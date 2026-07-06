@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -29,6 +29,14 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 const AnalyticsPage = lazy(() =>
   import("@/pages/AnalyticsPage").then((m) => ({ default: m.AnalyticsPage }))
 );
+
+/** Redirige "/" vers "/overview" en conservant la query string (ex: si
+ * Stripe redirige vers la racine du site avec ?premium=true, le paramètre
+ * ne doit pas être perdu avant même que la page ne se charge). */
+function RootRedirect() {
+  const location = useLocation();
+  return <Navigate to={`/overview${location.search}`} replace />;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -88,7 +96,7 @@ export default function App() {
               </Route>
             </Route>
 
-            <Route path="/" element={<Navigate to="/overview" replace />} />
+            <Route path="/" element={<RootRedirect />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </AuthProvider>

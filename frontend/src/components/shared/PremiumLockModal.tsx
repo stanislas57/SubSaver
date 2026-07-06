@@ -27,7 +27,7 @@ export function PremiumLockModal({ open, onOpenChange, feature }: PremiumLockMod
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Plus tard
           </Button>
-          <Button variant="premium" onClick={() => window.open(STRIPE_BILLING_URL, "_blank")}>
+          <Button variant="premium" onClick={() => (window.location.href = STRIPE_BILLING_URL)}>
             Passer Premium
           </Button>
         </DialogFooter>

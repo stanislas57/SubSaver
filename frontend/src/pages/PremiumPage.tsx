@@ -70,10 +70,13 @@ export function PremiumPage() {
   const subscriptionsQuery = useSubscriptions();
   const exportCsv = useExportSubscriptionsCsv();
 
-  /** Redirige vers Stripe si non-Premium, sinon lance l'export réel. */
+  /** Redirige vers Stripe si non-Premium, sinon lance l'export réel.
+   * Navigation dans le même onglet (pas de window.open) : Stripe doit
+   * pouvoir rediriger cet onglet vers /success?premium=true au retour,
+   * pour que l'app détecte le paiement et débloque isPremium. */
   function handleExportCsvClick() {
     if (!isPremium) {
-      window.open(STRIPE_BILLING_URL, "_blank");
+      window.location.href = STRIPE_BILLING_URL;
       return;
     }
     exportCsv.mutate();
@@ -94,7 +97,7 @@ export function PremiumPage() {
             : "Débloque tous les outils pour réduire tes dépenses récurrentes, seul ou en entreprise."}
         </RevealText>
         <div className="mt-8 flex justify-center">
-          <CTALink variant="solid" onClick={() => window.open(STRIPE_BILLING_URL, "_blank")}>
+          <CTALink variant="solid" onClick={() => (window.location.href = STRIPE_BILLING_URL)}>
             {user?.is_premium ? "Gérer mon abonnement" : "Passer Premium"}
           </CTALink>
         </div>
