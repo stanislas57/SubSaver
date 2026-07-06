@@ -9,7 +9,8 @@ from app.api.deps import get_current_user
 from app.core import powens
 from app.core.powens import PowensError
 from app.core.security import create_powens_state, decode_powens_state
-from app.core.subscription_detector import RawTransaction, detect_recurring_subscriptions
+from app.core.subscription_detector import RawTransaction
+from app.core.transaction_analyzer import analyze_transactions
 from app.db.session import get_db
 from app.models.bank_transaction import BankTransaction
 from app.models.user import User
@@ -191,14 +192,15 @@ def list_transactions(current_user: User = Depends(get_current_user), db: Sessio
 
 @router.get("/subscriptions/detect", response_model=list[DetectedSubscriptionOut])
 def detect_subscriptions(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Lance l'algorithme de détection sur les transactions déjà stockées (via /bank/transactions/sync).
-    Ne crée aucun abonnement automatiquement : renvoie des candidats à valider par l'utilisateur (F5)."""
+    """Lance l'algorithme de détection + catégorisation sur les transactions déjà stockées
+    (via /bank/transactions/sync). Ne crée aucun abonnement automatiquement : renvoie des
+    candidats (avec catégorie suggérée) à valider par l'utilisateur (F5)."""
     rows = db.execute(
         select(BankTransaction).where(BankTransaction.user_id == current_user.id)
     ).scalars().all()
 
     raw = [RawTransaction(id=row.id, wording=row.wording, value=row.value, date=row.date) for row in rows]
-    detected = detect_recurring_subscriptions(raw)
+    analyzed = analyze_transactions(raw)
 
     return [
         DetectedSubscriptionOut(
@@ -210,6 +212,7 @@ def detect_subscriptions(current_user: User = Depends(get_current_user), db: Ses
             next_estimated_date=d.next_estimated_date,
             confidence=d.confidence,
             source_transaction_ids=d.source_transaction_ids,
+            category=d.category,
         )
-        for d in detected
+        for d in analyzed
     ]

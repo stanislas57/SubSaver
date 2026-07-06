@@ -121,6 +121,7 @@ class DetectedSubscriptionOut(BaseModel):
     next_estimated_date: str
     confidence: float
     source_transaction_ids: list[str]
+    category: str
 
 
 class MarketOfferOut(BaseModel):
