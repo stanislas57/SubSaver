@@ -3,8 +3,10 @@ import { LogOut, Wallet } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const NAV_LINKS = [
+  { to: "/overview", label: "Vue d'ensemble" },
   { to: "/subscriptions", label: "Abonnements" },
   { to: "/analytics", label: "Analytique" },
+  { to: "/bank-connect", label: "Banque" },
   { to: "/premium", label: "Premium" },
 ];
 
@@ -18,7 +20,7 @@ export function TopNavbar() {
   return (
     <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-black/40 backdrop-blur-2xl">
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2.5">
+        <button onClick={() => navigate("/overview")} className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
             <Wallet className="h-4 w-4 text-white" />
           </div>

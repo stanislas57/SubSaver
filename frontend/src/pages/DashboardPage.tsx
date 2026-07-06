@@ -1,83 +1,13 @@
-import { useEffect, useMemo, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Wallet, ListChecks, AlertTriangle, Crown, Landmark, ArrowRight } from "lucide-react";
+import { useMemo } from "react";
+import { Wallet, ListChecks, AlertTriangle, Crown, Landmark } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { useScrollParallax } from "@/hooks/useScrollParallax";
+import { RevealText } from "@/components/shared/RevealText";
+import { BentoTile } from "@/components/shared/BentoTile";
+import { CTALink } from "@/components/shared/CTALink";
 import { formatPrice, daysUntil } from "@/lib/format";
 import type { Currency } from "@/types";
-
-gsap.registerPlugin(ScrollTrigger);
-
-const REDUCED_MOTION = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-/** Révélation de texte façon Apple : masque overflow-hidden sur le conteneur,
- * translation verticale (bas -> haut) déclenchée par le scroll, pas au chargement. */
-function RevealText({ children, className, as: Tag = "div" }: { children: React.ReactNode; className?: string; as?: "div" | "h2" | "p" }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const inner = innerRef.current;
-    if (!inner || REDUCED_MOTION()) return;
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        inner,
-        { yPercent: 100 },
-        {
-          yPercent: 0,
-          duration: 1,
-          ease: "power4.out",
-          scrollTrigger: { trigger: wrapRef.current, start: "top 85%" },
-        }
-      );
-    });
-    return () => ctx.revert();
-  }, []);
-
-  return (
-    <div ref={wrapRef} className="overflow-hidden">
-      <Tag ref={innerRef as never} className={className}>
-        {children}
-      </Tag>
-    </div>
-  );
-}
-
-function BentoTile({ className, children }: { className?: string; children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || REDUCED_MOTION()) return;
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        el,
-        { opacity: 0, y: 40, scale: 0.97 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.9,
-          ease: "power3.out",
-          scrollTrigger: { trigger: el, start: "top 88%" },
-        }
-      );
-    });
-    return () => ctx.revert();
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      className={`rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl transition-colors duration-300 hover:bg-white/[0.08] ${className ?? ""}`}
-    >
-      {children}
-    </div>
-  );
-}
 
 function SubscriptionParallaxCard({ name, price, currency, day, depth }: { name: string; price: number; currency: Currency; day: number; depth: number }) {
   const parallaxRef = useScrollParallax<HTMLDivElement>(depth);
@@ -101,7 +31,6 @@ function SubscriptionParallaxCard({ name, price, currency, day, depth }: { name:
 }
 
 export function DashboardPage() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const subscriptionsQuery = useSubscriptions();
   const currency = user?.currency ?? "EUR";
@@ -132,6 +61,9 @@ export function DashboardPage() {
         <RevealText className="mt-6 max-w-xl text-lg text-zinc-400">
           Une vue d'ensemble claire de vos dépenses récurrentes, pensée pour aller à l'essentiel.
         </RevealText>
+        <CTALink to="/overview" variant="ghost" className="mt-8">
+          Voir la vue d'ensemble
+        </CTALink>
       </section>
 
       {/* Section 2 — Bento box statistiques */}
@@ -210,13 +142,9 @@ export function DashboardPage() {
               />
             ))}
           </div>
-          <button
-            onClick={() => navigate("/subscriptions")}
-            className="mt-8 flex items-center gap-2 text-sm font-medium text-zinc-400 transition-colors hover:text-white"
-          >
-            Voir tous les abonnements
-            <ArrowRight className="h-4 w-4" />
-          </button>
+          <CTALink to="/subscriptions" variant="ghost" className="mt-8">
+            Voir tous mes abonnements
+          </CTALink>
         </div>
       </section>
 
@@ -233,12 +161,9 @@ export function DashboardPage() {
             Connecte ta banque et laisse l'algorithme isoler tes abonnements récurrents pour toi.
           </RevealText>
           {!user?.bank_connected && (
-            <button
-              onClick={() => navigate("/subscriptions")}
-              className="mt-8 rounded-full bg-white px-8 py-3 text-sm font-semibold text-black transition-transform duration-200 hover:scale-105"
-            >
+            <CTALink to="/bank-connect" variant="solid" className="mt-8">
               Connecter ma banque
-            </button>
+            </CTALink>
           )}
         </div>
       </section>

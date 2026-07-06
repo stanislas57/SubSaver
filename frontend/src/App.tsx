@@ -8,7 +8,9 @@ import { AppLayout } from "@/layouts/AppLayout";
 
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
+import { OverviewPage } from "@/pages/OverviewPage";
 import { DashboardPage } from "@/pages/DashboardPage";
+import { BankConnectPage } from "@/pages/BankConnectPage";
 import { SubscriptionsPage } from "@/pages/SubscriptionsPage";
 import { SubscriptionAddPage } from "@/pages/SubscriptionAddPage";
 import { AnalyticsPage } from "@/pages/AnalyticsPage";
@@ -40,7 +42,9 @@ export default function App() {
 
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
+                <Route path="/overview" element={<OverviewPage />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/bank-connect" element={<BankConnectPage />} />
                 <Route path="/subscriptions" element={<SubscriptionsPage />} />
                 <Route path="/subscriptions/add" element={<SubscriptionAddPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
@@ -53,7 +57,7 @@ export default function App() {
               </Route>
             </Route>
 
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/overview" replace />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </AuthProvider>
