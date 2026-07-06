@@ -5,6 +5,7 @@ import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { RevealText } from "@/components/shared/RevealText";
 import { BentoTile } from "@/components/shared/BentoTile";
 import { CTALink } from "@/components/shared/CTALink";
+import { HowItWorks } from "@/components/shared/HowItWorks";
 import { formatPrice, daysUntil } from "@/lib/format";
 
 /** Point d'entrée principal de l'app : vue condensée en 3 cartes Bento
@@ -37,17 +38,19 @@ export function OverviewPage() {
           Vue d'ensemble
         </RevealText>
         <RevealText className="mt-4 max-w-xl text-lg text-luxury-text-light">
-          Tout ce qu'il faut savoir sur tes abonnements, en un coup d'œil.
+          SubServer détecte automatiquement tous vos abonnements. En 2 clics. Sans paperasse.
         </RevealText>
 
+        <HowItWorks variant="light" className="mt-12 max-w-4xl" />
+
         <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-3">
-          <BentoTile className="flex flex-col justify-between">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">
+          <BentoTile className="flex flex-col justify-between border-luxury-night bg-luxury-night">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold/15 text-luxury-gold">
               <Wallet className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-medium text-luxury-text-light">Total mensuel des dépenses</p>
-              <p className="mt-2 bg-gradient-to-r from-luxury-night to-luxury-sapphire bg-clip-text text-5xl font-black text-transparent">
+              <p className="text-sm font-medium text-luxury-gold">Total mensuel des dépenses</p>
+              <p className="mt-2 text-5xl font-black text-white">
                 {formatPrice(monthlyTotal, currency)}
               </p>
             </div>
