@@ -8,6 +8,7 @@ import { AppLayout } from "@/layouts/AppLayout";
 
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
+import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import { OverviewPage } from "@/pages/OverviewPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { BankConnectPage } from "@/pages/BankConnectPage";
@@ -37,6 +38,7 @@ export default function App() {
               <Route element={<AuthLayout />}>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               </Route>
             </Route>
 

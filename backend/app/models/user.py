@@ -21,6 +21,15 @@ class User(Base):
     is_premium: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     bank_connected: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
+    # Vérification d'email à l'inscription (code 6 chiffres, cf. app/core/email_service.py)
+    is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    verification_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    verification_code_expires_at: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    # Réinitialisation de mot de passe (même mécanisme : code 6 chiffres par email)
+    reset_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    reset_code_expires_at: Mapped[str | None] = mapped_column(String, nullable=True)
+
     # Powens (Open Banking) — 1 utilisateur SubServer = 1 utilisateur Powens
     powens_user_token: Mapped[str | None] = mapped_column(String, nullable=True)
     powens_connection_id: Mapped[str | None] = mapped_column(String, nullable=True)

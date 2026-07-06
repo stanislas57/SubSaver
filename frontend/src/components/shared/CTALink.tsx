@@ -46,7 +46,7 @@ export function CTALink({ to, onClick, children, variant = "ghost", className }:
       ref={magneticRef}
       onClick={handleClick}
       className={cn(
-        "group flex items-center gap-2 text-sm font-medium text-zinc-400 transition-colors duration-200 hover:text-white",
+        "group flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-slate-50",
         className
       )}
     >

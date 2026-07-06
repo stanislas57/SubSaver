@@ -21,6 +21,11 @@ export default {
         danger: "#ef4444",
         success: "#10b981",
         warning: "#f59e0b",
+
+        // Thème SaaS "cinématique" (Overview/Dashboard/Premium/BankConnect/TopNavbar) :
+        // fond doux pour les yeux, plus jamais de noir absolu.
+        canvas: "#121826",
+        "canvas-soft": "#1a2233",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

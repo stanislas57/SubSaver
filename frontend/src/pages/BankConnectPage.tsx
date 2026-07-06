@@ -23,11 +23,11 @@ export function BankConnectPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center">
-      <RevealText as="h1" className="max-w-lg text-4xl font-black tracking-tight text-white sm:text-5xl">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6 text-center">
+      <RevealText as="h1" className="max-w-lg text-4xl font-black tracking-tight text-slate-50 sm:text-5xl">
         {user?.bank_connected ? "Ta banque est connectée" : "Sécurise ta connexion bancaire"}
       </RevealText>
-      <RevealText className="mt-4 max-w-md text-base text-zinc-400">
+      <RevealText className="mt-4 max-w-md text-base text-slate-400">
         {user?.bank_connected
           ? "Tes transactions sont synchronisées automatiquement. Tu peux relancer une détection à tout moment."
           : "Un seul geste pour connecter ta banque et laisser SubServer isoler tes abonnements récurrents."}

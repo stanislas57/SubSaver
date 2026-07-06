@@ -1,3 +1,4 @@
+import secrets
 from datetime import datetime, timedelta, timezone
 
 from jose import JWTError, jwt
@@ -14,6 +15,11 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
+
+
+def generate_verification_code() -> str:
+    """Code à 6 chiffres cryptographiquement sûr (vérification email / reset mot de passe)."""
+    return f"{secrets.randbelow(1_000_000):06d}"
 
 
 def create_access_token(subject: str) -> str:

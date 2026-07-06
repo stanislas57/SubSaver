@@ -15,6 +15,7 @@ import uuid
 from sqlalchemy import text
 
 from app.db.session import SessionLocal
+from app.models.user import User
 
 
 def _insert_transaction(user_id: str, tx_id: str, wording: str, value: float, date: str):
@@ -80,10 +81,15 @@ class TestCallback:
 
         state = up.parse_qs(up.urlparse(connect.json()["webview_url"]).query)["state"][0]
 
-        other = client.post(
+        other_email = f"other-{uuid.uuid4().hex[:8]}@example.com"
+        client.post(
             "/api/v1/auth/register",
-            json={"email": f"other-{uuid.uuid4().hex[:8]}@example.com", "password": "Test1234!", "first_name": "X"},
-        ).json()
+            json={"email": other_email, "password": "Test1234!", "first_name": "X"},
+        )
+        db = SessionLocal()
+        other_code = db.query(User).filter(User.email == other_email).first().verification_code
+        db.close()
+        other = client.post("/api/v1/auth/verify-email", json={"email": other_email, "code": other_code}).json()
         other_headers = {"Authorization": f"Bearer {other['access_token']}"}
 
         response = client.post(

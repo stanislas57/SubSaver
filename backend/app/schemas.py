@@ -29,6 +29,30 @@ class RegisterBody(BaseModel):
     first_name: str
 
 
+class RegisterResult(BaseModel):
+    email: str
+    message: str
+
+
+class VerifyEmailBody(BaseModel):
+    email: str
+    code: str
+
+
+class EmailBody(BaseModel):
+    email: str
+
+
+class ResetPasswordBody(BaseModel):
+    email: str
+    code: str
+    new_password: str
+
+
+class MessageResult(BaseModel):
+    message: str
+
+
 class AuthResponse(BaseModel):
     access_token: str
     token_type: str

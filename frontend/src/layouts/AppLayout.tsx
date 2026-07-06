@@ -9,7 +9,7 @@ export function AppLayout() {
   const { pathname } = useLocation();
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col bg-black">
+    <div className="relative flex min-h-screen w-full flex-col bg-canvas">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[120px]" />
         <div className="absolute right-0 top-1/3 h-[450px] w-[450px] rounded-full bg-purple-500/10 blur-[120px]" />

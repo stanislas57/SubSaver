@@ -16,6 +16,17 @@ interface AuthContextValue {
   register: (email: string, password: string, firstName: string) => Promise<void>;
   isRegistering: boolean;
   registerError: string | null;
+  verifyEmail: (email: string, code: string) => Promise<void>;
+  isVerifyingEmail: boolean;
+  verifyEmailError: string | null;
+  resendCode: (email: string) => Promise<void>;
+  isResendingCode: boolean;
+  forgotPassword: (email: string) => Promise<void>;
+  isSendingResetCode: boolean;
+  forgotPasswordError: string | null;
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<void>;
+  isResettingPassword: boolean;
+  resetPasswordError: string | null;
   logout: () => void;
 }
 
@@ -41,23 +52,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [meQuery.isError]);
 
+  function applyAuthResponse(data: { access_token: string; user: User }) {
+    localStorage.setItem(TOKEN_STORAGE_KEY, data.access_token);
+    queryClient.setQueryData(["me"], data.user);
+    setHasToken(true);
+  }
+
   const loginMutation = useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) => authService.login(email, password),
-    onSuccess: (data) => {
-      localStorage.setItem(TOKEN_STORAGE_KEY, data.access_token);
-      queryClient.setQueryData(["me"], data.user);
-      setHasToken(true);
-    },
+    onSuccess: applyAuthResponse,
   });
 
   const registerMutation = useMutation({
     mutationFn: ({ email, password, firstName }: { email: string; password: string; firstName: string }) =>
       authService.register(email, password, firstName),
-    onSuccess: (data) => {
-      localStorage.setItem(TOKEN_STORAGE_KEY, data.access_token);
-      queryClient.setQueryData(["me"], data.user);
-      setHasToken(true);
-    },
+  });
+
+  const verifyEmailMutation = useMutation({
+    mutationFn: ({ email, code }: { email: string; code: string }) => authService.verifyEmail(email, code),
+    onSuccess: applyAuthResponse,
+  });
+
+  const resendCodeMutation = useMutation({
+    mutationFn: (email: string) => authService.resendCode(email),
+  });
+
+  const forgotPasswordMutation = useMutation({
+    mutationFn: (email: string) => authService.forgotPassword(email),
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: ({ email, code, newPassword }: { email: string; code: string; newPassword: string }) =>
+      authService.resetPassword(email, code, newPassword),
   });
 
   async function login(email: string, password: string) {
@@ -66,6 +92,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function register(email: string, password: string, firstName: string) {
     await registerMutation.mutateAsync({ email, password, firstName });
+  }
+
+  async function verifyEmail(email: string, code: string) {
+    await verifyEmailMutation.mutateAsync({ email, code });
+  }
+
+  async function resendCode(email: string) {
+    await resendCodeMutation.mutateAsync(email);
+  }
+
+  async function forgotPassword(email: string) {
+    await forgotPasswordMutation.mutateAsync(email);
+  }
+
+  async function resetPassword(email: string, code: string, newPassword: string) {
+    await resetPasswordMutation.mutateAsync({ email, code, newPassword });
   }
 
   function logout() {
@@ -86,6 +128,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     register,
     isRegistering: registerMutation.isPending,
     registerError: registerMutation.isError ? getErrorMessage(registerMutation.error, "Impossible de créer le compte.") : null,
+    verifyEmail,
+    isVerifyingEmail: verifyEmailMutation.isPending,
+    verifyEmailError: verifyEmailMutation.isError ? getErrorMessage(verifyEmailMutation.error, "Code invalide.") : null,
+    resendCode,
+    isResendingCode: resendCodeMutation.isPending,
+    forgotPassword,
+    isSendingResetCode: forgotPasswordMutation.isPending,
+    forgotPasswordError: forgotPasswordMutation.isError ? getErrorMessage(forgotPasswordMutation.error) : null,
+    resetPassword,
+    isResettingPassword: resetPasswordMutation.isPending,
+    resetPasswordError: resetPasswordMutation.isError ? getErrorMessage(resetPasswordMutation.error, "Code invalide.") : null,
     logout,
   };
 

@@ -25,11 +25,22 @@ export interface User {
   bank_connected: boolean;
 }
 
-/** Réponse de POST /auth/register et POST /auth/login (schéma Token). */
+/** Réponse de POST /auth/login et POST /auth/verify-email (schéma Token). */
 export interface AuthResponse {
   access_token: string;
   token_type: string;
   user: User;
+}
+
+/** Réponse de POST /auth/register : le compte n'est pas encore actif, un code
+ * de vérification à 6 chiffres vient d'être envoyé par email. */
+export interface RegisterResult {
+  email: string;
+  message: string;
+}
+
+export interface MessageResult {
+  message: string;
 }
 
 /** Corps de PATCH /users/me — tous les champs sont optionnels. */
@@ -187,4 +198,5 @@ export interface DetectedSubscription {
   next_estimated_date: string;
   confidence: number;
   source_transaction_ids: string[];
+  category: string;
 }

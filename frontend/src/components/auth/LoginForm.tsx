@@ -15,6 +15,8 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+const inputClassName = "border-white/10 bg-white/5 text-slate-50 placeholder:text-slate-500 focus-visible:border-primary/60";
+
 export function LoginForm() {
   const { login, isLoggingIn, loginError } = useAuth();
   const {
@@ -33,26 +35,31 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-      <h2 className="font-display text-xl font-bold text-text-main">Connexion</h2>
+      <h2 className="font-display text-xl font-bold text-slate-50">Connexion</h2>
       {loginError && <ErrorAlert message={loginError} compact />}
 
       <div>
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" autoComplete="email" error={!!errors.email} {...register("email")} />
-        {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
+        <Label htmlFor="email" className="text-slate-300">Email</Label>
+        <Input id="email" type="email" autoComplete="email" error={!!errors.email} className={inputClassName} {...register("email")} />
+        {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>}
       </div>
 
       <div>
-        <Label htmlFor="password">Mot de passe</Label>
-        <Input id="password" type="password" autoComplete="current-password" error={!!errors.password} {...register("password")} />
-        {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password" className="text-slate-300">Mot de passe</Label>
+          <Link to="/forgot-password" className="mb-1.5 text-xs font-medium text-primary hover:underline">
+            Mot de passe oublié ?
+          </Link>
+        </div>
+        <Input id="password" type="password" autoComplete="current-password" error={!!errors.password} className={inputClassName} {...register("password")} />
+        {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password.message}</p>}
       </div>
 
       <Button type="submit" className="w-full" loading={isLoggingIn}>
         Se connecter
       </Button>
 
-      <p className="text-center text-sm text-text-muted">
+      <p className="text-center text-sm text-slate-400">
         Pas encore de compte ?{" "}
         <Link to="/register" className="font-medium text-primary hover:underline">
           Créer un compte

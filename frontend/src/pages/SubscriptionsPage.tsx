@@ -1,17 +1,18 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Download, Landmark, Sparkles } from "lucide-react";
+import { Plus, Landmark, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { SubscriptionList } from "@/components/subscriptions/SubscriptionList";
 import { SubscriptionForm } from "@/components/subscriptions/SubscriptionForm";
-import { DetectedSubscriptionsDialog, guessDomain } from "@/components/bank/DetectedSubscriptionsDialog";
+import { BankConsentModal } from "@/components/bank/BankConsentModal";
+import { BankReportModal } from "@/components/bank/BankReportModal";
+import { guessDomain } from "@/lib/bank";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   useCreateSubscription,
   useDeleteSubscription,
-  useExportSubscriptionsCsv,
   useSubscriptions,
   useUpdateSubscription,
 } from "@/hooks/useSubscriptions";
@@ -27,7 +28,6 @@ export function SubscriptionsPage() {
   const subscriptionsQuery = useSubscriptions();
   const updateSubscription = useUpdateSubscription();
   const deleteSubscription = useDeleteSubscription();
-  const exportCsv = useExportSubscriptionsCsv();
 
   const bankConnectUrl = useBankConnectUrl();
   const bankCallback = useBankCallback();
@@ -37,9 +37,10 @@ export function SubscriptionsPage() {
 
   const [editing, setEditing] = React.useState<Subscription | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | undefined>();
-  const [detectDialogOpen, setDetectDialogOpen] = React.useState(false);
+  const [consentOpen, setConsentOpen] = React.useState(false);
+  const [reportOpen, setReportOpen] = React.useState(false);
   const [candidates, setCandidates] = React.useState<DetectedSubscription[]>([]);
-  const [acceptingMerchant, setAcceptingMerchant] = React.useState<string | undefined>();
+  const [validating, setValidating] = React.useState(false);
 
   function handleDelete(subscription: Subscription) {
     if (!window.confirm(`Supprimer "${subscription.name}" ?`)) return;
@@ -62,47 +63,66 @@ export function SubscriptionsPage() {
     });
   }
 
-  /** Enchaîne sync des transactions puis lancement de l'algo de détection (F3 -> F4). */
-  function handleDetectSubscriptions() {
+  /** Tunnel de détection : consentement (1) -> sync + algo (2) -> rapport + validation (3). */
+  function handleOpenConsent() {
+    setConsentOpen(true);
+  }
+
+  function handleConsent() {
     syncTransactions.mutate(undefined, {
-      onError: (error) => toast.error(getErrorMessage(error)),
+      onError: (error) => {
+        toast.error(getErrorMessage(error));
+        setConsentOpen(false);
+      },
       onSuccess: () => {
         detectSubscriptions.mutate(undefined, {
           onSuccess: (data) => {
             setCandidates(data);
-            setDetectDialogOpen(true);
+            setConsentOpen(false);
+            setReportOpen(true);
           },
-          onError: (error) => toast.error(getErrorMessage(error)),
+          onError: (error) => {
+            toast.error(getErrorMessage(error));
+            setConsentOpen(false);
+          },
         });
       },
     });
   }
 
-  function handleAcceptCandidate(candidate: DetectedSubscription) {
-    setAcceptingMerchant(candidate.merchant);
-    const billingDay = new Date(candidate.next_estimated_date).getDate();
-    const input: SubscriptionInput = {
-      name: candidate.merchant,
-      price: candidate.price,
-      category: "Autre",
-      domain: guessDomain(candidate.merchant),
-      billing_day: billingDay,
-      importance: 2,
-      start_date: candidate.last_date,
-      trial_end_date: null,
-    };
-    createSubscription.mutate(input, {
-      onSuccess: () => {
-        toast.success(`"${candidate.merchant}" ajouté à tes abonnements.`);
-        setCandidates((prev) => prev.filter((c) => c.merchant !== candidate.merchant));
-      },
-      onError: (error) => toast.error(getErrorMessage(error)),
-      onSettled: () => setAcceptingMerchant(undefined),
-    });
+  function handleExcludeCandidate(candidate: DetectedSubscription) {
+    setCandidates((prev) => prev.filter((c) => c.merchant !== candidate.merchant));
   }
 
-  function handleRejectCandidate(candidate: DetectedSubscription) {
-    setCandidates((prev) => prev.filter((c) => c.merchant !== candidate.merchant));
+  /** Étape 3 : intègre définitivement tous les candidats restants du rapport. */
+  async function handleValidateReport() {
+    setValidating(true);
+    let successCount = 0;
+    for (const candidate of candidates) {
+      const billingDay = new Date(candidate.next_estimated_date).getDate();
+      const input: SubscriptionInput = {
+        name: candidate.merchant,
+        price: candidate.price,
+        category: candidate.category,
+        domain: guessDomain(candidate.merchant),
+        billing_day: billingDay,
+        importance: 2,
+        start_date: candidate.last_date,
+        trial_end_date: null,
+      };
+      try {
+        await createSubscription.mutateAsync(input);
+        successCount += 1;
+      } catch (error) {
+        toast.error(`"${candidate.merchant}" : ${getErrorMessage(error)}`);
+      }
+    }
+    setValidating(false);
+    setReportOpen(false);
+    setCandidates([]);
+    if (successCount > 0) {
+      toast.success(`${successCount} abonnement(s) intégré(s) à ton tableau de bord.`);
+    }
   }
 
   /** Étape 2 : au retour de la Webview Powens, l'URL contient state/connection_id/error en query params. */
@@ -141,21 +161,12 @@ export function SubscriptionsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleDetectSubscriptions}
+              onClick={handleOpenConsent}
               loading={syncTransactions.isPending || detectSubscriptions.isPending}
             >
               <Sparkles className="h-4 w-4" /> Détecter mes abonnements
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => exportCsv.mutate()}
-            loading={exportCsv.isPending}
-            disabled={!subscriptionsQuery.data?.length}
-          >
-            <Download className="h-4 w-4" /> Export CSV
-          </Button>
           <Button size="sm" onClick={() => navigate("/subscriptions/add")}>
             <Plus className="h-4 w-4" /> Ajouter
           </Button>
@@ -193,13 +204,21 @@ export function SubscriptionsPage() {
         </DialogContent>
       </Dialog>
 
-      <DetectedSubscriptionsDialog
-        open={detectDialogOpen}
-        onOpenChange={setDetectDialogOpen}
+      <BankConsentModal
+        open={consentOpen}
+        onOpenChange={setConsentOpen}
+        onConsent={handleConsent}
+        loading={syncTransactions.isPending || detectSubscriptions.isPending}
+      />
+
+      <BankReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
         candidates={candidates}
-        onAccept={handleAcceptCandidate}
-        onReject={handleRejectCandidate}
-        acceptingMerchant={acceptingMerchant}
+        currency={currency}
+        onExclude={handleExcludeCandidate}
+        onValidate={handleValidateReport}
+        validating={validating}
       />
     </div>
   );

@@ -29,5 +29,13 @@ class Settings(BaseSettings):
     POWENS_WEBVIEW_BASE_URL: str = "https://webview.powens.com/connect"
     POWENS_STATE_TTL_MINUTES: int = 10
 
+    # Email (SMTP) — codes de vérification / réinitialisation de mot de passe
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    EMAIL_FROM: str = "contact.subserver@proton.me"
+    VERIFICATION_CODE_TTL_MINUTES: int = 10
+
 
 settings = Settings()
