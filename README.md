@@ -1,9 +1,11 @@
 # SubServer
 
-Application de gestion d'abonnements (mode famille, comparateur d'offres, connexion bancaire simulée).
+Gestionnaire d'abonnements : abonnement partagé, comparateur d'offres (base curatée), connexion bancaire réelle (Powens sandbox) avec détection automatique des abonnements.
 
-- **Frontend** : React 19 + Vite + TypeScript + Tailwind + React Query — `subserver/`
-- **Backend** : FastAPI + SQLAlchemy + Alembic + PostgreSQL — `subserver-backend/`
+- **Frontend** : React 19 + Vite + TypeScript + Tailwind + React Query + Framer Motion — `frontend/`
+- **Backend** : FastAPI + SQLAlchemy + Alembic + PostgreSQL — `backend/`
+
+**Déployé** : https://subserver-frontend.onrender.com (API : https://subserver-urna.onrender.com)
 
 ---
 
@@ -18,10 +20,9 @@ Application de gestion d'abonnements (mode famille, comparateur d'offres, connex
 ## 1. Base de données
 
 ```bash
-# Installer PostgreSQL localement (Ubuntu/Debian), ou lancer un conteneur :
 docker run --name subserver-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=subserver -p 5432:5432 -d postgres:16
 
-# Si install locale (sans Docker) :
+# Ou install locale (Ubuntu/Debian) :
 sudo service postgresql start
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
 sudo -u postgres psql -c "CREATE DATABASE subserver;"
@@ -32,132 +33,132 @@ sudo -u postgres psql -c "CREATE DATABASE subserver;"
 ## 2. Backend (FastAPI)
 
 ```bash
-cd subserver-backend
+cd backend
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 cp .env.example .env
-# Édite .env si besoin (DATABASE_URL, SECRET_KEY, CORS_ORIGINS)
+# Édite .env : DATABASE_URL, SECRET_KEY, CORS_ORIGINS, et les 4 variables POWENS_* (voir ci-dessous)
 
-alembic upgrade head        # applique les migrations
+alembic upgrade head
 uvicorn app.main:app --reload --port 8000
 ```
 
-L'API est disponible sur `http://localhost:8000`, documentation interactive sur `http://localhost:8000/docs`.
+API sur `http://localhost:8000`, doc interactive sur `http://localhost:8000/docs`.
 
-**Variables d'environnement** (`subserver-backend/.env.example`) :
+**Variables d'environnement** (`backend/.env.example`) :
 
-| Variable | Description | Défaut |
-|---|---|---|
-| `DATABASE_URL` | URL de connexion PostgreSQL | `postgresql+psycopg2://postgres:postgres@localhost:5432/subserver` |
-| `SECRET_KEY` | Clé de signature JWT — **à changer en production** | `change-me-in-production` |
-| `ALGORITHM` | Algorithme JWT | `HS256` |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Durée de validité du token | `10080` (7 jours) |
-| `CORS_ORIGINS` | Origines autorisées (JSON list) | `["http://localhost:5173"]` |
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | URL de connexion PostgreSQL |
+| `SECRET_KEY` | Clé de signature JWT — **à changer en production** |
+| `ALGORITHM` | Algorithme JWT (`HS256`) |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Durée de validité du token (`10080` = 7 jours) |
+| `CORS_ORIGINS` | Origines autorisées (JSON list) |
+| `POWENS_DOMAIN` | Domaine sandbox/prod Powens (ex: `xxx-sandbox.biapi.pro`) |
+| `POWENS_CLIENT_ID` | Identifiant client Powens — **ne jamais committer** |
+| `POWENS_CLIENT_SECRET` | Secret client Powens — **ne jamais committer** |
+| `POWENS_REDIRECT_URI` | URL de retour après la Webview Powens (ex: `.../subscriptions`) |
+
+### Tests
+
+```bash
+cd backend && source .venv/bin/activate
+pytest tests/ -v
+```
+
+12 tests e2e (`tests/test_bank_flow.py`) : connect-url réel (sandbox Powens), sécurité du callback, sync transactions, algorithme de détection, création d'abonnement.
 
 ---
 
 ## 3. Frontend (Vite + React)
 
 ```bash
-cd subserver
+cd frontend
 npm install
 cp .env.example .env
-# Édite .env si l'API tourne ailleurs qu'en localhost:8000
 
-npm run dev      # développement, http://localhost:5173
-npm run build    # build de production -> dist/
-npm run preview  # sert le build de production localement
+npm run dev      # http://localhost:5173
+npm run build    # -> dist/
+npm run preview
 ```
 
-**Variables d'environnement** (`subserver/.env.example`) :
+**Variables d'environnement** (`frontend/.env.example`) :
 
-| Variable | Description | Défaut |
-|---|---|---|
-| `VITE_API_BASE_URL` | URL de base de l'API backend | `http://localhost:8000/api/v1` |
-| `VITE_STRIPE_BILLING_URL` | Lien du portail de facturation Stripe | lien de test |
+| Variable | Description |
+|---|---|
+| `VITE_API_BASE_URL` | URL de base de l'API backend |
+| `VITE_STRIPE_BILLING_URL` | Lien du portail de facturation Stripe |
 
 ---
 
-## 4. Lancer l'ensemble (DB + backend + frontend)
-
-Trois terminaux :
+## 4. Lancer l'ensemble en local
 
 ```bash
-# Terminal 1 — base de données (si non déjà lancée en service/Docker)
+# Terminal 1
 sudo service postgresql start
 
-# Terminal 2 — backend
-cd subserver-backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000
+# Terminal 2
+cd backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000
 
-# Terminal 3 — frontend
-cd subserver && npm run dev
+# Terminal 3
+cd frontend && npm run dev
 ```
 
-Ouvre `http://localhost:5173`, crée un compte via `/register`, puis utilise l'application normalement.
+Ouvre `http://localhost:5173`, crée un compte via `/register`.
+
+---
+
+## Fonctionnalités
+
+- **Abonnements** : CRUD, calendrier, analytique, export CSV
+- **Connexion bancaire réelle** (Powens, Bank API de base, flow Webview redirect) : `/subscriptions` → "Connecter ma banque" → détection automatique des abonnements récurrents (algorithme maison : nettoyage libellés + matching récurrence 7/30/365 jours)
+- **Abonnement partagé** : groupe, membres, répartition des coûts (accessible depuis Premium)
+- **Comparateur d'offres** : base curatée d'offres réelles (Streaming, Musique, Téléphonie), mise à jour manuelle — accessible depuis Premium (premium requis)
+- **Lettre de résiliation** : génération 100% client-side, accessible depuis Premium
+- **Refonte visuelle** : tilt 3D + micro-interactions (Framer Motion + CSS 3D transforms)
 
 ---
 
 ## Structure du projet
 
 ```
-subserver/                          # Frontend
-├── .env.example
-├── index.html
-├── package.json
-├── tsconfig.json / tsconfig.node.json
-├── tailwind.config.js
-├── postcss.config.js
-├── vite.config.ts
+frontend/
 └── src/
-    ├── main.tsx, App.tsx, index.css, types.ts, vite-env.d.ts
-    ├── api/            axiosClient.ts, config.ts
-    ├── services/       authService, userService, subscriptionService,
-    │                   bankService, marketService, familyService
-    ├── hooks/          useSubscriptions, useBank, useProfile, useMarket, useFamily
-    ├── contexts/       AuthContext.tsx
-    ├── routes/         ProtectedRoute.tsx
-    ├── layouts/        AppLayout.tsx, AuthLayout.tsx
-    ├── lib/            format.ts, utils.ts, cancellationLetter.ts
-    ├── pages/          Dashboard, Subscriptions, SubscriptionAdd, Analytics,
-    │                   Calendar, Lab(+Comparator/Cancellation), Premium,
-    │                   Profile, Login, Register, NotFound
+    ├── api/                axiosClient.ts, config.ts
+    ├── services/           auth, user, subscription, bank, market, sharedSubscription
+    ├── hooks/              useSubscriptions, useBank, useProfile, useMarket, useSharedSubscription
+    ├── lib/                format.ts, utils.ts, motion.ts, cancellationLetter.ts
+    ├── pages/              Dashboard, Subscriptions, SubscriptionAdd, Analytics, Calendar,
+    │                       Premium (inclut comparateur/résiliation/abonnement partagé),
+    │                       LabComparatorPage, LabCancellationPage, Profile, Login, Register
     └── components/
-        ├── ui/         primitives (button, card, dialog, input, select, tabs…)
-        ├── shared/      StatCard, EmptyState, NotificationCenter, ThemeToggle…
-        ├── auth/        LoginForm, RegisterForm
+        ├── ui/             button, card, tilt-card, dialog, input, select, tabs…
+        ├── shared/         StatCard, FeatureBox, PremiumLockModal, EmptyState…
         ├── subscriptions/  SubscriptionForm, SubscriptionList, SubscriptionListItem
-        ├── bank/        BankGrid
-        ├── calendar/    CalendarGrid
-        ├── analytics/   ChartCard
-        ├── lab/         ComparatorOfferCard
-        ├── family/      FamilyTabs, FamilyModal, FamilyMemberRow, FamilyBalanceCard
-        ├── profile/     ProfileForm
-        └── layout/      Sidebar, Topbar, NavLink
+        ├── bank/           BankGrid, DetectedSubscriptionsDialog
+        ├── shared-subscription/  SharedSubscriptionTabs/Modal/MemberRow/BalanceCard
+        ├── lab/            ComparatorOfferCard
+        └── layout/         Sidebar (nav animée), Topbar, NavLink
 
-subserver-backend/                  # Backend
-├── .env.example
+backend/
 ├── requirements.txt
-├── alembic.ini
-├── alembic/
-│   ├── env.py
-│   ├── script.py.mako
-│   └── versions/9109338c326b_initial_schema.py
+├── alembic/versions/       migrations (schema initial, powens, bank_transactions, market_offers)
+├── tests/                  test_bank_flow.py (12 tests e2e)
 └── app/
-    ├── main.py                     point d'entrée FastAPI
-    ├── schemas.py                  schémas Pydantic (miroir de src/types.ts)
-    ├── core/        config.py (Settings), security.py (JWT, hash)
-    ├── db/          session.py (engine, Base, get_db)
-    ├── models/      user.py, subscription.py, family_member.py
-    └── api/
-        ├── deps.py                 get_current_user
-        └── v1/      router.py + auth, users, subscriptions, bank, market, family
+    ├── main.py
+    ├── schemas.py
+    ├── core/               config.py, security.py, powens.py (client Powens), subscription_detector.py (algo)
+    ├── models/             user, subscription, family_member, bank_transaction, market_offer
+    └── api/v1/             auth, users, subscriptions, bank, market, family
 ```
 
 ---
 
 ## Notes
 
-- Les endpoints `bank/providers` et `market/offers` renvoient actuellement un catalogue statique de démonstration (pas d'intégration bancaire/partenaire réelle branchée).
-- Migrations : toute évolution de modèle passe par `alembic revision --autogenerate -m "message"` puis `alembic upgrade head`.
-- Le token JWT est stocké côté frontend dans `localStorage` (clé `subserver_token`).
+- `bank/providers` reste un catalogue de démonstration ; la vraie connexion passe par `bank/connect-url` + `bank/callback` (Powens).
+- `market/offers` est une base curatée manuellement (pas de scraping/API tierce) — mise à jour via nouvelle migration Alembic en cas de changement tarifaire.
+- Toute évolution de modèle : `alembic revision --autogenerate -m "message"` puis `alembic upgrade head`.
+- JWT stocké côté frontend dans `localStorage` (clé `subserver_token`).
+- Base Postgres Render (plan free) : vérifier la date d'expiration et upgrader si besoin.
