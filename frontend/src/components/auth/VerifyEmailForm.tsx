@@ -7,7 +7,7 @@ import { ErrorAlert } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 
 const inputClassName =
-  "border-white/10 bg-white/5 text-center text-2xl tracking-[0.5em] text-slate-50 placeholder:text-slate-600 focus-visible:border-primary/60";
+  "border-luxury-text/20 bg-luxury-bg text-center text-2xl tracking-[0.5em] text-luxury-text placeholder:text-luxury-text-light focus-visible:border-luxury-sapphire/60";
 
 export interface VerifyEmailFormProps {
   email: string;
@@ -33,14 +33,14 @@ export function VerifyEmailForm({ email }: VerifyEmailFormProps) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
-      <h2 className="font-display text-xl font-bold text-slate-50">Vérifie ton email</h2>
-      <p className="text-sm text-slate-400">
-        On a envoyé un code à 6 chiffres à <span className="text-slate-200">{email}</span>, valable 10 minutes.
+      <h2 className="font-display text-xl font-bold text-luxury-text">Vérifie ton email</h2>
+      <p className="text-sm text-luxury-text-light">
+        On a envoyé un code à 6 chiffres à <span className="text-luxury-text font-semibold">{email}</span>, valable 10 minutes.
       </p>
       {verifyEmailError && <ErrorAlert message={verifyEmailError} compact />}
 
       <div>
-        <Label htmlFor="code" className="text-slate-300">Code de vérification</Label>
+        <Label htmlFor="code" className="text-luxury-text">Code de vérification</Label>
         <Input
           id="code"
           inputMode="numeric"
@@ -60,7 +60,7 @@ export function VerifyEmailForm({ email }: VerifyEmailFormProps) {
         type="button"
         onClick={handleResend}
         disabled={isResendingCode}
-        className="w-full text-center text-sm font-medium text-primary hover:underline disabled:opacity-50"
+        className="w-full text-center text-sm font-medium text-luxury-sapphire hover:underline disabled:opacity-50"
       >
         Renvoyer le code
       </button>

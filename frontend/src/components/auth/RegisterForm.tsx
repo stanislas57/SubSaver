@@ -16,7 +16,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-const inputClassName = "border-white/10 bg-white/5 text-slate-50 placeholder:text-slate-500 focus-visible:border-primary/60";
+const inputClassName = "border-luxury-text/20 bg-luxury-bg placeholder:text-luxury-text-light focus-visible:border-luxury-sapphire/60 text-luxury-text";
 
 export interface RegisterFormProps {
   /** Appelé une fois le code de vérification envoyé, pour passer à l'étape suivante. */
@@ -42,34 +42,34 @@ export function RegisterForm({ onRegistered }: RegisterFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-      <h2 className="font-display text-xl font-bold text-slate-50">Créer un compte</h2>
+      <h2 className="font-display text-xl font-bold text-luxury-text">Créer un compte</h2>
       {registerError && <ErrorAlert message={registerError} compact />}
 
       <div>
-        <Label htmlFor="firstName" className="text-slate-300">Prénom</Label>
+        <Label htmlFor="firstName" className="text-luxury-text">Prénom</Label>
         <Input id="firstName" autoComplete="given-name" error={!!errors.firstName} className={inputClassName} {...register("firstName")} />
-        {errors.firstName && <p className="mt-1 text-xs text-red-400">{errors.firstName.message}</p>}
+        {errors.firstName && <p className="mt-1 text-xs text-red-500">{errors.firstName.message}</p>}
       </div>
 
       <div>
-        <Label htmlFor="email" className="text-slate-300">Email</Label>
+        <Label htmlFor="email" className="text-luxury-text">Email</Label>
         <Input id="email" type="email" autoComplete="email" error={!!errors.email} className={inputClassName} {...register("email")} />
-        {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>}
+        {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
       </div>
 
       <div>
-        <Label htmlFor="password" className="text-slate-300">Mot de passe</Label>
+        <Label htmlFor="password" className="text-luxury-text">Mot de passe</Label>
         <Input id="password" type="password" autoComplete="new-password" error={!!errors.password} className={inputClassName} {...register("password")} />
-        {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password.message}</p>}
+        {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
       </div>
 
       <Button type="submit" className="w-full" loading={isRegistering}>
         Créer mon compte
       </Button>
 
-      <p className="text-center text-sm text-slate-400">
+      <p className="text-center text-sm text-luxury-text-light">
         Déjà un compte ?{" "}
-        <Link to="/login" className="font-medium text-primary hover:underline">
+        <Link to="/login" className="font-medium text-luxury-sapphire hover:underline">
           Se connecter
         </Link>
       </p>

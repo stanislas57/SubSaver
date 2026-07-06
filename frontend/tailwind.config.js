@@ -19,13 +19,17 @@ export default {
         border: "var(--border)",
         "border-sidebar": "var(--border-sidebar)",
         danger: "#ef4444",
-        success: "#10b981",
         warning: "#f59e0b",
 
-        // Thème SaaS "cinématique" (Overview/Dashboard/Premium/BankConnect/TopNavbar) :
-        // fond doux pour les yeux, plus jamais de noir absolu.
-        canvas: "#121826",
-        "canvas-soft": "#1a2233",
+        // Thème Lumineux & Luxueux : fond clair, accents riches
+        "luxury-bg": "#fafaf7",           // Blanc cassé très doux
+        "luxury-bg-soft": "#f5f3f0",      // Gris perle
+        "luxury-card": "#ffffff",          // Blanc pur pour les cartes
+        "luxury-sapphire": "#0c3c6e",     // Bleu saphir profond
+        "luxury-champagne": "#d4af37",    // Or/champagne subtil
+        "luxury-platinum": "#e8e8e8",     // Platine léger
+        "luxury-text": "#1a1a1a",         // Texte très foncé
+        "luxury-text-light": "#6b7280",   // Texte secondaire
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
@@ -35,11 +39,14 @@ export default {
         sm: "8px",
         md: "12px",
         lg: "16px",
+        xl: "20px",
       },
       boxShadow: {
         sm: "0 2px 4px rgba(0,0,0,0.02)",
         md: "0 8px 16px -4px rgba(59,130,246,0.08)",
         lg: "0 20px 24px -4px rgba(0,0,0,0.1)",
+        luxury: "0 4px 12px rgba(0,0,0,0.08)",
+        "luxury-lg": "0 12px 32px rgba(0,0,0,0.1)",
       },
     },
   },

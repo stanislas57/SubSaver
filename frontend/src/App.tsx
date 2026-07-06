@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ProtectedRoute, GuestOnlyRoute } from "@/routes/ProtectedRoute";
+import { ProtectedRoute, GuestOnlyRoute, PremiumOnlyRoute } from "@/routes/ProtectedRoute";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { AppLayout } from "@/layouts/AppLayout";
 
@@ -52,10 +52,14 @@ export default function App() {
                 <Route path="/analytics" element={<AnalyticsPage />} />
                 <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/premium" element={<PremiumPage />} />
-                <Route path="/lab" element={<Navigate to="/premium" replace />} />
-                <Route path="/lab/comparator" element={<LabComparatorPage />} />
-                <Route path="/lab/cancellation" element={<LabCancellationPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+
+                {/* Routes Premium-only (BtoB) */}
+                <Route element={<PremiumOnlyRoute />}>
+                  <Route path="/lab" element={<Navigate to="/lab/comparator" replace />} />
+                  <Route path="/lab/comparator" element={<LabComparatorPage />} />
+                  <Route path="/lab/cancellation" element={<LabCancellationPage />} />
+                </Route>
               </Route>
             </Route>
 

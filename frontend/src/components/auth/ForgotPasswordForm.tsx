@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 
-const inputClassName = "border-white/10 bg-white/5 text-slate-50 placeholder:text-slate-500 focus-visible:border-primary/60";
+const inputClassName = "border-luxury-text/20 bg-luxury-bg placeholder:text-luxury-text-light focus-visible:border-luxury-sapphire/60 text-luxury-text";
 
 const emailSchema = z.object({ email: z.string().email("Email invalide") });
 type EmailValues = z.infer<typeof emailSchema>;
@@ -49,25 +49,25 @@ export function ForgotPasswordForm() {
   if (email) {
     return (
       <form onSubmit={resetForm.handleSubmit(onSubmitReset)} className="space-y-4" noValidate>
-        <h2 className="font-display text-xl font-bold text-slate-50">Nouveau mot de passe</h2>
-        <p className="text-sm text-slate-400">
-          Entre le code reçu à <span className="text-slate-200">{email}</span> et ton nouveau mot de passe.
+        <h2 className="font-display text-xl font-bold text-luxury-text">Nouveau mot de passe</h2>
+        <p className="text-sm text-luxury-text-light">
+          Entre le code reçu à <span className="text-luxury-text font-semibold">{email}</span> et ton nouveau mot de passe.
         </p>
         {resetPasswordError && <ErrorAlert message={resetPasswordError} compact />}
 
         <div>
-          <Label htmlFor="code" className="text-slate-300">Code de réinitialisation</Label>
+          <Label htmlFor="code" className="text-luxury-text">Code de réinitialisation</Label>
           <Input id="code" inputMode="numeric" maxLength={6} className={inputClassName} {...resetForm.register("code")} />
           {resetForm.formState.errors.code && (
-            <p className="mt-1 text-xs text-red-400">{resetForm.formState.errors.code.message}</p>
+            <p className="mt-1 text-xs text-red-500">{resetForm.formState.errors.code.message}</p>
           )}
         </div>
 
         <div>
-          <Label htmlFor="newPassword" className="text-slate-300">Nouveau mot de passe</Label>
+          <Label htmlFor="newPassword" className="text-luxury-text">Nouveau mot de passe</Label>
           <Input id="newPassword" type="password" autoComplete="new-password" className={inputClassName} {...resetForm.register("newPassword")} />
           {resetForm.formState.errors.newPassword && (
-            <p className="mt-1 text-xs text-red-400">{resetForm.formState.errors.newPassword.message}</p>
+            <p className="mt-1 text-xs text-red-500">{resetForm.formState.errors.newPassword.message}</p>
           )}
         </div>
 
@@ -80,15 +80,15 @@ export function ForgotPasswordForm() {
 
   return (
     <form onSubmit={emailForm.handleSubmit(onSubmitEmail)} className="space-y-4" noValidate>
-      <h2 className="font-display text-xl font-bold text-slate-50">Mot de passe oublié</h2>
-      <p className="text-sm text-slate-400">Entre ton email, on t'envoie un code de réinitialisation.</p>
+      <h2 className="font-display text-xl font-bold text-luxury-text">Mot de passe oublié</h2>
+      <p className="text-sm text-luxury-text-light">Entre ton email, on t'envoie un code de réinitialisation.</p>
       {forgotPasswordError && <ErrorAlert message={forgotPasswordError} compact />}
 
       <div>
-        <Label htmlFor="email" className="text-slate-300">Email</Label>
+        <Label htmlFor="email" className="text-luxury-text">Email</Label>
         <Input id="email" type="email" autoComplete="email" className={inputClassName} {...emailForm.register("email")} />
         {emailForm.formState.errors.email && (
-          <p className="mt-1 text-xs text-red-400">{emailForm.formState.errors.email.message}</p>
+          <p className="mt-1 text-xs text-red-500">{emailForm.formState.errors.email.message}</p>
         )}
       </div>
 
@@ -96,8 +96,8 @@ export function ForgotPasswordForm() {
         Envoyer le code
       </Button>
 
-      <p className="text-center text-sm text-slate-400">
-        <Link to="/login" className="font-medium text-primary hover:underline">
+      <p className="text-center text-sm text-luxury-text-light">
+        <Link to="/login" className="font-medium text-luxury-sapphire hover:underline">
           Retour à la connexion
         </Link>
       </p>

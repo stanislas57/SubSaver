@@ -1,30 +1,28 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LogOut, Wallet } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const NAV_LINKS = [
   { to: "/overview", label: "Vue d'ensemble" },
   { to: "/subscriptions", label: "Abonnements" },
   { to: "/analytics", label: "Analytique" },
+  { to: "/calendar", label: "Calendrier" },
   { to: "/bank-connect", label: "Banque" },
   { to: "/premium", label: "Premium" },
 ];
 
-/** Navigation unique de l'app : barre fixe en haut, plus de menu latéral.
- * Glassmorphism prononcé (bg-canvas/40 + backdrop-blur-2xl) pour flotter au-dessus
- * des sections cinématiques du contenu. */
+/** Thème clair et luxueux : barre de navigation supérieure avec logo SubServer,
+ * fond blanc semi-transparent et accent subtil. */
 export function TopNavbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-canvas/40 backdrop-blur-2xl">
+    <header className="fixed top-0 z-50 w-full border-b border-luxury-text/10 bg-white/60 backdrop-blur-2xl">
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <button onClick={() => navigate("/overview")} className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
-            <Wallet className="h-4 w-4 text-slate-50" />
-          </div>
-          <span className="text-sm font-bold tracking-tight text-slate-50">SubServer</span>
+        <button onClick={() => navigate("/overview")} className="flex items-center gap-3">
+          <img src="/logo.png" alt="SubServer" className="h-8 w-auto" />
+          <span className="text-sm font-bold tracking-tight text-luxury-sapphire hidden sm:inline">SubServer</span>
         </button>
 
         <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
@@ -34,7 +32,7 @@ export function TopNavbar() {
               to={link.to}
               className={({ isActive }) =>
                 `text-sm font-medium transition-colors duration-200 ${
-                  isActive ? "text-slate-50" : "text-slate-400 hover:text-slate-50"
+                  isActive ? "text-luxury-sapphire font-semibold" : "text-luxury-text-light hover:text-luxury-sapphire"
                 }`
               }
             >
@@ -46,13 +44,13 @@ export function TopNavbar() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/profile")}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-slate-50 transition-colors duration-200 hover:bg-white/20"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-luxury-sapphire/10 text-xs font-bold text-luxury-sapphire transition-colors duration-200 hover:bg-luxury-sapphire/20"
           >
             {user?.first_name?.charAt(0).toUpperCase() ?? "?"}
           </button>
           <button
             onClick={logout}
-            className="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-400 transition-colors duration-200 hover:bg-white/10 hover:text-slate-50"
+            className="rounded-lg border border-luxury-text/20 bg-luxury-text/5 p-2 text-luxury-text-light transition-colors duration-200 hover:bg-luxury-text/10 hover:text-luxury-text"
           >
             <LogOut className="h-4 w-4" />
           </button>
