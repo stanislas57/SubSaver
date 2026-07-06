@@ -148,9 +148,10 @@ export function SubscriptionsPage() {
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="w-full px-6 py-8">
+    <div className="mx-auto max-w-5xl space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-text-muted">
+        <p className="text-sm text-luxury-text-light">
           {subscriptionsQuery.data ? `${subscriptionsQuery.data.length} abonnement(s)` : "Gère tes abonnements"}
         </p>
         <div className="flex flex-wrap gap-2">
@@ -217,6 +218,7 @@ export function SubscriptionsPage() {
         onValidate={handleValidateReport}
         validating={validating}
       />
+    </div>
     </div>
   );
 }

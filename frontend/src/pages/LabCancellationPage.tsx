@@ -33,39 +33,41 @@ export function LabCancellationPage() {
   }
 
   return (
-    <Card className="mx-auto max-w-2xl">
-      <CardHeader>
-        <CardTitle>Générer une lettre de résiliation</CardTitle>
-        <CardDescription>Sélectionne un abonnement pour générer une lettre type, prête à envoyer.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {subscriptionsQuery.isPending && <Skeleton className="h-10 w-full" />}
-        {subscriptionsQuery.isError && (
-          <ErrorAlert message={getErrorMessage(subscriptionsQuery.error)} onRetry={() => subscriptionsQuery.refetch()} />
-        )}
-        {!subscriptionsQuery.isPending && !subscriptionsQuery.isError && subscriptions.length === 0 && (
-          <p className="text-sm text-text-muted">Ajoute d'abord un abonnement pour générer une lettre.</p>
-        )}
+    <div className="w-full px-6 py-8">
+      <Card className="mx-auto max-w-2xl">
+        <CardHeader>
+          <CardTitle>Générer une lettre de résiliation</CardTitle>
+          <CardDescription>Sélectionne un abonnement pour générer une lettre type, prête à envoyer.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {subscriptionsQuery.isPending && <Skeleton className="h-10 w-full" />}
+          {subscriptionsQuery.isError && (
+            <ErrorAlert message={getErrorMessage(subscriptionsQuery.error)} onRetry={() => subscriptionsQuery.refetch()} />
+          )}
+          {!subscriptionsQuery.isPending && !subscriptionsQuery.isError && subscriptions.length === 0 && (
+            <p className="text-sm text-text-muted">Ajoute d'abord un abonnement pour générer une lettre.</p>
+          )}
 
-        {selected && (
-          <>
-            <Select value={selectedId} onChange={(e) => setSelectedId(e.target.value)} aria-label="Abonnement">
-              {subscriptions.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </Select>
+          {selected && (
+            <>
+              <Select value={selectedId} onChange={(e) => setSelectedId(e.target.value)} aria-label="Abonnement">
+                {subscriptions.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </Select>
 
-            <Textarea readOnly value={letter} className="min-h-72 font-mono text-xs leading-relaxed" />
+              <Textarea readOnly value={letter} className="min-h-72 font-mono text-xs leading-relaxed" />
 
-            <Button onClick={copyLetter} variant="outline">
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              {copied ? "Copié !" : "Copier la lettre"}
-            </Button>
-          </>
-        )}
-      </CardContent>
-    </Card>
+              <Button onClick={copyLetter} variant="outline">
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? "Copié !" : "Copier la lettre"}
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
