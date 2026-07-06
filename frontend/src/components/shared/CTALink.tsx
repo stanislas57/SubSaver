@@ -15,8 +15,8 @@ export interface CTALinkProps {
 }
 
 /** Lien d'action inter-pages avec effet magnétique + glow au survol.
- * variant="solid" : bouton plein (blanc sur noir), pour les CTA principaux.
- * variant="ghost" : lien discret avec flèche, pour les CTA secondaires. */
+ * variant="solid" : bouton plein doré (thème Luxe), pour les CTA principaux.
+ * variant="ghost" : lien discret bleu nuit avec flèche, pour les CTA secondaires. */
 export function CTALink({ to, onClick, children, variant = "ghost", className }: CTALinkProps) {
   const navigate = useNavigate();
   const magneticRef = useMagnetic<HTMLButtonElement>(0.3, 12);
@@ -31,8 +31,9 @@ export function CTALink({ to, onClick, children, variant = "ghost", className }:
       <button
         ref={magneticRef}
         onClick={handleClick}
+        style={{ willChange: "transform" }}
         className={cn(
-          "rounded-full bg-white px-8 py-3 text-sm font-semibold text-black shadow-[0_0_0_0_rgba(255,255,255,0)] transition-shadow duration-300 hover:shadow-[0_0_40px_4px_rgba(255,255,255,0.25)]",
+          "rounded-full bg-gradient-to-br from-luxury-gold to-luxury-gold-deep px-8 py-3 text-sm font-semibold text-white shadow-md transition-shadow duration-300 hover:shadow-gold",
           className
         )}
       >
@@ -45,8 +46,9 @@ export function CTALink({ to, onClick, children, variant = "ghost", className }:
     <button
       ref={magneticRef}
       onClick={handleClick}
+      style={{ willChange: "transform" }}
       className={cn(
-        "group flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-slate-50",
+        "group flex items-center gap-2 text-sm font-medium text-luxury-text-light transition-colors duration-200 hover:text-luxury-gold-deep",
         className
       )}
     >

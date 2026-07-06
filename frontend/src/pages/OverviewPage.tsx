@@ -33,58 +33,58 @@ export function OverviewPage() {
   return (
     <div className="w-full px-6 py-24">
       <div className="mx-auto max-w-6xl">
-        <RevealText as="h1" className="text-5xl font-black tracking-tight text-slate-50 sm:text-6xl">
+        <RevealText as="h1" className="text-5xl font-black tracking-tight text-luxury-text sm:text-6xl">
           Vue d'ensemble
         </RevealText>
-        <RevealText className="mt-4 max-w-xl text-lg text-slate-400">
+        <RevealText className="mt-4 max-w-xl text-lg text-luxury-text-light">
           Tout ce qu'il faut savoir sur tes abonnements, en un coup d'œil.
         </RevealText>
 
         <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-3">
           <BentoTile className="flex flex-col justify-between">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-slate-50">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">
               <Wallet className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-500">Total mensuel des dépenses</p>
-              <p className="mt-2 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-5xl font-black text-transparent">
+              <p className="text-sm font-medium text-luxury-text-light">Total mensuel des dépenses</p>
+              <p className="mt-2 bg-gradient-to-r from-luxury-night to-luxury-sapphire bg-clip-text text-5xl font-black text-transparent">
                 {formatPrice(monthlyTotal, currency)}
               </p>
             </div>
           </BentoTile>
 
           <BentoTile className="flex flex-col justify-between">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-slate-50">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">
               <Trophy className="h-5 w-5" />
             </div>
             <div>
-              <p className="mb-3 text-sm font-medium text-slate-500">Tes 3 plus gros abonnements</p>
-              {topSubscriptions.length === 0 && <p className="text-sm text-slate-500">Aucun abonnement pour l'instant.</p>}
+              <p className="mb-3 text-sm font-medium text-luxury-text-light">Tes 3 plus gros abonnements</p>
+              {topSubscriptions.length === 0 && <p className="text-sm text-luxury-text-light">Aucun abonnement pour l'instant.</p>}
               <ul className="space-y-2">
                 {topSubscriptions.map((sub) => (
                   <li key={sub.id} className="flex items-center justify-between gap-3 text-sm">
-                    <span className="truncate text-slate-50">{sub.name}</span>
-                    <span className="shrink-0 font-semibold text-slate-300">{formatPrice(sub.price, currency)}</span>
+                    <span className="truncate text-luxury-text">{sub.name}</span>
+                    <span className="shrink-0 font-semibold text-slate-600">{formatPrice(sub.price, currency)}</span>
                   </li>
                 ))}
               </ul>
             </div>
           </BentoTile>
 
-          <BentoTile className={`flex flex-col justify-between ${endingTrials.length > 0 ? "border-orange-500/30 bg-orange-500/[0.06]" : ""}`}>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400">
+          <BentoTile className={`flex flex-col justify-between ${endingTrials.length > 0 ? "border-amber-400/50 bg-amber-50" : ""}`}>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
               <AlertTriangle className="h-5 w-5" />
             </div>
             <div>
-              <p className="mb-3 text-sm font-medium text-slate-500">Essais gratuits qui se terminent</p>
+              <p className="mb-3 text-sm font-medium text-luxury-text-light">Essais gratuits qui se terminent</p>
               {endingTrials.length === 0 ? (
-                <p className="text-sm text-slate-500">Aucun essai en cours de fin.</p>
+                <p className="text-sm text-luxury-text-light">Aucun essai en cours de fin.</p>
               ) : (
                 <ul className="space-y-2">
                   {endingTrials.map((sub) => (
                     <li key={sub.id} className="flex items-center justify-between gap-3 text-sm">
-                      <span className="truncate text-slate-50">{sub.name}</span>
-                      <span className="shrink-0 font-semibold text-orange-300">
+                      <span className="truncate text-luxury-text">{sub.name}</span>
+                      <span className="shrink-0 font-semibold text-amber-700">
                         {daysUntil(sub.trial_end_date!)} j restants
                       </span>
                     </li>

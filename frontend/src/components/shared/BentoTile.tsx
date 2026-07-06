@@ -10,9 +10,10 @@ export interface BentoTileProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
-/** Tuile "Bento Box" (glassmorphism sombre) qui apparaît en fondu/translation
- * dès qu'elle entre dans le viewport (ScrollTrigger), pas au chargement global. */
-export function BentoTile({ children, className, ...props }: BentoTileProps) {
+/** Tuile "Bento Box" (thème Luxe : carte blanche, fine bordure bleu nuit,
+ * ombre douce) qui apparaît en fondu/translation dès qu'elle entre dans le
+ * viewport (ScrollTrigger), pas au chargement global. */
+export function BentoTile({ children, className, style, ...props }: BentoTileProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,6 +30,10 @@ export function BentoTile({ children, className, ...props }: BentoTileProps) {
           duration: 0.9,
           ease: "power3.out",
           scrollTrigger: { trigger: el, start: "top 88%" },
+          onComplete: () => {
+            // Libère la couche GPU une fois l'animation jouée
+            el.style.willChange = "auto";
+          },
         }
       );
     });
@@ -38,8 +43,10 @@ export function BentoTile({ children, className, ...props }: BentoTileProps) {
   return (
     <div
       ref={ref}
+      // will-change force l'accélération matérielle pendant l'animation GSAP
+      style={{ willChange: "transform, opacity", ...style }}
       className={cn(
-        "rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl transition-colors duration-300 hover:bg-white/[0.08]",
+        "rounded-3xl border border-slate-900/10 bg-luxury-card p-8 shadow-md transition-shadow duration-300 hover:shadow-luxury-lg",
         className
       )}
       {...props}

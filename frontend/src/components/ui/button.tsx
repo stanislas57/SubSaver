@@ -14,7 +14,7 @@ const buttonVariants = cva(
         ghost: "text-text-muted hover:bg-surface-hover hover:text-text-main",
         danger: "bg-red-50 text-red-600 border border-transparent hover:bg-red-100 hover:border-red-300",
         premium:
-          "bg-gradient-to-br from-accent to-emerald-600 text-white shadow-md hover:-translate-y-px hover:shadow-lg",
+          "bg-gradient-to-br from-luxury-gold to-luxury-gold-deep text-white shadow-md hover:-translate-y-px hover:shadow-lg",
       },
       size: {
         sm: "h-8 px-3 text-xs",

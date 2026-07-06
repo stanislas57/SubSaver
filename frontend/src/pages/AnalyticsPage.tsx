@@ -22,11 +22,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { formatPrice } from "@/lib/format";
 import { RevealText } from "@/components/shared/RevealText";
 import { BentoTile } from "@/components/shared/BentoTile";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const CATEGORY_COLORS = {
-  Streaming: "#3b82f6",
+  Streaming: "#0c3c6e",
   Musique: "#8b5cf6",
-  Sport: "#10b981",
+  Sport: "#C5A059",
   Logement: "#f59e0b",
   Telephonie: "#06b6d4",
   Transport: "#ec4899",
@@ -81,7 +82,9 @@ export function AnalyticsPage() {
     return data;
   }, [stats.monthlyTotal]);
 
-  // Données pour LineChart : évolution des 6 derniers mois (simulée)
+  // Données pour LineChart : évolution des 6 derniers mois (simulée mais
+  // DÉTERMINISTE — sinusoïde douce, pas de Math.random qui provoquait un
+  // graphique différent à chaque re-render et des animations parasites)
   const evolutionData = useMemo(() => {
     const data = [];
     const monthlyTotal = stats.monthlyTotal;
@@ -89,8 +92,7 @@ export function AnalyticsPage() {
       const month = new Date();
       month.setMonth(month.getMonth() - i);
       const monthName = month.toLocaleDateString("fr-FR", { month: "short" });
-      // Variation simulée : ±10%
-      const variation = 1 + (Math.random() - 0.5) * 0.2;
+      const variation = 1 + Math.sin(month.getMonth()) * 0.08;
       data.push({
         mois: monthName,
         dépenses: parseFloat((monthlyTotal * variation).toFixed(2)),
@@ -110,8 +112,8 @@ export function AnalyticsPage() {
       <div className="mx-auto max-w-7xl">
         {/* En-tête */}
         <div className="mb-12">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-luxury-sapphire/10">
-            <BarChart3 className="h-6 w-6 text-luxury-sapphire" />
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-luxury-gold-soft">
+            <BarChart3 className="h-6 w-6 text-luxury-gold-deep" />
           </div>
           <RevealText as="h1" className="text-5xl font-black tracking-tight text-luxury-text sm:text-6xl">
             Analytique détaillée
@@ -121,10 +123,24 @@ export function AnalyticsPage() {
           </RevealText>
         </div>
 
+        {/* Skeletons dorés pendant l'analyse des données */}
+        {subscriptionsQuery.isPending && (
+          <div className="mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }, (_, i) => (
+              <div key={i} className="rounded-3xl border border-slate-900/10 bg-white p-8 shadow-md">
+                <Skeleton className="h-10 w-10 rounded-lg" />
+                <Skeleton className="mt-6 h-4 w-32" />
+                <Skeleton className="mt-3 h-9 w-24" />
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Cartes de statistiques */}
+        {!subscriptionsQuery.isPending && (
         <div className="mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <BentoTile className="flex flex-col justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-luxury-sapphire/10 text-luxury-sapphire">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-luxury-gold-soft text-luxury-gold-deep">
               <PiggyBank className="h-5 w-5" />
             </div>
             <div className="mt-4">
@@ -136,7 +152,7 @@ export function AnalyticsPage() {
           </BentoTile>
 
           <BentoTile className="flex flex-col justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-luxury-champagne/20 text-luxury-champagne">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-luxury-gold-soft text-luxury-gold-deep">
               <TrendingUp className="h-5 w-5" />
             </div>
             <div className="mt-4">
@@ -169,6 +185,7 @@ export function AnalyticsPage() {
             </div>
           </BentoTile>
         </div>
+        )}
 
         {/* Graphiques */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
@@ -189,7 +206,7 @@ export function AnalyticsPage() {
                     }}
                     formatter={(value) => formatPrice(Number(value), currency)}
                   />
-                  <Bar dataKey="price" fill="#0c3c6e" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="price" fill="#C5A059" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -252,8 +269,8 @@ export function AnalyticsPage() {
                 <Line
                   type="monotone"
                   dataKey="dépenses"
-                  stroke="#0c3c6e"
-                  dot={{ fill: "#0c3c6e", r: 5 }}
+                  stroke="#C5A059"
+                  dot={{ fill: "#C5A059", r: 5 }}
                   strokeWidth={2}
                 />
               </LineChart>
@@ -271,8 +288,8 @@ export function AnalyticsPage() {
               <AreaChart data={projectionData} margin={chartConfig.margin}>
                 <defs>
                   <linearGradient id="colorDépenses" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0c3c6e" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#0c3c6e" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#C5A059" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#C5A059" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -286,7 +303,7 @@ export function AnalyticsPage() {
                   }}
                   formatter={(value) => formatPrice(Number(value), currency)}
                 />
-                <Area type="monotone" dataKey="dépenses" stroke="#0c3c6e" fillOpacity={1} fill="url(#colorDépenses)" />
+                <Area type="monotone" dataKey="dépenses" stroke="#C5A059" fillOpacity={1} fill="url(#colorDépenses)" />
               </AreaChart>
             </ResponsiveContainer>
           ) : (

@@ -21,6 +21,8 @@ export function RevealText({ children, className, as: Tag = "div" }: RevealTextP
   useEffect(() => {
     const inner = innerRef.current;
     if (!inner || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // will-change force l'accélération matérielle le temps de l'animation
+    inner.style.willChange = "transform";
     const ctx = gsap.context(() => {
       gsap.fromTo(
         inner,
@@ -30,6 +32,9 @@ export function RevealText({ children, className, as: Tag = "div" }: RevealTextP
           duration: 1,
           ease: "power4.out",
           scrollTrigger: { trigger: wrapRef.current, start: "top 85%" },
+          onComplete: () => {
+            inner.style.willChange = "auto";
+          },
         }
       );
     });

@@ -52,21 +52,21 @@ export function BankReportModal({
             {candidates.map((c) => (
               <li
                 key={`${c.merchant}-${c.frequency}-${c.price}`}
-                className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-3"
+                className="flex items-center justify-between gap-3 rounded-xl border border-slate-900/10 bg-white shadow-sm p-3"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="truncate font-medium text-slate-50">{c.merchant}</p>
+                    <p className="truncate font-medium text-luxury-text">{c.merchant}</p>
                     <CategoryBadge category={c.category} />
                   </div>
-                  <p className="mt-1 text-sm text-slate-400">
+                  <p className="mt-1 text-sm text-luxury-text-light">
                     {formatPrice(c.price, currency)} · {FREQUENCY_LABELS[c.frequency]} · {Math.round(c.confidence * 100)}% confiance
                   </p>
                 </div>
                 <button
                   onClick={() => onExclude(c)}
                   aria-label={`Retirer ${c.merchant} du rapport`}
-                  className="shrink-0 rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/10 hover:text-slate-50"
+                  className="shrink-0 rounded-lg p-2 text-luxury-text-light transition-colors hover:bg-slate-100 hover:text-luxury-text"
                 >
                   <X className="h-4 w-4" />
                 </button>

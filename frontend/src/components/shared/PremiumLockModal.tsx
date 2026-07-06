@@ -14,7 +14,7 @@ export function PremiumLockModal({ open, onOpenChange, feature }: PremiumLockMod
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-emerald-50 text-accent">
+          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-luxury-gold-soft text-luxury-gold-deep">
             <Sparkles className="h-5 w-5" />
           </div>
           <DialogTitle>Fonctionnalité Premium</DialogTitle>

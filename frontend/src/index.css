@@ -3,18 +3,18 @@
 @tailwind utilities;
 
 /* =====================================================================
-   SubServer — Design tokens (identiques au prototype déjà validé)
+   SubServer — Design tokens "Luxe" : fond clair, texte Bleu Nuit, accents Or
 ===================================================================== */
 :root {
-  --bg-app: #f4f7f9;
-  --bg-sidebar: #0f172a;
+  --bg-app: #f8fafc;
+  --bg-sidebar: #0a1128;
   --surface: #ffffff;
   --surface-hover: #f1f5f9;
 
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --primary-light: #eff6ff;
-  --accent: #10b981;
+  --primary: #c5a059;
+  --primary-hover: #b08d3f;
+  --primary-light: #faf6ea;
+  --accent: #d4af37;
 
   --text-main: #0f172a;
   --text-muted: #64748b;

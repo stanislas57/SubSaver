@@ -12,7 +12,7 @@ export function FeatureBox({ icon, title, description }: FeatureBoxProps) {
   return (
     <TiltCard>
       <CardContent className="p-5">
-        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-emerald-50 text-accent">
+        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-luxury-gold-soft text-luxury-gold-deep">
           {icon}
         </div>
         <h4 className="font-display text-sm font-bold text-text-main">{title}</h4>

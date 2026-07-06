@@ -21,7 +21,7 @@ export function TopNavbar() {
     <header className="fixed top-0 z-50 w-full border-b border-luxury-text/10 bg-white/60 backdrop-blur-2xl">
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <button onClick={() => navigate("/overview")} className="flex items-center gap-3">
-          <img src="/logo.png" alt="SubServer" className="h-8 w-auto" />
+          <img src="/logo.svg" alt="SubServer" className="h-8 w-auto" />
           <span className="text-sm font-bold tracking-tight text-luxury-sapphire hidden sm:inline">SubServer</span>
         </button>
 
@@ -31,8 +31,10 @@ export function TopNavbar() {
               key={link.to}
               to={link.to}
               className={({ isActive }) =>
-                `text-sm font-medium transition-colors duration-200 ${
-                  isActive ? "text-luxury-sapphire font-semibold" : "text-luxury-text-light hover:text-luxury-sapphire"
+                `border-b-2 pb-1 text-sm font-medium transition-colors duration-200 ${
+                  isActive
+                    ? "border-luxury-gold font-semibold text-luxury-night"
+                    : "border-transparent text-luxury-text-light hover:text-luxury-night"
                 }`
               }
             >

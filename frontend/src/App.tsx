@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
@@ -5,6 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute, GuestOnlyRoute, PremiumOnlyRoute } from "@/routes/ProtectedRoute";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { AppLayout } from "@/layouts/AppLayout";
+import { PageSpinner } from "@/components/ui/spinner";
 
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
@@ -14,7 +16,6 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { BankConnectPage } from "@/pages/BankConnectPage";
 import { SubscriptionsPage } from "@/pages/SubscriptionsPage";
 import { SubscriptionAddPage } from "@/pages/SubscriptionAddPage";
-import { AnalyticsPage } from "@/pages/AnalyticsPage";
 import { CalendarPage } from "@/pages/CalendarPage";
 import { PremiumPage } from "@/pages/PremiumPage";
 import { LabComparatorPage } from "@/pages/LabComparatorPage";
@@ -22,9 +23,21 @@ import { LabCancellationPage } from "@/pages/LabCancellationPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
+// Chargée à la demande : recharts pèse lourd, le code-splitting évite de
+// l'embarquer dans le bundle initial (gain net sur le premier chargement).
+const AnalyticsPage = lazy(() =>
+  import("@/pages/AnalyticsPage").then((m) => ({ default: m.AnalyticsPage }))
+);
+
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 1, refetchOnWindowFocus: false },
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      // Les données restent "fraîches" 1 min : évite les refetch redondants
+      // à chaque navigation entre pages (source de latence perçue).
+      staleTime: 60_000,
+    },
   },
 });
 
@@ -35,8 +48,9 @@ export default function App() {
         <AuthProvider>
           <Routes>
             <Route element={<GuestOnlyRoute />}>
+              {/* /login a son propre écran immersif plein-page (fond Bleu Nuit animé) */}
+              <Route path="/login" element={<LoginPage />} />
               <Route element={<AuthLayout />}>
-                <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               </Route>
@@ -49,7 +63,14 @@ export default function App() {
                 <Route path="/bank-connect" element={<BankConnectPage />} />
                 <Route path="/subscriptions" element={<SubscriptionsPage />} />
                 <Route path="/subscriptions/add" element={<SubscriptionAddPage />} />
-                <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route
+                  path="/analytics"
+                  element={
+                    <Suspense fallback={<PageSpinner label="Chargement de l'analytique…" />}>
+                      <AnalyticsPage />
+                    </Suspense>
+                  }
+                />
                 <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/premium" element={<PremiumPage />} />
                 <Route path="/profile" element={<ProfilePage />} />

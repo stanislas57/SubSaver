@@ -21,15 +21,16 @@ export default {
         danger: "#ef4444",
         warning: "#f59e0b",
 
-        // Thème Lumineux & Luxueux : fond clair, accents riches
-        "luxury-bg": "#fafaf7",           // Blanc cassé très doux
-        "luxury-bg-soft": "#f5f3f0",      // Gris perle
-        "luxury-card": "#ffffff",          // Blanc pur pour les cartes
-        "luxury-sapphire": "#0c3c6e",     // Bleu saphir profond
-        "luxury-champagne": "#d4af37",    // Or/champagne subtil
-        "luxury-platinum": "#e8e8e8",     // Platine léger
-        "luxury-text": "#1a1a1a",         // Texte très foncé
-        "luxury-text-light": "#6b7280",   // Texte secondaire
+        // Thème "Luxe" — Bleu Nuit & Or sur fond clair
+        "luxury-bg": "#f8fafc",            // Gris perle (fond app)
+        "luxury-card": "#ffffff",           // Blanc pur (cartes Bento)
+        "luxury-night": "#0A1128",          // Bleu Nuit profond (fond login, titres forts)
+        "luxury-text": "#0F172A",           // Texte principal (bleu nuit lisible)
+        "luxury-text-light": "#64748b",     // Texte secondaire
+        "luxury-gold": "#D4AF37",           // Or élégant (accents vifs)
+        "luxury-gold-deep": "#B08D3F",      // Or profond (texte doré lisible sur blanc)
+        "luxury-gold-soft": "#FAF6EA",      // Fond doré très pâle (chips, badges)
+        "luxury-sapphire": "#0c3c6e",       // Bleu saphir (accent secondaire, données)
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
@@ -43,10 +44,11 @@ export default {
       },
       boxShadow: {
         sm: "0 2px 4px rgba(0,0,0,0.02)",
-        md: "0 8px 16px -4px rgba(59,130,246,0.08)",
-        lg: "0 20px 24px -4px rgba(0,0,0,0.1)",
-        luxury: "0 4px 12px rgba(0,0,0,0.08)",
-        "luxury-lg": "0 12px 32px rgba(0,0,0,0.1)",
+        md: "0 8px 16px -4px rgba(10,17,40,0.08)",
+        lg: "0 20px 24px -4px rgba(10,17,40,0.1)",
+        luxury: "0 4px 16px rgba(10,17,40,0.07)",
+        "luxury-lg": "0 12px 32px rgba(10,17,40,0.1)",
+        gold: "0 0 24px -6px rgba(212,175,55,0.45)",
       },
     },
   },

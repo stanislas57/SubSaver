@@ -16,7 +16,7 @@ export function BankConsentModal({ open, onOpenChange, onConsent, loading }: Ban
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-slate-50">
+          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">
             <ShieldCheck className="h-5 w-5" />
           </div>
           <DialogTitle>Autoriser la détection des abonnements ?</DialogTitle>
