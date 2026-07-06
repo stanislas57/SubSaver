@@ -39,8 +39,8 @@ export default function App() {
             </Route>
 
             <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<DashboardPage />} />
               <Route element={<AppLayout />}>
+                <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/subscriptions" element={<SubscriptionsPage />} />
                 <Route path="/subscriptions/add" element={<SubscriptionAddPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />

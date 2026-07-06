@@ -14,7 +14,6 @@ export function useScrollParallax<T extends HTMLElement>(distance = 24) {
     const el = ref.current;
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const scroller = el.closest("main") ?? undefined;
     const ctx = gsap.context(() => {
       gsap.fromTo(
         el,
@@ -25,7 +24,6 @@ export function useScrollParallax<T extends HTMLElement>(distance = 24) {
           force3D: true,
           scrollTrigger: {
             trigger: el,
-            scroller,
             start: "top bottom",
             end: "bottom top",
             scrub: 0.6,
