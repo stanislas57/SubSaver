@@ -1,5 +1,5 @@
 import * as React from "react";
-import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from "framer-motion";
+import gsap from "gsap";
 import { cn } from "@/lib/utils";
 
 export interface TiltCardProps
@@ -7,63 +7,79 @@ export interface TiltCardProps
   children: React.ReactNode;
 }
 
-/** Carte interactive avec léger tilt 3D et reflet suivant le curseur — signature visuelle
- * de l'app (clin d'œil à la carte bancaire, cohérent avec un gestionnaire d'abonnements/banque).
- * Désactivé automatiquement si l'utilisateur préfère moins d'animations.
+type Quick = ReturnType<typeof gsap.quickTo>;
+
+/** Carte vitrée (glassmorphism) avec tilt 3D + glare piloté par GSAP quickTo — lissage
+ * indépendant du framerate. Entrée en cascade basée sur la position parmi ses frères.
+ * Désactivée automatiquement si l'utilisateur préfère moins d'animations.
  */
 export function TiltCard({ children, className, ...props }: TiltCardProps) {
-  const prefersReducedMotion = useReducedMotion();
   const ref = React.useRef<HTMLDivElement>(null);
+  const quick = React.useRef<{ rx: Quick; ry: Quick; scale: Quick } | null>(null);
 
-  const mouseX = useMotionValue(0.5);
-  const mouseY = useMotionValue(0.5);
-  const springConfig = { stiffness: 200, damping: 20, mass: 0.5 };
-  const springX = useSpring(mouseX, springConfig);
-  const springY = useSpring(mouseY, springConfig);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-  const rotateX = useTransform(springY, [0, 1], [7, -7]);
-  const rotateY = useTransform(springX, [0, 1], [-7, 7]);
-  const sheenX = useTransform(springX, [0, 1], [0, 100]);
-  const sheenY = useTransform(springY, [0, 1], [0, 100]);
-  const sheenBackground = useTransform(
-    [sheenX, sheenY],
-    ([x, y]: number[]) => `radial-gradient(circle at ${x}% ${y}%, rgba(59,130,246,0.14), rgba(16,185,129,0.08) 40%, transparent 70%)`
-  );
+    gsap.set(el, { transformPerspective: 900 });
+    quick.current = {
+      rx: gsap.quickTo(el, "rotationX", { duration: 0.6, ease: "power3.out" }),
+      ry: gsap.quickTo(el, "rotationY", { duration: 0.6, ease: "power3.out" }),
+      scale: gsap.quickTo(el, "scale", { duration: 0.4, ease: "power2.out" }),
+    };
+
+    const index = Array.from(el.parentElement?.children ?? []).indexOf(el);
+    gsap.fromTo(
+      el,
+      { opacity: 0, y: 24, scale: 0.96 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.6, delay: index * 0.07, ease: "power3.out" }
+    );
+  }, []);
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    if (prefersReducedMotion || !ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    mouseX.set((e.clientX - rect.left) / rect.width);
-    mouseY.set((e.clientY - rect.top) / rect.height);
+    const el = ref.current;
+    if (!el || !quick.current) return;
+    const rect = el.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    quick.current.rx(7 - py * 14);
+    quick.current.ry(px * 14 - 7);
+    quick.current.scale(1.015);
+    el.style.setProperty("--glare-x", `${px * 100}%`);
+    el.style.setProperty("--glare-y", `${py * 100}%`);
+    el.style.setProperty("--glare-o", "1");
   }
 
   function handleMouseLeave() {
-    mouseX.set(0.5);
-    mouseY.set(0.5);
-  }
-
-  if (prefersReducedMotion) {
-    return (
-      <div className={cn("rounded-lg border border-border bg-surface shadow-sm", className)} {...props}>
-        {children}
-      </div>
-    );
+    const el = ref.current;
+    if (!el || !quick.current) return;
+    quick.current.rx(0);
+    quick.current.ry(0);
+    quick.current.scale(1);
+    el.style.setProperty("--glare-o", "0");
   }
 
   return (
-    <motion.div
+    <div
       ref={ref}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      style={{ rotateX, rotateY, transformStyle: "preserve-3d", transformPerspective: 800 }}
+      style={{ transformStyle: "preserve-3d" }}
       className={cn(
-        "relative overflow-hidden rounded-lg border border-border bg-surface shadow-sm transition-shadow duration-200 will-change-transform hover:shadow-lg",
+        "relative overflow-hidden rounded-2xl border border-white/15 bg-surface/60 shadow-lg backdrop-blur-xl transition-shadow duration-300 will-change-transform hover:shadow-2xl dark:border-white/10 dark:bg-white/5",
         className
       )}
       {...props}
     >
-      <motion.div className="pointer-events-none absolute inset-0" style={{ background: sheenBackground }} />
+      <div
+        className="pointer-events-none absolute inset-0 transition-opacity duration-300"
+        style={{
+          opacity: "var(--glare-o, 0)",
+          background:
+            "radial-gradient(circle at var(--glare-x, 50%) var(--glare-y, 50%), rgba(59,130,246,0.18), rgba(16,185,129,0.10) 40%, transparent 70%)",
+        }}
+      />
       <div className="relative">{children}</div>
-    </motion.div>
+    </div>
   );
 }

@@ -21,18 +21,18 @@ export function NavLink({ to, icon, label, end }: NavLinkProps) {
       to={to}
       end={end}
       className={cn(
-        "relative flex items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-medium transition-colors",
+        "relative flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium transition-colors",
         isActive ? "text-white" : "text-text-sidebar hover:bg-white/5 hover:text-white"
       )}
     >
       {isActive && (
         <motion.div
           layoutId="sidebar-active-pill"
-          className="absolute inset-0 rounded-sm bg-white/10"
+          className="absolute inset-0 rounded-xl border border-white/10 bg-white/10 shadow-[0_4px_20px_-4px_rgba(59,130,246,0.5)] backdrop-blur-sm"
           transition={{ type: "spring", stiffness: 380, damping: 32 }}
         />
       )}
-      <span className="relative flex items-center gap-3">
+      <span className="relative flex items-center gap-3.5">
         {icon}
         {label}
       </span>
