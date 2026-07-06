@@ -27,6 +27,11 @@ interface AuthContextValue {
   resetPassword: (email: string, code: string, newPassword: string) => Promise<void>;
   isResettingPassword: boolean;
   resetPasswordError: string | null;
+  /** Confirme l'upgrade Premium (appelé depuis /success au retour de Stripe)
+   * et met à jour `user.is_premium` immédiatement dans tout le contexte. */
+  confirmPremiumUpgrade: () => Promise<void>;
+  isConfirmingPremium: boolean;
+  confirmPremiumError: string | null;
   logout: () => void;
 }
 
@@ -86,6 +91,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       authService.resetPassword(email, code, newPassword),
   });
 
+  const confirmPremiumMutation = useMutation({
+    mutationFn: () => userService.upgradeToPremium(),
+    onSuccess: (updatedUser) => queryClient.setQueryData(["me"], updatedUser),
+  });
+
   async function login(email: string, password: string) {
     await loginMutation.mutateAsync({ email, password });
   }
@@ -108,6 +118,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function resetPassword(email: string, code: string, newPassword: string) {
     await resetPasswordMutation.mutateAsync({ email, code, newPassword });
+  }
+
+  async function confirmPremiumUpgrade() {
+    await confirmPremiumMutation.mutateAsync();
   }
 
   function logout() {
@@ -139,6 +153,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     resetPassword,
     isResettingPassword: resetPasswordMutation.isPending,
     resetPasswordError: resetPasswordMutation.isError ? getErrorMessage(resetPasswordMutation.error, "Code invalide.") : null,
+    confirmPremiumUpgrade,
+    isConfirmingPremium: confirmPremiumMutation.isPending,
+    confirmPremiumError: confirmPremiumMutation.isError ? getErrorMessage(confirmPremiumMutation.error) : null,
     logout,
   };
 

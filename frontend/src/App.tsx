@@ -21,6 +21,7 @@ import { PremiumPage } from "@/pages/PremiumPage";
 import { LabComparatorPage } from "@/pages/LabComparatorPage";
 import { LabCancellationPage } from "@/pages/LabCancellationPage";
 import { ProfilePage } from "@/pages/ProfilePage";
+import { SuccessPage } from "@/pages/SuccessPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 // Chargée à la demande : recharts pèse lourd, le code-splitting évite de
@@ -57,6 +58,9 @@ export default function App() {
             </Route>
 
             <Route element={<ProtectedRoute />}>
+              {/* /success est plein-écran (célébration post-Stripe), pas de TopNavbar */}
+              <Route path="/success" element={<SuccessPage />} />
+
               <Route element={<AppLayout />}>
                 <Route path="/overview" element={<OverviewPage />} />
                 <Route path="/dashboard" element={<DashboardPage />} />

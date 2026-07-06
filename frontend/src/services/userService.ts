@@ -13,4 +13,10 @@ export const userService = {
     const { data } = await axiosClient.patch<User>("/users/me", payload);
     return data;
   },
+
+  /** POST /users/me/upgrade-premium — appelé au retour de la page de succès Stripe. */
+  async upgradeToPremium(): Promise<User> {
+    const { data } = await axiosClient.post<User>("/users/me/upgrade-premium");
+    return data;
+  },
 };
