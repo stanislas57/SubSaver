@@ -12,10 +12,12 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/layout/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
+import { useMagnetic } from "@/hooks/useMagnetic";
 
 export function Sidebar() {
   const { logout, user } = useAuth();
   const navRef = useRef<HTMLElement>(null);
+  const logoutRef = useMagnetic<HTMLButtonElement>(0.25, 8);
 
   useEffect(() => {
     const items = navRef.current?.children;
@@ -54,6 +56,7 @@ export function Sidebar() {
       <div className="relative space-y-1.5 border-t border-white/10 pt-4">
         <NavLink to="/profile" icon={<User className="h-4 w-4" />} label={user?.first_name ?? "Profil"} />
         <button
+          ref={logoutRef}
           onClick={logout}
           className="flex w-full items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium text-text-sidebar transition-colors hover:bg-white/5 hover:text-white"
         >

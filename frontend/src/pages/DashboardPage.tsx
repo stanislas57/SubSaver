@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { useAuth } from "@/contexts/AuthContext";
+import { useScrollParallax } from "@/hooks/useScrollParallax";
 import { formatPrice, daysUntil } from "@/lib/format";
 import { getErrorMessage } from "@/api/axiosClient";
 
@@ -15,6 +16,8 @@ export function DashboardPage() {
   const { user } = useAuth();
   const subscriptionsQuery = useSubscriptions();
   const currency = user?.currency ?? "EUR";
+  const statsParallaxRef = useScrollParallax<HTMLDivElement>(14);
+  const listParallaxRef = useScrollParallax<HTMLDivElement>(26);
 
   const stats = useMemo(() => {
     const subs = subscriptionsQuery.data ?? [];
@@ -43,7 +46,7 @@ export function DashboardPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div ref={statsParallaxRef} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Dépense mensuelle"
           value={formatPrice(stats.monthlyTotal, currency)}
@@ -72,25 +75,27 @@ export function DashboardPage() {
         />
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Derniers abonnements</CardTitle>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/subscriptions")}>
-            Voir tout
-          </Button>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <SubscriptionList
-            subscriptions={recent}
-            isLoading={subscriptionsQuery.isPending}
-            isError={subscriptionsQuery.isError}
-            errorMessage={subscriptionsQuery.error ? getErrorMessage(subscriptionsQuery.error) : undefined}
-            onRetry={() => subscriptionsQuery.refetch()}
-            currency={currency}
-            onAdd={() => navigate("/subscriptions/add")}
-          />
-        </CardContent>
-      </Card>
+      <div ref={listParallaxRef}>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Derniers abonnements</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/subscriptions")}>
+              Voir tout
+            </Button>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <SubscriptionList
+              subscriptions={recent}
+              isLoading={subscriptionsQuery.isPending}
+              isError={subscriptionsQuery.isError}
+              errorMessage={subscriptionsQuery.error ? getErrorMessage(subscriptionsQuery.error) : undefined}
+              onRetry={() => subscriptionsQuery.refetch()}
+              currency={currency}
+              onAdd={() => navigate("/subscriptions/add")}
+            />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

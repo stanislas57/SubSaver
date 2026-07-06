@@ -2,6 +2,7 @@ import * as React from "react";
 import { NavLink as RouterNavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useMagnetic } from "@/hooks/useMagnetic";
 
 export interface NavLinkProps {
   to: string;
@@ -11,13 +12,16 @@ export interface NavLinkProps {
 }
 
 /** Lien de navigation de la sidebar. L'état actif est surligné par une pilule
- * qui glisse d'un lien à l'autre (layoutId partagé), plutôt qu'un simple changement de fond. */
+ * qui glisse d'un lien à l'autre (layoutId partagé), plutôt qu'un simple changement de fond.
+ * Effet magnétique subtil : le lien suit légèrement le curseur au survol. */
 export function NavLink({ to, icon, label, end }: NavLinkProps) {
   const { pathname } = useLocation();
   const isActive = end ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
+  const magneticRef = useMagnetic<HTMLAnchorElement>(0.25, 8);
 
   return (
     <RouterNavLink
+      ref={magneticRef}
       to={to}
       end={end}
       className={cn(
