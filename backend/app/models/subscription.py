@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Float, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
@@ -20,5 +20,10 @@ class Subscription(Base):
     importance: Mapped[int] = mapped_column(Integer, nullable=False)
     start_date: Mapped[str | None] = mapped_column(String, nullable=True)
     trial_end_date: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    # Sélection pour l'Abonnement partagé (cf. app/api/v1/family.py) : seuls
+    # les abonnements marqués is_shared=True entrent dans le calcul de
+    # répartition des coûts du groupe, jamais le total global de l'utilisateur.
+    is_shared: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     user: Mapped["User"] = relationship(back_populates="subscriptions")

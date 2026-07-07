@@ -152,6 +152,29 @@ export interface SharedSubscriptionBalance {
   amount_owed: number;
 }
 
+/** Abonnement de l'utilisateur avec son statut de partage (GET/PUT
+ * /family/shareable-subscriptions et /family/shared-subscriptions) --
+ * volontairement distinct de `Subscription` : le partage ne concerne que la
+ * sélection, pas l'édition complète d'un abonnement. */
+export interface ShareableSubscription {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  is_shared: boolean;
+}
+
+/** Abonnement dédupliqué et normalisé pour le menu de la Lettre de
+ * résiliation (GET /subscriptions/cancellation-candidates) -- `display_name`
+ * est passé dans le moteur Clé Marchand côté backend, donc jamais un libellé
+ * bancaire brut ni un doublon. */
+export interface CancellableSubscription {
+  id: string;
+  display_name: string;
+  price: number;
+  domain: string;
+}
+
 // ---------------------------------------------------------------------------
 // Constantes partagées
 // ---------------------------------------------------------------------------

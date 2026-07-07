@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorAlert } from "@/components/ui/alert";
 import { RevealText } from "@/components/shared/RevealText";
-import { useSubscriptions } from "@/hooks/useSubscriptions";
+import { useCancellationCandidates } from "@/hooks/useSubscriptions";
 import { useAuth } from "@/contexts/AuthContext";
 import { buildCancellationMailto, generateCancellationLetter } from "@/lib/cancellationLetter";
 import { getErrorMessage } from "@/api/axiosClient";
@@ -15,10 +15,14 @@ import { getErrorMessage } from "@/api/axiosClient";
 /** Espace Particulier Premium : génère une lettre de résiliation type puis
  * l'envoie via un lien mailto: (ouvre le client mail par défaut de
  * l'utilisateur, déjà configuré avec sa propre adresse -- pas besoin de
- * backend d'envoi pour ça). Accès garanti Premium (PremiumOnlyRoute). */
+ * backend d'envoi pour ça). Accès garanti Premium (PremiumOnlyRoute).
+ *
+ * Le menu déroulant se base sur GET /subscriptions/cancellation-candidates,
+ * déjà dédupliqué et normalisé (Clé Marchand) côté backend -- jamais le nom
+ * brut ni un doublon d'abonnement. */
 export function LabCancellationPage() {
   const { user } = useAuth();
-  const subscriptionsQuery = useSubscriptions();
+  const subscriptionsQuery = useCancellationCandidates();
   const [selectedId, setSelectedId] = React.useState<string>("");
   const [copied, setCopied] = React.useState(false);
 
@@ -76,7 +80,7 @@ export function LabCancellationPage() {
                 <Select value={selectedId} onChange={(e) => setSelectedId(e.target.value)} aria-label="Abonnement">
                   {subscriptions.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {s.name}
+                      {s.display_name}
                     </option>
                   ))}
                 </Select>

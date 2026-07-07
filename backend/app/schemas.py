@@ -192,6 +192,41 @@ class FamilyBalanceOut(BaseModel):
     amount_owed: float
 
 
+class ShareableSubscriptionOut(BaseModel):
+    """Version allégée de SubscriptionOut pour la sélection Abonnement
+    partagé -- volontairement un schéma séparé plutôt que d'ajouter
+    is_shared à SubscriptionOut/SubscriptionInput, qui sont utilisés par le
+    CRUD abonnements générique (SubscriptionForm) sans rapport avec le
+    partage de groupe."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    name: str
+    price: float
+    category: str
+    is_shared: bool
+
+
+class SharedSubscriptionSelectionBody(BaseModel):
+    subscription_ids: list[str]
+
+
+class CancellableSubscriptionOut(BaseModel):
+    """Version dédupliquée et normalisée des abonnements pour le menu de la
+    Lettre de résiliation -- `display_name` passe par le même moteur de
+    reconnaissance de marchand (`match_whitelist`/Clé Marchand) que l'analyse
+    bancaire, pour ne jamais afficher un libellé brut ("EDF CLIENTS
+    PARTICULIERS...") ni un doublon (deux entrées "Prixtel") dans le menu."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    display_name: str
+    price: float
+    domain: str
+
+
 # ---------------------------------------------------------------------------
 # Back-Office Super Admin (cf. app/api/v1/admin.py)
 # ---------------------------------------------------------------------------

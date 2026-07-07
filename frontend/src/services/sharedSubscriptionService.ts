@@ -1,5 +1,10 @@
 import { axiosClient } from "@/api/axiosClient";
-import type { SharedSubscriptionBalance, SharedSubscriptionGroup, SharedSubscriptionMember } from "@/types";
+import type {
+  ShareableSubscription,
+  SharedSubscriptionBalance,
+  SharedSubscriptionGroup,
+  SharedSubscriptionMember,
+} from "@/types";
 
 export const sharedSubscriptionService = {
   /** GET /family/group (route backend inchangée) */
@@ -25,6 +30,20 @@ export const sharedSubscriptionService = {
   /** GET /family/balances */
   async getBalances(): Promise<SharedSubscriptionBalance[]> {
     const { data } = await axiosClient.get<SharedSubscriptionBalance[]>("/family/balances");
+    return data;
+  },
+
+  /** GET /family/shareable-subscriptions */
+  async getShareableSubscriptions(): Promise<ShareableSubscription[]> {
+    const { data } = await axiosClient.get<ShareableSubscription[]>("/family/shareable-subscriptions");
+    return data;
+  },
+
+  /** PUT /family/shared-subscriptions — remplace toute la sélection. */
+  async setSharedSubscriptions(subscriptionIds: string[]): Promise<ShareableSubscription[]> {
+    const { data } = await axiosClient.put<ShareableSubscription[]>("/family/shared-subscriptions", {
+      subscription_ids: subscriptionIds,
+    });
     return data;
   },
 };

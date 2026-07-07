@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -16,9 +17,11 @@ import {
 import { RevealText } from "@/components/shared/RevealText";
 import { BentoTile } from "@/components/shared/BentoTile";
 import { CTALink } from "@/components/shared/CTALink";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useExportSubscriptionsCsv, useSubscriptions } from "@/hooks/useSubscriptions";
-import { STRIPE_BILLING_URL } from "@/api/config";
+import { STRIPE_BILLING_URL, STRIPE_CUSTOMER_PORTAL_URL } from "@/api/config";
 import { cn } from "@/lib/utils";
 
 const PARTICULIER_TOOLS = [
@@ -66,17 +69,32 @@ export function PremiumPage() {
   const isPremium = !!user?.is_premium;
   const subscriptionsQuery = useSubscriptions();
   const exportCsv = useExportSubscriptionsCsv();
+  const [showExportConfirm, setShowExportConfirm] = React.useState(false);
 
-  /** Redirige vers Stripe si non-Premium, sinon lance l'export réel.
-   * Navigation dans le même onglet (pas de window.open) : Stripe doit
-   * pouvoir rediriger cet onglet vers /premium?success=true au retour,
-   * pour que l'app détecte le paiement et débloque isPremium. */
+  /** Ouvre la modale de confirmation d'export CSV. Non-Premium -> Stripe. */
   function handleExportCsvClick() {
     if (!isPremium) {
       window.location.href = STRIPE_BILLING_URL;
       return;
     }
+    setShowExportConfirm(true);
+  }
+
+  /** Confirme l'export et le déclenche réellement. */
+  function confirmExportCsv() {
+    setShowExportConfirm(false);
     exportCsv.mutate();
+  }
+
+  /** Redirige vers Stripe Billing/Portal selon le statut Premium. Pour
+   * non-Premium: page d'achat. Pour Premium: portail client (gestion
+   * facturation, annulation). */
+  function handleManageSubscriptionClick() {
+    if (isPremium) {
+      window.location.href = STRIPE_CUSTOMER_PORTAL_URL;
+    } else {
+      window.location.href = STRIPE_BILLING_URL;
+    }
   }
 
   /** Les 3 modules "Espace Particulier" ont désormais de vraies pages :
@@ -112,7 +130,7 @@ export function PremiumPage() {
             : "Débloque tous les outils pour réduire tes dépenses récurrentes, seul ou en entreprise."}
         </RevealText>
         <div className="mt-8 flex justify-center">
-          <CTALink variant="solid" onClick={() => (window.location.href = STRIPE_BILLING_URL)}>
+          <CTALink variant="solid" onClick={handleManageSubscriptionClick}>
             {isPremium ? "Gérer mon abonnement" : "Passer Premium"}
           </CTALink>
         </div>
@@ -241,6 +259,26 @@ export function PremiumPage() {
           })}
         </div>
       </div>
+
+      {/* Modale de confirmation : Export CSV */}
+      <Dialog open={showExportConfirm} onOpenChange={setShowExportConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Générer et télécharger vos abonnements</DialogTitle>
+            <DialogDescription>
+              Voulez-vous générer et télécharger l'historique de vos abonnements au format CSV ?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowExportConfirm(false)}>
+              Annuler
+            </Button>
+            <Button onClick={confirmExportCsv} loading={exportCsv.isPending}>
+              <Download className="h-4 w-4" /> Télécharger
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -33,3 +33,21 @@ export function useRemoveSharedSubscriptionMember() {
     },
   });
 }
+
+export function useShareableSubscriptions() {
+  return useQuery({
+    queryKey: [QUERY_KEY, "shareable-subscriptions"],
+    queryFn: sharedSubscriptionService.getShareableSubscriptions,
+  });
+}
+
+export function useSetSharedSubscriptions() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (subscriptionIds: string[]) => sharedSubscriptionService.setSharedSubscriptions(subscriptionIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY, "shareable-subscriptions"] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY, "balances"] });
+    },
+  });
+}

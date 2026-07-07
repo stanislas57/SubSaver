@@ -1,10 +1,13 @@
-import type { Subscription, User } from "@/types";
+import type { CancellableSubscription, User } from "@/types";
 
 /**
  * Génère une lettre de résiliation type à partir des données déjà en cache
  * (aucun appel API dédié — décision d'architecture : fonction pure côté client).
+ * `subscription.display_name` est déjà le nom de marchand normalisé (Clé
+ * Marchand), jamais le libellé bancaire brut -- cf. GET
+ * /subscriptions/cancellation-candidates.
  */
-export function generateCancellationLetter(subscription: Subscription, user: User): string {
+export function generateCancellationLetter(subscription: CancellableSubscription, user: User): string {
   const today = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "long", year: "numeric" }).format(
     new Date()
   );
@@ -12,13 +15,13 @@ export function generateCancellationLetter(subscription: Subscription, user: Use
   return `${user.first_name}
 ${user.email}
 
-Objet : Résiliation de mon abonnement ${subscription.name}
+Objet : Résiliation de mon abonnement ${subscription.display_name}
 
 ${today}
 
 Madame, Monsieur,
 
-Je vous informe par la présente de ma décision de résilier mon abonnement "${subscription.name}" (compte associé à l'adresse ${user.email}), avec effet à la prochaine échéance de facturation.
+Je vous informe par la présente de ma décision de résilier mon abonnement "${subscription.display_name}" (compte associé à l'adresse ${user.email}), avec effet à la prochaine échéance de facturation.
 
 Je vous remercie de bien vouloir me confirmer la prise en compte de cette résiliation ainsi que la date de fin effective de mon abonnement, par retour de courrier ou par email.
 
@@ -36,8 +39,8 @@ ${user.first_name}`;
  * remplacer par une vraie base d'adresses de résiliation par service
  * lorsque ce backend existera.
  */
-export function buildCancellationMailto(subscription: Subscription, letter: string): string {
+export function buildCancellationMailto(subscription: CancellableSubscription, letter: string): string {
   const to = `contact@${subscription.domain}`;
-  const subject = `Résiliation de mon abonnement ${subscription.name}`;
+  const subject = `Résiliation de mon abonnement ${subscription.display_name}`;
   return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(letter)}`;
 }

@@ -1,5 +1,5 @@
 import { axiosClient } from "@/api/axiosClient";
-import type { Subscription, SubscriptionInput } from "@/types";
+import type { CancellableSubscription, Subscription, SubscriptionInput } from "@/types";
 
 /** Extrait le nom de fichier depuis l'en-tête Content-Disposition, avec repli. */
 function filenameFromContentDisposition(header: string | undefined, fallback: string): string {
@@ -40,5 +40,11 @@ export const subscriptionService = {
       "subserver-abonnements.csv"
     );
     return { blob: response.data as Blob, filename };
+  },
+
+  /** GET /subscriptions/cancellation-candidates */
+  async listCancellationCandidates(): Promise<CancellableSubscription[]> {
+    const { data } = await axiosClient.get<CancellableSubscription[]>("/subscriptions/cancellation-candidates");
+    return data;
   },
 };

@@ -1,6 +1,5 @@
 import * as React from "react";
 import { LineChart, SlidersHorizontal } from "lucide-react";
-import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorAlert } from "@/components/ui/alert";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -11,6 +10,9 @@ import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { useAuth } from "@/contexts/AuthContext";
 import { CATEGORIES } from "@/types";
 import { getErrorMessage } from "@/api/axiosClient";
+import { cn } from "@/lib/utils";
+
+const COMING_SOON_CATEGORIES = new Set(["Logement", "Sport", "Banque & Invest", "Transport"]);
 
 /** Espace Particulier Premium : compare l'abonnement en cours (si détecté
  * pour la catégorie choisie) aux meilleures offres du marché, avec économie
@@ -44,14 +46,35 @@ export function LabComparatorPage() {
           </RevealText>
         </div>
 
-        <div className="max-w-xs">
-          <Select value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Catégorie">
-            {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </Select>
+        <div className="max-w-2xl">
+          <label className="mb-2 block text-sm font-medium text-luxury-text">Catégorie</label>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {CATEGORIES.map((cat) => {
+              const isComingSoon = COMING_SOON_CATEGORIES.has(cat);
+              return (
+                <button
+                  key={cat}
+                  onClick={() => !isComingSoon && setCategory(cat)}
+                  disabled={isComingSoon}
+                  className={cn(
+                    "relative rounded-lg border-2 p-3 text-center text-sm font-medium transition-all",
+                    category === cat && !isComingSoon
+                      ? "border-luxury-gold bg-luxury-gold-soft text-luxury-gold-deep"
+                      : "border-slate-900/10 bg-white text-luxury-text hover:border-slate-900/20",
+                    isComingSoon && "pointer-events-none cursor-not-allowed opacity-50"
+                  )}
+                  aria-label={`Catégorie ${cat}`}
+                >
+                  {cat}
+                  {isComingSoon && (
+                    <span className="absolute right-1 top-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-600">
+                      Bientôt
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {offersQuery.isPending && (

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Users, Minus, Plus, PiggyBank } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSubscriptions } from "@/hooks/useSubscriptions";
+import { useShareableSubscriptions } from "@/hooks/useSharedSubscription";
 import { RevealText } from "@/components/shared/RevealText";
 import { BentoTile } from "@/components/shared/BentoTile";
 import { SharedSubscriptionTabs } from "@/components/shared-subscription/SharedSubscriptionTabs";
@@ -12,16 +12,23 @@ const MAX_MEMBERS = 6;
 
 /** Espace Particulier Premium : simulation des économies réalisées en
  * partageant ses abonnements, puis gestion réelle du groupe (membres,
- * répartition des coûts) via SharedSubscriptionTabs. */
+ * répartition des coûts) via SharedSubscriptionTabs.
+ *
+ * Règle métier : la simulation se base UNIQUEMENT sur les abonnements que
+ * l'utilisateur a explicitement cochés comme partagés (onglet "Abonnements
+ * partagés" ci-dessous), jamais sur le total de tous ses abonnements --
+ * partager Netflix ne doit pas mettre l'électricité dans le calcul. */
 export function SharedSubscriptionPage() {
   const { user } = useAuth();
   const currency = user?.currency ?? "EUR";
-  const subscriptionsQuery = useSubscriptions();
+  const shareableQuery = useShareableSubscriptions();
   const [members, setMembers] = React.useState(2);
 
-  const monthlyTotal = (subscriptionsQuery.data ?? []).reduce((sum, s) => sum + s.price, 0);
-  const perPerson = monthlyTotal / members;
-  const savingsPerPerson = monthlyTotal - perPerson;
+  const sharedTotal = (shareableQuery.data ?? [])
+    .filter((s) => s.is_shared)
+    .reduce((sum, s) => sum + s.price, 0);
+  const perPerson = sharedTotal / members;
+  const savingsPerPerson = sharedTotal - perPerson;
   const yearlySavingsPerPerson = savingsPerPerson * 12;
 
   return (
@@ -43,7 +50,9 @@ export function SharedSubscriptionPage() {
             <div>
               <p className="text-sm font-medium text-luxury-text-light">Simule tes économies</p>
               <p className="mt-1 text-sm text-luxury-text-light">
-                Sur la base de ta dépense mensuelle actuelle : {formatPrice(monthlyTotal, currency)}
+                {sharedTotal > 0
+                  ? `Sur la base de tes abonnements partagés : ${formatPrice(sharedTotal, currency)}`
+                  : "Sélectionne des abonnements à partager dans l'onglet ci-dessous pour voir la simulation."}
               </p>
             </div>
 

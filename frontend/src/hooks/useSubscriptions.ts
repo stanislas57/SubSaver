@@ -32,6 +32,10 @@ export function useDeleteSubscription() {
   });
 }
 
+export function useCancellationCandidates() {
+  return useQuery({ queryKey: ["subscriptions", "cancellation-candidates"], queryFn: subscriptionService.listCancellationCandidates });
+}
+
 export function useExportSubscriptionsCsv() {
   return useMutation({
     mutationFn: async () => {
