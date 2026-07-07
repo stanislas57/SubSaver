@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, String
+from sqlalchemy import Boolean, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
@@ -34,6 +34,13 @@ class User(Base):
     # Réinitialisation de mot de passe (même mécanisme : code 6 chiffres par email)
     reset_code: Mapped[str | None] = mapped_column(String, nullable=True)
     reset_code_expires_at: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    # Protection anti brute-force (cf. app/api/v1/auth.py) : compteurs remis à
+    # zéro à chaque succès ou à chaque nouveau code émis (register/resend/forgot).
+    failed_login_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    locked_until: Mapped[str | None] = mapped_column(String, nullable=True)
+    verification_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    reset_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # Powens (Open Banking) — 1 utilisateur SubServer = 1 utilisateur Powens
     powens_user_token: Mapped[str | None] = mapped_column(String, nullable=True)

@@ -9,6 +9,7 @@ from app.api.deps import get_current_user
 from app.core import powens
 from app.core.powens import PowensError
 from app.core.security import create_powens_state, decode_powens_state
+from app.core.token_encryption import decrypt_token, encrypt_token
 from app.core.subscription_detector import RawTransaction
 from app.core.transaction_analyzer import analyze_transactions
 from app.db.session import get_db
@@ -61,10 +62,10 @@ async def get_connect_url(current_user: User = Depends(get_current_user), db: Se
     vers laquelle le frontend doit rediriger l'utilisateur (redirection pleine page)."""
     try:
         if not current_user.powens_user_token:
-            current_user.powens_user_token = await powens.init_user_token()
+            current_user.powens_user_token = encrypt_token(await powens.init_user_token())
             db.commit()
 
-        temporary_code = await powens.get_temporary_code(current_user.powens_user_token)
+        temporary_code = await powens.get_temporary_code(decrypt_token(current_user.powens_user_token))
     except PowensError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -128,11 +129,12 @@ async def sync_transactions(current_user: User = Depends(get_current_user), db: 
 
     synced_count = 0
     cursor: str | None = None
+    powens_token = decrypt_token(current_user.powens_user_token)
 
     for _ in range(MAX_SYNC_PAGES):
         try:
             page = await powens.fetch_transactions_page(
-                current_user.powens_user_token, cursor=cursor, limit=TRANSACTIONS_PAGE_SIZE
+                powens_token, cursor=cursor, limit=TRANSACTIONS_PAGE_SIZE
             )
         except PowensError as exc:
             raise HTTPException(
