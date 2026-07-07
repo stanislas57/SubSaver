@@ -8,7 +8,12 @@ import { SubscriptionList } from "@/components/subscriptions/SubscriptionList";
 import { SubscriptionForm } from "@/components/subscriptions/SubscriptionForm";
 import { BankConsentModal } from "@/components/bank/BankConsentModal";
 import { BankReportModal } from "@/components/bank/BankReportModal";
-import { guessDomain } from "@/lib/bank";
+import {
+  loadTrackedMerchantKeys,
+  normalizeMerchantKey,
+  reconcileSubscriptions,
+  saveTrackedMerchantKeys,
+} from "@/lib/subscriptionReconciliation";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   useCreateSubscription,
@@ -94,34 +99,81 @@ export function SubscriptionsPage() {
     setCandidates((prev) => prev.filter((c) => c.merchant !== candidate.merchant));
   }
 
-  /** Étape 3 : intègre définitivement tous les candidats restants du rapport. */
+  /** Étape 3 : réconciliation (Upsert & Cleanup) entre l'existant et le rapport.
+   * La Clé Marchand (candidate.merchant, ex: "Netflix", "EDF") sert d'identifiant
+   * unique : un marchand déjà suivi est mis à jour (nouveau prix si changement de
+   * forfait) au lieu d'être dupliqué ; un marchand non re-détecté n'est jamais
+   * supprimé sans confirmation explicite (il a pu être payé par un autre moyen
+   * que ce compte bancaire, sans être résilié pour autant). */
   async function handleValidateReport() {
     setValidating(true);
-    let successCount = 0;
-    for (const candidate of candidates) {
-      const billingDay = new Date(candidate.next_estimated_date).getDate();
-      const input: SubscriptionInput = {
-        name: candidate.merchant,
-        price: candidate.price,
-        category: candidate.category,
-        domain: guessDomain(candidate.merchant),
-        billing_day: billingDay,
-        importance: 2,
-        start_date: candidate.last_date,
-        trial_end_date: null,
-      };
+    const { toCreate, toUpdate, toRemove, updatedTrackedMerchantKeys } = reconcileSubscriptions(
+      subscriptionsQuery.data ?? [],
+      candidates,
+      loadTrackedMerchantKeys()
+    );
+
+    let createdCount = 0;
+    let updatedCount = 0;
+    let removedCount = 0;
+
+    for (const input of toCreate) {
       try {
         await createSubscription.mutateAsync(input);
-        successCount += 1;
+        createdCount += 1;
       } catch (error) {
-        toast.error(`"${candidate.merchant}" : ${getErrorMessage(error)}`);
+        toast.error(`"${input.name}" : ${getErrorMessage(error)}`);
+        updatedTrackedMerchantKeys.delete(normalizeMerchantKey(input.name));
       }
     }
+
+    for (const { id, input } of toUpdate) {
+      try {
+        await updateSubscription.mutateAsync({ id, input });
+        updatedCount += 1;
+      } catch (error) {
+        toast.error(`"${input.name}" : ${getErrorMessage(error)}`);
+      }
+    }
+
+    if (toRemove.length > 0) {
+      const names = toRemove.map((s) => s.name).join(", ");
+      const confirmed = window.confirm(
+        `Ces abonnements ne sont retrouvés dans aucune transaction des 6 derniers mois (probablement résiliés) : ${names}. Les retirer de ton tableau de bord ?`
+      );
+      for (const subscription of toRemove) {
+        if (!confirmed) {
+          // L'utilisateur garde cet abonnement : il reste suivi pour la
+          // prochaine réconciliation (sinon il ne serait plus jamais
+          // proposé au nettoyage, ni ne pourrait être remis à jour).
+          updatedTrackedMerchantKeys.add(normalizeMerchantKey(subscription.name));
+          continue;
+        }
+        try {
+          await deleteSubscription.mutateAsync(subscription.id);
+          removedCount += 1;
+        } catch (error) {
+          toast.error(`"${subscription.name}" : ${getErrorMessage(error)}`);
+          updatedTrackedMerchantKeys.add(normalizeMerchantKey(subscription.name));
+        }
+      }
+    }
+
+    saveTrackedMerchantKeys(updatedTrackedMerchantKeys);
+
     setValidating(false);
     setReportOpen(false);
     setCandidates([]);
-    if (successCount > 0) {
-      toast.success(`${successCount} abonnement(s) intégré(s) à ton tableau de bord.`);
+
+    const summary = [
+      createdCount > 0 && `${createdCount} ajouté(s)`,
+      updatedCount > 0 && `${updatedCount} mis à jour`,
+      removedCount > 0 && `${removedCount} retiré(s)`,
+    ].filter(Boolean);
+    if (summary.length > 0) {
+      toast.success(`Tableau de bord synchronisé : ${summary.join(", ")}.`);
+    } else {
+      toast.info("Aucun changement : ton tableau de bord était déjà à jour.");
     }
   }
 
