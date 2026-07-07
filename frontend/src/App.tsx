@@ -29,6 +29,7 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
 import { AdminUsersPage } from "@/pages/admin/AdminUsersPage";
 import { AdminAnalyticsPage } from "@/pages/admin/AdminAnalyticsPage";
+import { PrivacyPage } from "@/pages/PrivacyPage";
 
 // Chargée à la demande : recharts pèse lourd, le code-splitting évite de
 // l'embarquer dans le bundle initial (gain net sur le premier chargement).
@@ -92,6 +93,7 @@ export default function App() {
                 <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/premium" element={<PremiumPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
 
                 {/* Routes Premium-only (Espace Particulier Premium + BtoB) */}
                 <Route element={<PremiumOnlyRoute />}>

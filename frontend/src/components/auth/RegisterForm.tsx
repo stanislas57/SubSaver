@@ -1,7 +1,9 @@
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,6 +27,7 @@ export interface RegisterFormProps {
 
 export function RegisterForm({ onRegistered }: RegisterFormProps) {
   const { register: registerUser, isRegistering, registerError } = useAuth();
+  const [showPassword, setShowPassword] = React.useState(false);
   const {
     register,
     handleSubmit,
@@ -59,7 +62,24 @@ export function RegisterForm({ onRegistered }: RegisterFormProps) {
 
       <div>
         <Label htmlFor="password" className="text-luxury-text">Mot de passe</Label>
-        <Input id="password" type="password" autoComplete="new-password" error={!!errors.password} className={inputClassName} {...register("password")} />
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="new-password"
+            error={!!errors.password}
+            className={`${inputClassName} pr-10`}
+            {...register("password")}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-luxury-text-light hover:text-luxury-text transition-colors"
+            aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+          >
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
+        </div>
         {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
       </div>
 

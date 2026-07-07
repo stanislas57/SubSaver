@@ -41,11 +41,17 @@ export function RevealText({ children, className, as: Tag = "div" }: RevealTextP
     return () => ctx.revert();
   }, []);
 
+  // Ajoute text-balance automatiquement aux h1 et h2 pour éviter les coupures
+  // maladroites sur mobile (typographie fluide).
+  const headingClass = (Tag === "h1" || Tag === "h2") && !className?.includes("text-balance")
+    ? `text-balance ${className || ""}`
+    : className;
+
   return (
     <div ref={wrapRef} className="overflow-hidden">
       {/* Tag est polymorphe (div/h1/h2/p) : TS ne peut pas unifier le type de ref
        * par branche, d'où ce cast ciblé (innerRef n'est lu que comme HTMLElement générique). */}
-      <Tag ref={innerRef as React.RefObject<HTMLDivElement>} className={className}>
+      <Tag ref={innerRef as React.RefObject<HTMLDivElement>} className={headingClass}>
         {children}
       </Tag>
     </div>

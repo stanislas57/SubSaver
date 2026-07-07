@@ -1,6 +1,9 @@
+import * as React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { TopNavbar } from "@/components/layout/TopNavbar";
+import { Footer } from "@/components/layout/Footer";
+import { ContactModal } from "@/components/layout/ContactModal";
 import { pageTransition } from "@/lib/motion";
 import { PremiumWelcomeGate } from "@/components/shared/PremiumWelcomeGate";
 
@@ -8,6 +11,7 @@ import { PremiumWelcomeGate } from "@/components/shared/PremiumWelcomeGate";
  * contenu aéré et lumineux avec halos discrets en arrière-plan. */
 export function AppLayout() {
   const { pathname } = useLocation();
+  const [showContact, setShowContact] = React.useState(false);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-luxury-bg">
@@ -36,6 +40,10 @@ export function AppLayout() {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      <Footer onContactClick={() => setShowContact(true)} />
+
+      <ContactModal open={showContact} onOpenChange={setShowContact} />
     </div>
   );
 }
