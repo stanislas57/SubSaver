@@ -1,9 +1,14 @@
 import uuid
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 class User(Base):
@@ -33,6 +38,13 @@ class User(Base):
     # Powens (Open Banking) — 1 utilisateur SubServer = 1 utilisateur Powens
     powens_user_token: Mapped[str | None] = mapped_column(String, nullable=True)
     powens_connection_id: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    # Back-office Super Admin (cf. app/api/v1/admin.py)
+    is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # Dates ISO calculées côté Python (comme le reste des dates de l'app) : nullable
+    # car les comptes créés avant cette colonne n'ont pas de valeur connue.
+    created_at: Mapped[str | None] = mapped_column(String, nullable=True, default=_now_iso)
+    last_login_at: Mapped[str | None] = mapped_column(String, nullable=True)
 
     subscriptions: Mapped[list["Subscription"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"

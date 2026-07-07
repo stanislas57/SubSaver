@@ -21,6 +21,7 @@ class UserOut(BaseModel):
     notification_pref: NotificationPref
     is_premium: bool
     bank_connected: bool
+    is_admin: bool
 
 
 class RegisterBody(BaseModel):
@@ -189,3 +190,40 @@ class FamilyBalanceOut(BaseModel):
     member_name: str
     share_percent: float
     amount_owed: float
+
+
+# ---------------------------------------------------------------------------
+# Back-Office Super Admin (cf. app/api/v1/admin.py)
+# ---------------------------------------------------------------------------
+
+class AdminUserOut(BaseModel):
+    id: str
+    email: str
+    first_name: str
+    is_premium: bool
+    is_admin: bool
+    bank_connected: bool
+    created_at: Optional[str] = None
+    last_login_at: Optional[str] = None
+    subscriptions_count: int
+
+
+class AdminUserUpdate(BaseModel):
+    email: Optional[str] = None
+    first_name: Optional[str] = None
+    is_premium: Optional[bool] = None
+    is_admin: Optional[bool] = None
+
+
+class AdminUsersPage(BaseModel):
+    items: list[AdminUserOut]
+    total: int
+    page: int
+    page_size: int
+
+
+class AdminAnalyticsOut(BaseModel):
+    total_users: int
+    new_users_today: int
+    premium_users: int
+    premium_conversion_rate: float

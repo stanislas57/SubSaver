@@ -4,8 +4,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute, GuestOnlyRoute, PremiumOnlyRoute } from "@/routes/ProtectedRoute";
+import { AdminRouteGuard } from "@/routes/AdminRouteGuard";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { AppLayout } from "@/layouts/AppLayout";
+import { AdminLayout } from "@/layouts/AdminLayout";
 import { PageSpinner } from "@/components/ui/spinner";
 
 import { LoginPage } from "@/pages/LoginPage";
@@ -24,6 +26,9 @@ import { ProfilePage } from "@/pages/ProfilePage";
 import { SuccessPage } from "@/pages/SuccessPage";
 import { SharedSubscriptionPage } from "@/pages/SharedSubscriptionPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
+import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
+import { AdminUsersPage } from "@/pages/admin/AdminUsersPage";
+import { AdminAnalyticsPage } from "@/pages/admin/AdminAnalyticsPage";
 
 // Chargée à la demande : recharts pèse lourd, le code-splitting évite de
 // l'embarquer dans le bundle initial (gain net sur le premier chargement).
@@ -95,6 +100,15 @@ export default function App() {
                   <Route path="/lab/shared" element={<SharedSubscriptionPage />} />
                   <Route path="/lab/cancellation" element={<LabCancellationPage />} />
                 </Route>
+              </Route>
+            </Route>
+
+            {/* Back-Office Super Admin : layout et garde totalement isolés du site public */}
+            <Route element={<AdminRouteGuard />}>
+              <Route element={<AdminLayout />}>
+                <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin/users" element={<AdminUsersPage />} />
+                <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
               </Route>
             </Route>
 

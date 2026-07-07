@@ -31,3 +31,19 @@ export function daysUntil(iso: string): number {
 export function billingDayLabel(day: number): string {
   return `Le ${day} du mois`;
 }
+
+/** Formate un horodatage ISO complet (ex: created_at/last_login_at du CRM
+ * admin) -- contrairement à `formatDate`, ne pas ajouter "T00:00:00" : la
+ * valeur contient déjà une heure précise. */
+export function formatDateTime(iso: string | null): string {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}

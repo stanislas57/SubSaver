@@ -94,6 +94,11 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect.")
     if not user.is_verified:
         raise HTTPException(status_code=403, detail="Compte non vérifié. Vérifie ton email avant de te connecter.")
+
+    # Tracé CRM (cf. Back-Office Admin) : date de dernière connexion.
+    user.last_login_at = datetime.now(timezone.utc).isoformat()
+    db.commit()
+
     return AuthResponse(access_token=create_access_token(user.id), token_type="bearer", user=user)
 
 

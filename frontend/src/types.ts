@@ -23,6 +23,7 @@ export interface User {
   notification_pref: NotificationPref;
   is_premium: boolean;
   bank_connected: boolean;
+  is_admin: boolean;
 }
 
 /** Réponse de POST /auth/login et POST /auth/verify-email (schéma Token). */
@@ -199,4 +200,44 @@ export interface DetectedSubscription {
   confidence: number;
   source_transaction_ids: string[];
   category: string;
+}
+
+// ---------------------------------------------------------------------------
+// Back-Office Super Admin
+// ---------------------------------------------------------------------------
+
+/** Ligne du tableau CRM GET /admin/users. */
+export interface AdminUser {
+  id: string;
+  email: string;
+  first_name: string;
+  is_premium: boolean;
+  is_admin: boolean;
+  bank_connected: boolean;
+  created_at: string | null;
+  last_login_at: string | null;
+  subscriptions_count: number;
+}
+
+export interface AdminUsersPage {
+  items: AdminUser[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+/** Corps de PATCH /admin/users/{id} — tous les champs sont optionnels. */
+export interface AdminUserUpdateInput {
+  email?: string;
+  first_name?: string;
+  is_premium?: boolean;
+  is_admin?: boolean;
+}
+
+/** Réponse de GET /admin/analytics. */
+export interface AdminAnalytics {
+  total_users: number;
+  new_users_today: number;
+  premium_users: number;
+  premium_conversion_rate: number;
 }
