@@ -1,20 +1,22 @@
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
+import { LineChart, SlidersHorizontal } from "lucide-react";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorAlert } from "@/components/ui/alert";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { RevealText } from "@/components/shared/RevealText";
 import { ComparatorOfferCard } from "@/components/lab/ComparatorOfferCard";
-import { PremiumLockModal } from "@/components/shared/PremiumLockModal";
 import { useMarketOffers } from "@/hooks/useMarket";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { useAuth } from "@/contexts/AuthContext";
 import { CATEGORIES } from "@/types";
 import { getErrorMessage } from "@/api/axiosClient";
-import { SlidersHorizontal } from "lucide-react";
 
+/** Espace Particulier Premium : compare l'abonnement en cours (si détecté
+ * pour la catégorie choisie) aux meilleures offres du marché, avec économie
+ * estimée mise en avant sur chaque carte. Accès garanti Premium (le
+ * PremiumOnlyRoute parent redirige déjà vers Stripe sinon). */
 export function LabComparatorPage() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const currency = user?.currency ?? "EUR";
   const [category, setCategory] = React.useState<string>(CATEGORIES[0]);
@@ -27,13 +29,21 @@ export function LabComparatorPage() {
     ? [...offersQuery.data].sort((a, b) => b.score - a.score)[0].id
     : null;
 
-  if (!user?.is_premium) {
-    return <PremiumLockModal open onOpenChange={(open) => !open && navigate("/premium")} feature="Le comparateur d'offres" />;
-  }
-
   return (
     <div className="w-full px-6 py-8">
-      <div className="mx-auto max-w-5xl space-y-4">
+      <div className="mx-auto max-w-5xl space-y-6">
+        <div>
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">
+            <LineChart className="h-6 w-6" />
+          </div>
+          <RevealText as="h1" className="text-4xl font-black tracking-tight text-luxury-text sm:text-5xl">
+            Comparateur d'offres
+          </RevealText>
+          <RevealText className="mt-3 max-w-xl text-lg text-luxury-text-light">
+            Compare ton abonnement actuel aux meilleures alternatives du marché, catégorie par catégorie.
+          </RevealText>
+        </div>
+
         <div className="max-w-xs">
           <Select value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Catégorie">
             {CATEGORIES.map((cat) => (

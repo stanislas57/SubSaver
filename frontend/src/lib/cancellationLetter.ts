@@ -20,9 +20,24 @@ Madame, Monsieur,
 
 Je vous informe par la présente de ma décision de résilier mon abonnement "${subscription.name}" (compte associé à l'adresse ${user.email}), avec effet à la prochaine échéance de facturation.
 
-Je vous remercie de bien vouloir m'confirmer la prise en compte de cette résiliation ainsi que la date de fin effective de mon abonnement, par retour de courrier ou par email.
+Je vous remercie de bien vouloir me confirmer la prise en compte de cette résiliation ainsi que la date de fin effective de mon abonnement, par retour de courrier ou par email.
 
 Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.
 
 ${user.first_name}`;
+}
+
+/**
+ * Construit un lien mailto: prêt à l'envoi pour la lettre de résiliation.
+ * Le "From" est naturellement l'adresse de l'utilisateur puisque mailto:
+ * ouvre son client de messagerie par défaut (déjà configuré avec sa propre
+ * adresse) -- aucun backend d'envoi n'est nécessaire pour ça. Le
+ * destinataire est une estimation heuristique (contact@{domaine}) : à
+ * remplacer par une vraie base d'adresses de résiliation par service
+ * lorsque ce backend existera.
+ */
+export function buildCancellationMailto(subscription: Subscription, letter: string): string {
+  const to = `contact@${subscription.domain}`;
+  const subject = `Résiliation de mon abonnement ${subscription.name}`;
+  return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(letter)}`;
 }

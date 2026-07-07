@@ -22,6 +22,7 @@ import { LabComparatorPage } from "@/pages/LabComparatorPage";
 import { LabCancellationPage } from "@/pages/LabCancellationPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { SuccessPage } from "@/pages/SuccessPage";
+import { SharedSubscriptionPage } from "@/pages/SharedSubscriptionPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 // Chargée à la demande : recharts pèse lourd, le code-splitting évite de
@@ -66,7 +67,7 @@ export default function App() {
             </Route>
 
             <Route element={<ProtectedRoute />}>
-              {/* /success est plein-écran (célébration post-Stripe), pas de TopNavbar */}
+              {/* /success n'est qu'une cible de redirection pour Stripe, cf. SuccessPage.tsx */}
               <Route path="/success" element={<SuccessPage />} />
 
               <Route element={<AppLayout />}>
@@ -87,10 +88,11 @@ export default function App() {
                 <Route path="/premium" element={<PremiumPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
 
-                {/* Routes Premium-only (BtoB) */}
+                {/* Routes Premium-only (Espace Particulier Premium + BtoB) */}
                 <Route element={<PremiumOnlyRoute />}>
                   <Route path="/lab" element={<Navigate to="/lab/comparator" replace />} />
                   <Route path="/lab/comparator" element={<LabComparatorPage />} />
+                  <Route path="/lab/shared" element={<SharedSubscriptionPage />} />
                   <Route path="/lab/cancellation" element={<LabCancellationPage />} />
                 </Route>
               </Route>

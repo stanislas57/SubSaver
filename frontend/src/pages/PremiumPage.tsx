@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -17,30 +16,29 @@ import {
 import { RevealText } from "@/components/shared/RevealText";
 import { BentoTile } from "@/components/shared/BentoTile";
 import { CTALink } from "@/components/shared/CTALink";
-import { SharedSubscriptionModal } from "@/components/shared-subscription/SharedSubscriptionModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useExportSubscriptionsCsv, useSubscriptions } from "@/hooks/useSubscriptions";
 import { STRIPE_BILLING_URL } from "@/api/config";
 import { cn } from "@/lib/utils";
 
-const PARTICULIER_TOOLS = (navigate: ReturnType<typeof useNavigate>, openSharedSubscription: () => void) => [
+const PARTICULIER_TOOLS = [
   {
     icon: LineChart,
     title: "Comparateur d'offres",
     description: "Compare tes abonnements aux meilleures offres du marché.",
-    onClick: () => navigate("/lab/comparator"),
+    path: "/lab/comparator",
   },
   {
     icon: Users,
     title: "Abonnement partagé",
     description: "Partage tes abonnements et répartis les coûts entre membres.",
-    onClick: openSharedSubscription,
+    path: "/lab/shared",
   },
   {
     icon: FileText,
     title: "Lettre de résiliation",
     description: "Génère une lettre de résiliation prête à envoyer.",
-    onClick: () => navigate("/lab/cancellation"),
+    path: "/lab/cancellation",
   },
 ];
 
@@ -66,13 +64,12 @@ export function PremiumPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isPremium = !!user?.is_premium;
-  const [sharedSubscriptionOpen, setSharedSubscriptionOpen] = React.useState(false);
   const subscriptionsQuery = useSubscriptions();
   const exportCsv = useExportSubscriptionsCsv();
 
   /** Redirige vers Stripe si non-Premium, sinon lance l'export réel.
    * Navigation dans le même onglet (pas de window.open) : Stripe doit
-   * pouvoir rediriger cet onglet vers /success?premium=true au retour,
+   * pouvoir rediriger cet onglet vers /premium?success=true au retour,
    * pour que l'app détecte le paiement et débloque isPremium. */
   function handleExportCsvClick() {
     if (!isPremium) {
@@ -82,23 +79,41 @@ export function PremiumPage() {
     exportCsv.mutate();
   }
 
+  /** Les 3 modules "Espace Particulier" ont désormais de vraies pages :
+   * Premium -> navigation directe ; non-Premium -> redirection Stripe
+   * (le cadenas les distingue visuellement avant même le clic). */
+  function handleParticulierClick(path: string) {
+    if (!isPremium) {
+      window.location.href = STRIPE_BILLING_URL;
+      return;
+    }
+    navigate(path);
+  }
+
   return (
     <div className="w-full px-6 py-24">
       <div className="mx-auto max-w-4xl text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-luxury-gold-soft text-luxury-gold-deep">
-          {user?.is_premium ? <ShieldCheck className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}
+          {isPremium ? <ShieldCheck className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}
         </div>
+
+        {isPremium && (
+          <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-luxury-night px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-luxury-gold">
+            <ShieldCheck className="h-3.5 w-3.5" /> Statut : Membre Premium
+          </span>
+        )}
+
         <RevealText as="h1" className="text-5xl font-black tracking-tight text-luxury-text sm:text-6xl">
-          {user?.is_premium ? "Tu es membre Premium" : "Passe au Premium"}
+          {isPremium ? "Tu es membre Premium" : "Passe au Premium"}
         </RevealText>
         <RevealText className="mx-auto mt-4 max-w-xl text-lg text-luxury-text-light">
-          {user?.is_premium
+          {isPremium
             ? "Profite du comparateur, de l'abonnement partagé illimité et des exports avancés."
             : "Débloque tous les outils pour réduire tes dépenses récurrentes, seul ou en entreprise."}
         </RevealText>
         <div className="mt-8 flex justify-center">
           <CTALink variant="solid" onClick={() => (window.location.href = STRIPE_BILLING_URL)}>
-            {user?.is_premium ? "Gérer mon abonnement" : "Passer Premium"}
+            {isPremium ? "Gérer mon abonnement" : "Passer Premium"}
           </CTALink>
         </div>
       </div>
@@ -108,16 +123,29 @@ export function PremiumPage() {
           Espace Particulier
         </RevealText>
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
-          {PARTICULIER_TOOLS(navigate, () => setSharedSubscriptionOpen(true)).map((tool) => {
+          {PARTICULIER_TOOLS.map((tool) => {
             const Icon = tool.icon;
             return (
               <BentoTile
                 key={tool.title}
-                onClick={tool.onClick}
+                onClick={() => handleParticulierClick(tool.path)}
                 role="button"
                 tabIndex={0}
-                className="cursor-pointer"
+                className={cn("relative cursor-pointer", !isPremium && "opacity-70")}
               >
+                <AnimatePresence>
+                  {!isPremium && (
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0.5, rotate: 15 }}
+                      animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                      exit={{ opacity: 0, scale: 0.4, rotate: -20 }}
+                      transition={{ duration: 0.35, ease: "easeOut" }}
+                      className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-luxury-night text-luxury-gold"
+                    >
+                      <Lock className="h-3.5 w-3.5" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">
                   <Icon className="h-5 w-5" />
                 </div>
@@ -213,12 +241,6 @@ export function PremiumPage() {
           })}
         </div>
       </div>
-
-      <SharedSubscriptionModal
-        open={sharedSubscriptionOpen}
-        onOpenChange={setSharedSubscriptionOpen}
-        currency={user?.currency ?? "EUR"}
-      />
     </div>
   );
 }

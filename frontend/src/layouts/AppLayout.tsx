@@ -2,16 +2,12 @@ import { Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { pageTransition } from "@/lib/motion";
-import { usePremiumUpgradeListener } from "@/hooks/usePremiumUpgradeListener";
+import { PremiumWelcomeGate } from "@/components/shared/PremiumWelcomeGate";
 
 /** Thème clair et luxueux : structure plein-écran avec TopNavbar fixée,
  * contenu aéré et lumineux avec halos discrets en arrière-plan. */
 export function AppLayout() {
   const { pathname } = useLocation();
-
-  // Capte le retour de paiement Stripe quelle que soit la page authentifiée
-  // sur laquelle il atterrit (cf. usePremiumUpgradeListener).
-  usePremiumUpgradeListener();
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-luxury-bg">
@@ -20,6 +16,10 @@ export function AppLayout() {
         <div className="absolute right-0 top-1/3 h-[450px] w-[450px] rounded-full bg-purple-200/15 blur-[120px]" />
         <div className="absolute bottom-0 left-1/3 h-[400px] w-[400px] rounded-full bg-amber-100/10 blur-[120px]" />
       </div>
+
+      {/* Capte le retour de paiement Stripe quelle que soit la page authentifiée
+       * sur laquelle il atterrit (cf. PremiumWelcomeGate). */}
+      <PremiumWelcomeGate />
 
       <TopNavbar />
 
