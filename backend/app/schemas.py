@@ -153,6 +153,21 @@ class DetectedSubscriptionOut(BaseModel):
     confidence: float
     source_transaction_ids: list[str]
     category: str
+    # Calculés côté serveur en comparant `merchant` (déjà la Clé Marchand
+    # canonique) au nom NORMALISÉ (même moteur whitelist) de chaque
+    # abonnement déjà existant de l'utilisateur -- une comparaison de texte
+    # brut côté frontend ne peut pas détecter qu'un abonnement existant au
+    # libellé bancaire brut ("PRLV SEPA PRIXTEL MOBILE 123456") et ce candidat
+    # ("Prixtel") désignent le même marchand.
+    matched_subscription_id: Optional[str] = None
+    duplicate_subscription_ids: list[str] = []
+
+
+class BankStatusOut(BaseModel):
+    bank_connected: bool
+    bank_name: Optional[str] = None
+    last_sync_at: Optional[str] = None
+    total_transactions: int
 
 
 class MarketOfferOut(BaseModel):

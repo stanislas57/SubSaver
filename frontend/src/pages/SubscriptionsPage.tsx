@@ -7,13 +7,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { SubscriptionList } from "@/components/subscriptions/SubscriptionList";
 import { SubscriptionForm } from "@/components/subscriptions/SubscriptionForm";
 import { BankConsentModal } from "@/components/bank/BankConsentModal";
-import { BankReportModal } from "@/components/bank/BankReportModal";
+import { BankReportModal, type CandidateReview } from "@/components/bank/BankReportModal";
 import {
   loadTrackedMerchantKeys,
   normalizeMerchantKey,
   reconcileSubscriptions,
   saveTrackedMerchantKeys,
 } from "@/lib/subscriptionReconciliation";
+import { guessDomain } from "@/lib/bank";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   useCreateSubscription,
@@ -99,23 +100,67 @@ export function SubscriptionsPage() {
     setCandidates((prev) => prev.filter((c) => c.merchant !== candidate.merchant));
   }
 
-  /** Étape 3 : réconciliation (Upsert & Cleanup) entre l'existant et le rapport.
-   * La Clé Marchand (candidate.merchant, ex: "Netflix", "EDF") sert d'identifiant
-   * unique : un marchand déjà suivi est mis à jour (nouveau prix si changement de
-   * forfait) au lieu d'être dupliqué ; un marchand non re-détecté n'est jamais
-   * supprimé sans confirmation explicite (il a pu être payé par un autre moyen
-   * que ce compte bancaire, sans être résilié pour autant). */
-  async function handleValidateReport() {
+  /** Étape 3 : intègre les candidats revus dans la modale "Transactions importées".
+   *
+   * Deux chemins distincts :
+   * 1. Candidats avec une cible de fusion (matched_subscription_id détecté
+   *    côté serveur -- y compris un libellé bancaire hérité qu'une simple
+   *    comparaison de texte ne peut pas repérer -- ou choisie manuellement) :
+   *    mise à jour DIRECTE de cet abonnement précis, jamais de création.
+   * 2. Le reste : réconciliation habituelle (Upsert & Cleanup) par Clé
+   *    Marchand, comme avant. Le nom/catégorie édités par l'utilisateur dans
+   *    la modale sont appliqués dans les deux cas.
+   *
+   * Les doublons hérités explicitement cochés par l'utilisateur sont
+   * supprimés indépendamment de ces deux chemins. */
+  async function handleValidateReport(reviews: CandidateReview[]) {
     setValidating(true);
-    const { toCreate, toUpdate, toRemove, updatedTrackedMerchantKeys } = reconcileSubscriptions(
-      subscriptionsQuery.data ?? [],
-      candidates,
-      loadTrackedMerchantKeys()
-    );
+    const existingSubs = subscriptionsQuery.data ?? [];
 
     let createdCount = 0;
     let updatedCount = 0;
     let removedCount = 0;
+
+    const withMergeTarget = reviews.filter((r) => r.mergeTargetId);
+    const withoutMergeTarget = reviews.filter((r) => !r.mergeTargetId);
+
+    for (const review of withMergeTarget) {
+      const existing = existingSubs.find((s) => s.id === review.mergeTargetId);
+      const input: SubscriptionInput = {
+        name: review.name,
+        price: review.candidate.price,
+        category: review.category,
+        domain: existing?.domain ?? guessDomain(review.name),
+        billing_day: new Date(review.candidate.next_estimated_date).getDate(),
+        importance: existing?.importance ?? 2,
+        start_date: review.candidate.last_date,
+        trial_end_date: existing?.trial_end_date ?? null,
+      };
+      try {
+        await updateSubscription.mutateAsync({ id: review.mergeTargetId as string, input });
+        updatedCount += 1;
+      } catch (error) {
+        toast.error(`"${review.name}" : ${getErrorMessage(error)}`);
+      }
+    }
+
+    for (const review of reviews) {
+      for (const duplicateId of review.duplicatesToRemove) {
+        try {
+          await deleteSubscription.mutateAsync(duplicateId);
+          removedCount += 1;
+        } catch (error) {
+          toast.error(getErrorMessage(error));
+        }
+      }
+    }
+
+    const editedCandidates = withoutMergeTarget.map((r) => ({ ...r.candidate, merchant: r.name, category: r.category }));
+    const { toCreate, toUpdate, toRemove, updatedTrackedMerchantKeys } = reconcileSubscriptions(
+      existingSubs,
+      editedCandidates,
+      loadTrackedMerchantKeys()
+    );
 
     for (const input of toCreate) {
       try {
@@ -265,6 +310,7 @@ export function SubscriptionsPage() {
         open={reportOpen}
         onOpenChange={setReportOpen}
         candidates={candidates}
+        existingSubscriptions={subscriptionsQuery.data ?? []}
         currency={currency}
         onExclude={handleExcludeCandidate}
         onValidate={handleValidateReport}

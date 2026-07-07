@@ -4,6 +4,7 @@ import type {
   BankCallbackResult,
   BankConnectUrl,
   BankProvider,
+  BankStatus,
   BankSyncResult,
   BankTransactionsSyncResult,
   DetectedSubscription,
@@ -43,6 +44,12 @@ export const bankService = {
   /** GET /bank/subscriptions/detect — lance l'algorithme de détection sur les transactions stockées. */
   async detectSubscriptions(): Promise<DetectedSubscription[]> {
     const { data } = await axiosClient.get<DetectedSubscription[]>("/bank/subscriptions/detect");
+    return data;
+  },
+
+  /** GET /bank/status — établissement, dernière synchro, nombre de transactions. */
+  async getStatus(): Promise<BankStatus> {
+    const { data } = await axiosClient.get<BankStatus>("/bank/status");
     return data;
   },
 };

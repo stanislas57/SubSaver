@@ -97,3 +97,22 @@ async def fetch_transactions_page(user_token: str, cursor: str | None = None, li
     if response.status_code != 200:
         raise PowensError(f"Échec users/me/transactions Powens : {response.text}", response.status_code)
     return response.json()
+
+
+async def fetch_connection(user_token: str, connection_id: str) -> dict:
+    """Récupère les détails d'une connexion bancaire (GET
+    /users/me/connections/{id}?expand=connector), utilisé uniquement pour en
+    extraire le nom de l'établissement (connector.name) à afficher à
+    l'utilisateur -- cf. app/api/v1/bank.py::handle_callback, qui absorbe
+    toute PowensError ici : ne jamais faire échouer la connexion bancaire
+    elle-même pour un simple affichage cosmétique.
+    """
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await client.get(
+            f"{_base_url()}/users/me/connections/{connection_id}",
+            headers={"Authorization": f"Bearer {user_token}"},
+            params={"expand": "connector"},
+        )
+    if response.status_code != 200:
+        raise PowensError(f"Échec users/me/connections/{connection_id} Powens : {response.text}", response.status_code)
+    return response.json()

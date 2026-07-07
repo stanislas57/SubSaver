@@ -45,6 +45,15 @@ class User(Base):
     # Powens (Open Banking) — 1 utilisateur SubServer = 1 utilisateur Powens
     powens_user_token: Mapped[str | None] = mapped_column(String, nullable=True)
     powens_connection_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Nom de l'établissement bancaire (ex: "BNP Paribas"), récupéré au mieux
+    # depuis Powens juste après le callback -- reste null si l'appel échoue
+    # (dégradation gracieuse, cf. handle_callback) sans jamais bloquer la
+    # connexion bancaire elle-même.
+    bank_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Date ISO de la dernière synchronisation de transactions réussie
+    # (POST /bank/transactions/sync), affichée sur la page Banque pour
+    # réassurer l'utilisateur que la connexion est active.
+    last_bank_sync_at: Mapped[str | None] = mapped_column(String, nullable=True)
 
     # Back-office Super Admin (cf. app/api/v1/admin.py)
     is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

@@ -83,13 +83,19 @@ def delete_subscription(
 
 @router.get("/export")
 def export_subscriptions(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Un CSV exporté est par nature destiné à être partagé (colocataires,
+    comptable...) : le nom exporté passe donc par le même moteur Clé Marchand
+    que les autres vues partagées, jamais le libellé bancaire brut stocké en
+    base (qui peut contenir un numéro de client, cf. audit confidentialité)."""
     rows = db.query(Subscription).filter(Subscription.user_id == current_user.id).order_by(Subscription.name).all()
 
     buffer = io.StringIO()
     writer = csv.writer(buffer)
     writer.writerow(["name", "price", "category", "domain", "billing_day", "importance", "start_date", "trial_end_date"])
     for r in rows:
-        writer.writerow([r.name, r.price, r.category, r.domain, r.billing_day, r.importance, r.start_date, r.trial_end_date])
+        writer.writerow(
+            [display_merchant_name(r.name), r.price, r.category, r.domain, r.billing_day, r.importance, r.start_date, r.trial_end_date]
+        )
     buffer.seek(0)
 
     return StreamingResponse(

@@ -285,6 +285,22 @@ export interface DetectedSubscription {
   confidence: number;
   source_transaction_ids: string[];
   category: string;
+  /** Abonnement existant déjà déduit du même marchand (comparaison
+   * normalisée côté serveur, détecte aussi les libellés bancaires bruts
+   * hérités) -- si présent, ce candidat doit mettre à jour cet abonnement
+   * plutôt que d'en créer un nouveau. */
+  matched_subscription_id: string | null;
+  /** Autres abonnements existants correspondant au même marchand (doublons
+   * hérités, ex: libellés bruts différents) -- proposés au nettoyage. */
+  duplicate_subscription_ids: string[];
+}
+
+/** Réponse de GET /bank/status. */
+export interface BankStatus {
+  bank_connected: boolean;
+  bank_name: string | null;
+  last_sync_at: string | null;
+  total_transactions: number;
 }
 
 // ---------------------------------------------------------------------------

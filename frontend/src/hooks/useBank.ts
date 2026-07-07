@@ -30,16 +30,28 @@ export function useBankCallback() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
       queryClient.invalidateQueries({ queryKey: ["me"] });
+      queryClient.invalidateQueries({ queryKey: ["bank", "status"] });
     },
   });
 }
 
 /** Récupère les transactions brutes depuis Powens et les stocke. */
 export function useSyncTransactions() {
-  return useMutation({ mutationFn: bankService.syncTransactions });
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: bankService.syncTransactions,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bank", "status"] });
+    },
+  });
 }
 
 /** Lance l'algorithme de détection sur les transactions déjà stockées. */
 export function useDetectSubscriptions() {
   return useMutation({ mutationFn: bankService.detectSubscriptions });
+}
+
+/** Indicateurs de réassurance page Banque : établissement, dernière synchro, volume. */
+export function useBankStatus() {
+  return useQuery({ queryKey: ["bank", "status"], queryFn: bankService.getStatus });
 }

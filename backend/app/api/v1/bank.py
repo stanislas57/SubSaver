@@ -1,7 +1,9 @@
+import logging
+from datetime import datetime, timezone
 from urllib.parse import parse_qs, urlparse
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
@@ -11,21 +13,25 @@ from app.core.powens import PowensError
 from app.core.security import create_powens_state, decode_powens_state
 from app.core.token_encryption import decrypt_token, encrypt_token
 from app.core.subscription_detector import RawTransaction
-from app.core.transaction_analyzer import analyze_transactions
+from app.core.transaction_analyzer import analyze_transactions, display_merchant_name
 from app.db.session import get_db
 from app.models.bank_transaction import BankTransaction
+from app.models.subscription import Subscription
 from app.models.user import User
 from app.schemas import (
     BankCallbackBody,
     BankCallbackResult,
     BankConnectUrlOut,
     BankProviderOut,
+    BankStatusOut,
     BankSyncBody,
     BankSyncResult,
     BankTransactionOut,
     BankTransactionsSyncResult,
     DetectedSubscriptionOut,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bank", tags=["bank"])
 
@@ -78,7 +84,7 @@ async def get_connect_url(current_user: User = Depends(get_current_user), db: Se
 
 
 @router.post("/callback", response_model=BankCallbackResult)
-def handle_callback(
+async def handle_callback(
     body: BankCallbackBody,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -101,6 +107,19 @@ def handle_callback(
 
     current_user.bank_connected = True
     current_user.powens_connection_id = body.connection_id
+
+    # Nom de l'établissement bancaire : purement cosmétique (affiché page
+    # Banque) -- un échec ici ne doit jamais faire échouer la connexion
+    # bancaire elle-même, d'où l'absorption de PowensError.
+    if current_user.powens_user_token:
+        try:
+            details = await powens.fetch_connection(decrypt_token(current_user.powens_user_token), body.connection_id)
+            connector_name = (details.get("connector") or {}).get("name")
+            if connector_name:
+                current_user.bank_name = connector_name
+        except PowensError as exc:
+            logger.warning("Impossible de récupérer le nom de la banque (connection_id=%s) : %s", body.connection_id, exc)
+
     db.commit()
 
     return BankCallbackResult(bank_connected=True, connection_id=body.connection_id)
@@ -169,7 +188,25 @@ async def sync_transactions(current_user: User = Depends(get_current_user), db: 
         db.execute(select(BankTransaction.id).where(BankTransaction.user_id == current_user.id)).all()
     )
 
+    current_user.last_bank_sync_at = datetime.now(timezone.utc).isoformat()
+    db.commit()
+
     return BankTransactionsSyncResult(synced_count=synced_count, total_stored=total_stored_count)
+
+
+@router.get("/status", response_model=BankStatusOut)
+def get_bank_status(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Indicateurs de réassurance affichés sur la page Banque : établissement,
+    date de dernière synchronisation, nombre total de transactions détectées."""
+    total_transactions = (
+        db.query(func.count(BankTransaction.id)).filter(BankTransaction.user_id == current_user.id).scalar() or 0
+    )
+    return BankStatusOut(
+        bank_connected=current_user.bank_connected,
+        bank_name=current_user.bank_name,
+        last_sync_at=current_user.last_bank_sync_at,
+        total_transactions=total_transactions,
+    )
 
 
 @router.get("/transactions", response_model=list[BankTransactionOut])
@@ -204,17 +241,39 @@ def detect_subscriptions(current_user: User = Depends(get_current_user), db: Ses
     raw = [RawTransaction(id=row.id, wording=row.wording, value=row.value, date=row.date) for row in rows]
     analyzed = analyze_transactions(raw)
 
-    return [
-        DetectedSubscriptionOut(
-            merchant=d.merchant,
-            price=d.price,
-            frequency=d.frequency,
-            occurrences=d.occurrences,
-            last_date=d.last_date,
-            next_estimated_date=d.next_estimated_date,
-            confidence=d.confidence,
-            source_transaction_ids=d.source_transaction_ids,
-            category=d.category,
+    # Regroupe les abonnements existants par nom normalisé (même moteur Clé
+    # Marchand que la détection elle-même) pour signaler, pour chaque
+    # candidat, l'abonnement existant qu'il met à jour ainsi que d'éventuels
+    # doublons hérités (plusieurs lignes en base pour le même marchand,
+    # typiquement des libellés bancaires bruts différents datant d'avant la
+    # liste blanche) -- une simple comparaison de texte brut côté frontend ne
+    # peut pas détecter cette correspondance.
+    existing_subscriptions = db.query(Subscription).filter(Subscription.user_id == current_user.id).all()
+    existing_by_key: dict[str, list[Subscription]] = {}
+    for sub in existing_subscriptions:
+        key = display_merchant_name(sub.name).strip().casefold()
+        existing_by_key.setdefault(key, []).append(sub)
+
+    results: list[DetectedSubscriptionOut] = []
+    for d in analyzed:
+        key = d.merchant.strip().casefold()
+        matches = sorted(existing_by_key.get(key, []), key=lambda s: s.start_date or "", reverse=True)
+        matched_id = matches[0].id if matches else None
+        duplicate_ids = [m.id for m in matches[1:]]
+
+        results.append(
+            DetectedSubscriptionOut(
+                merchant=d.merchant,
+                price=d.price,
+                frequency=d.frequency,
+                occurrences=d.occurrences,
+                last_date=d.last_date,
+                next_estimated_date=d.next_estimated_date,
+                confidence=d.confidence,
+                source_transaction_ids=d.source_transaction_ids,
+                category=d.category,
+                matched_subscription_id=matched_id,
+                duplicate_subscription_ids=duplicate_ids,
+            )
         )
-        for d in analyzed
-    ]
+    return results
