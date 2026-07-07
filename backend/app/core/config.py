@@ -54,6 +54,12 @@ class Settings(BaseSettings):
     EMAIL_FROM: str = "contact.subserver@proton.me"
     VERIFICATION_CODE_TTL_MINUTES: int = 10
 
+    # Boîte de réception du formulaire de contact -- volontairement distincte
+    # de EMAIL_FROM (l'identité d'envoi SMTP) même si elles pointent
+    # aujourd'hui vers la même adresse : permet de rediriger le contact vers
+    # une autre boîte plus tard sans toucher à la configuration SMTP.
+    CONTACT_EMAIL: str = "contact.subserver@proton.me"
+
     @model_validator(mode="after")
     def _validate_production_safety(self) -> "Settings":
         """Fail-fast en production sur les secrets non configurés : mieux vaut

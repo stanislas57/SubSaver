@@ -268,3 +268,15 @@ export interface AdminAnalytics {
   premium_users: number;
   premium_conversion_rate: number;
 }
+
+// ---------------------------------------------------------------------------
+// Contact
+// ---------------------------------------------------------------------------
+
+/** Corps de POST /contact (formulaire public, aucune authentification requise). */
+export interface ContactFormPayload {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}

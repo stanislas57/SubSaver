@@ -1,68 +1,106 @@
 import * as React from "react";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { ErrorAlert } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSendContactMessage } from "@/hooks/useContact";
+import { getErrorMessage } from "@/api/axiosClient";
 
 interface ContactModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-/** Modale de contact : email + message. Soumet via mailto: ou stub EmailJS/Resend
- * une fois le backend SMTP configuré. Pour l'instant, utilise mailto: + copie
- * système pour fonctionner sans serveur. */
+/** Modale de contact : envoie réellement un e-mail vers contact.subserver@proton.me
+ * via POST /contact (backend FastAPI + SMTP, cf. app/core/email_service.py). */
 export function ContactModal({ open, onOpenChange }: ContactModalProps) {
   const { user } = useAuth();
+  const sendMessage = useSendContactMessage();
+  const [name, setName] = React.useState(user?.first_name ?? "");
   const [email, setEmail] = React.useState(user?.email ?? "");
+  const [subject, setSubject] = React.useState("");
   const [message, setMessage] = React.useState("");
-  const [submitting, setSubmitting] = React.useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  const canSubmit = !!name.trim() && !!email.trim() && !!subject.trim() && !!message.trim();
+
+  function resetForm() {
+    setName(user?.first_name ?? "");
+    setEmail(user?.email ?? "");
+    setSubject("");
+    setMessage("");
+    sendMessage.reset();
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) resetForm();
+    onOpenChange(nextOpen);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim() || !message.trim()) return;
+    if (!canSubmit) return;
 
-    setSubmitting(true);
-
-    // Pour l'instant : mailto: simple. Une fois EmailJS/Resend/backend configuré,
-    // remplacer par un vrai appel API.
-    const subject = "Contact SubServer";
-    const body = `Email: ${email}\n\n${message}`;
-    const mailtoLink = `mailto:contact.subserver@proton.me?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-    // Ouvre le client mail par défaut
-    window.location.href = mailtoLink;
-
-    // Réinitialise et ferme après un délai
-    setTimeout(() => {
-      setEmail(user?.email ?? "");
-      setMessage("");
-      onOpenChange(false);
-      setSubmitting(false);
-    }, 500);
+    sendMessage.mutate(
+      { name: name.trim(), email: email.trim(), subject: subject.trim(), message: message.trim() },
+      {
+        onSuccess: () => {
+          toast.success("Message envoyé ! Nous te répondrons rapidement.");
+          resetForm();
+          onOpenChange(false);
+        },
+      }
+    );
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Nous contacter</DialogTitle>
           <DialogDescription>
-            Nous serons ravis de répondre à vos questions ou suggestions.
+            Nous serons ravis de répondre à tes questions ou suggestions.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {sendMessage.isError && (
+            <ErrorAlert message={getErrorMessage(sendMessage.error, "Impossible d'envoyer le message.")} compact />
+          )}
+
+          <div>
+            <Label htmlFor="contact-name">Nom</Label>
+            <Input
+              id="contact-name"
+              placeholder="Ton nom"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
           <div>
             <Label htmlFor="contact-email">Email</Label>
             <Input
               id="contact-email"
               type="email"
-              placeholder="votre@email.com"
+              placeholder="ton@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="contact-subject">Sujet</Label>
+            <Input
+              id="contact-subject"
+              placeholder="Objet de ton message"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
               required
             />
           </div>
@@ -80,10 +118,10 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Annuler
             </Button>
-            <Button type="submit" loading={submitting} disabled={!email.trim() || !message.trim()}>
+            <Button type="submit" loading={sendMessage.isPending} disabled={!canSubmit}>
               Envoyer
             </Button>
           </DialogFooter>

@@ -1,6 +1,6 @@
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 Language = Literal["fr", "en", "de", "es", "sv"]
 Theme = Literal["light", "dark"]
@@ -226,6 +226,36 @@ class CancellableSubscriptionOut(BaseModel):
     display_name: str
     price: float
     domain: str
+
+
+class ContactBody(BaseModel):
+    """Corps de POST /contact (formulaire public, non authentifié). `name`,
+    `email` et `subject` finissent dans des en-têtes SMTP (Reply-To, Subject)
+    -- on y interdit tout retour à la ligne pour empêcher une injection
+    d'en-tête (ex: ajout frauduleux d'un Bcc:)."""
+
+    name: str = Field(max_length=100)
+    email: str = Field(max_length=254)
+    subject: str = Field(max_length=200)
+    message: str = Field(max_length=5000)
+
+    @field_validator("name", "email", "subject")
+    @classmethod
+    def _no_newlines(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("Ce champ ne peut pas être vide.")
+        if "\n" in stripped or "\r" in stripped:
+            raise ValueError("Ce champ ne peut pas contenir de retour à la ligne.")
+        return stripped
+
+    @field_validator("message")
+    @classmethod
+    def _message_not_blank(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("Le message ne peut pas être vide.")
+        return stripped
 
 
 # ---------------------------------------------------------------------------
