@@ -81,6 +81,11 @@ class SubscriptionOut(BaseModel):
     importance: int
     start_date: Optional[str] = None
     trial_end_date: Optional[str] = None
+    # Champ en lecture seule (jamais dans SubscriptionInput) : expose l'état
+    # de partage pour les pages qui en ont besoin en affichage (ex: filtre
+    # Personnels/Partagés de l'Analytique) sans coupler le CRUD générique
+    # d'abonnement à la logique d'Abonnement partagé.
+    is_shared: bool = False
 
 
 class SubscriptionInput(BaseModel):

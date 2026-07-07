@@ -73,10 +73,13 @@ export interface Subscription {
   start_date: string | null;
   /** Format ISO "YYYY-MM-DD" ou null. */
   trial_end_date: string | null;
+  /** Lecture seule (jamais dans SubscriptionInput) -- statut de partage,
+   * utilisé par exemple par le filtre Personnels/Partagés de l'Analytique. */
+  is_shared: boolean;
 }
 
 /** Corps commun à POST /subscriptions et PUT /subscriptions/{id}. */
-export type SubscriptionInput = Omit<Subscription, "id">;
+export type SubscriptionInput = Omit<Subscription, "id" | "is_shared">;
 
 // ---------------------------------------------------------------------------
 // Banque
