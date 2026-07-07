@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -39,6 +41,19 @@ def upgrade_premium(current_user: User = Depends(get_current_user), db: Session 
     retirer cette route (ou la réserver à un usage interne/service-to-service).
     """
     current_user.is_premium = True
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.post("/me/accept-charter", response_model=UserOut)
+def accept_charter(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Enregistre l'acceptation de la charte informatique -- appelé une seule
+    fois, au clic sur "J'accepte" dans la modale bloquante (CharterModal côté
+    frontend). Idempotent : un second appel ne fait que rafraîchir la date,
+    ce qui ne casse rien puisque le frontend ne réaffiche plus la modale dès
+    que `charter_accepted_at` est renseigné."""
+    current_user.charter_accepted_at = datetime.now(timezone.utc).isoformat()
     db.commit()
     db.refresh(current_user)
     return current_user

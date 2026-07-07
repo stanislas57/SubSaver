@@ -32,6 +32,12 @@ interface AuthContextValue {
   confirmPremiumUpgrade: () => Promise<void>;
   isConfirmingPremium: boolean;
   confirmPremiumError: string | null;
+  /** Enregistre l'acceptation de la charte informatique (cf. CharterGate) et
+   * met à jour `user.charter_accepted_at` immédiatement, ce qui démonte la
+   * modale bloquante sans nécessiter de refetch. */
+  acceptCharter: () => Promise<void>;
+  isAcceptingCharter: boolean;
+  acceptCharterError: string | null;
   logout: () => void;
 }
 
@@ -96,6 +102,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (updatedUser) => queryClient.setQueryData(["me"], updatedUser),
   });
 
+  const acceptCharterMutation = useMutation({
+    mutationFn: () => userService.acceptCharter(),
+    onSuccess: (updatedUser) => queryClient.setQueryData(["me"], updatedUser),
+  });
+
   async function login(email: string, password: string) {
     await loginMutation.mutateAsync({ email, password });
   }
@@ -122,6 +133,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function confirmPremiumUpgrade() {
     await confirmPremiumMutation.mutateAsync();
+  }
+
+  async function acceptCharter() {
+    await acceptCharterMutation.mutateAsync();
   }
 
   function logout() {
@@ -156,6 +171,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     confirmPremiumUpgrade,
     isConfirmingPremium: confirmPremiumMutation.isPending,
     confirmPremiumError: confirmPremiumMutation.isError ? getErrorMessage(confirmPremiumMutation.error) : null,
+    acceptCharter,
+    isAcceptingCharter: acceptCharterMutation.isPending,
+    acceptCharterError: acceptCharterMutation.isError ? getErrorMessage(acceptCharterMutation.error) : null,
     logout,
   };
 

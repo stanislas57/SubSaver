@@ -24,6 +24,10 @@ export interface User {
   is_premium: boolean;
   bank_connected: boolean;
   is_admin: boolean;
+  /** null tant que l'utilisateur n'a jamais accepté la charte informatique --
+   * c'est ce champ qui déclenche CharterGate (modale bloquante) à la
+   * première connexion, cf. POST /users/me/accept-charter. */
+  charter_accepted_at: string | null;
 }
 
 /** Réponse de POST /auth/login et POST /auth/verify-email (schéma Token). */

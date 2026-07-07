@@ -19,4 +19,10 @@ export const userService = {
     const { data } = await axiosClient.post<User>("/users/me/upgrade-premium");
     return data;
   },
+
+  /** POST /users/me/accept-charter — appelé au clic sur "J'accepte" dans CharterModal. */
+  async acceptCharter(): Promise<User> {
+    const { data } = await axiosClient.post<User>("/users/me/accept-charter");
+    return data;
+  },
 };

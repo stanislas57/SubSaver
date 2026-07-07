@@ -22,6 +22,7 @@ class UserOut(BaseModel):
     is_premium: bool
     bank_connected: bool
     is_admin: bool
+    charter_accepted_at: Optional[str] = None
 
 
 class RegisterBody(BaseModel):

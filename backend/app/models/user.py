@@ -53,6 +53,11 @@ class User(Base):
     created_at: Mapped[str | None] = mapped_column(String, nullable=True, default=_now_iso)
     last_login_at: Mapped[str | None] = mapped_column(String, nullable=True)
 
+    # Charte informatique : null tant que l'utilisateur ne l'a jamais acceptée --
+    # c'est ce champ qui déclenche la modale bloquante (CharterGate côté
+    # frontend) à la première connexion, puis plus jamais une fois renseigné.
+    charter_accepted_at: Mapped[str | None] = mapped_column(String, nullable=True)
+
     subscriptions: Mapped[list["Subscription"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
