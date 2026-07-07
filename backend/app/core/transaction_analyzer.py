@@ -1,92 +1,448 @@
-"""Moteur d'analyse des transactions bancaires : isole les abonnements récurrents
-puis les auto-catégorise par correspondance de libellé.
+"""Moteur d'analyse des transactions bancaires -- Liste Blanche Stricte.
 
-S'appuie sur l'algorithme de récurrence existant (subscription_detector) sans le
-dupliquer, et ajoute la seule étape manquante : le croisement du marchand nettoyé
-avec un dictionnaire de mots-clés pour déduire une catégorie (ex: NETFLIX -> Streaming).
+Remplace l'ancienne approche "floue" (clustering libre par libellé + montant,
+sans vérification du marchand) par une logique en 3 temps :
+
+1. Fenêtre d'analyse : on ne regarde que les transactions des 6 derniers mois
+   (`ANALYSIS_WINDOW_MONTHS`). Tout ce qui est plus ancien est ignoré.
+2. Liste blanche stricte : une transaction n'est retenue comme abonnement QUE
+   SI son libellé (nettoyé du bruit bancaire habituel) correspond à l'un des
+   marchands de `SUBSCRIPTION_WHITELIST` (matching souple par sous-chaîne,
+   insensible aux accents/casse/ponctuation, avec limites de mots pour éviter
+   les faux positifs sur les entrées courtes comme "PC" ou "AWS"). Tout le
+   reste est ignoré, même si le motif ressemble à une récurrence.
+3. Filtre d'activité : un marchand identifié n'est renvoyé que s'il est
+   toujours actif -- soit une occurrence de paiement dans le mois en cours ou
+   le mois précédent, soit une périodicité mensuelle/annuelle détectée dont la
+   prochaine échéance logique n'est pas dépassée.
 
 Module pur (aucune dépendance DB/FastAPI), testable isolément avec un simple
-tableau de transactions.
+tableau de transactions. Ne dépend de `subscription_detector` que pour deux
+utilitaires génériques et stables (le dataclass `RawTransaction`, partagé avec
+l'API, et `clean_label`, le nettoyage de bruit bancaire) -- pas pour la
+détection de récurrence elle-même, entièrement réécrite ci-dessous.
 """
 
-from dataclasses import asdict, dataclass
+import re
+import unicodedata
+from dataclasses import dataclass
+from datetime import date, timedelta
 
-from app.core.subscription_detector import (
-    DetectedSubscription,
-    RawTransaction,
-    clean_label,
-    detect_recurring_subscriptions,
-)
+from app.core.subscription_detector import RawTransaction, clean_label
 
-# Doit rester synchronisé avec `CATEGORIES` dans frontend/src/types.ts.
-DEFAULT_CATEGORY = "Autre"
+# ---------------------------------------------------------------------------
+# Règles métier
+# ---------------------------------------------------------------------------
 
-# Mots-clés (recherchés dans le libellé déjà nettoyé, donc en MAJUSCULES) associés
-# à chaque catégorie. Ordre = priorité en cas de correspondances multiples.
-CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
-    "Streaming": (
-        "NETFLIX", "DISNEY", "AMAZON PRIME", "PRIME VIDEO", "CANAL+", "CANALPLUS",
-        "MYCANAL", "OCS", "PARAMOUNT", "APPLE TV", "HBO", "CRUNCHYROLL", "SALTO",
+ANALYSIS_WINDOW_MONTHS = 6
+
+# Intervalle nominal (jours, tolérance) pour chaque périodicité reconnue.
+# Le whitelist ne contient que des services par abonnement (streaming, cloud,
+# assurances...), jamais facturés à la semaine : on ne teste que mensuel/annuel.
+_FREQUENCIES: dict[str, tuple[int, int]] = {
+    "monthly": (30, 5),
+    "yearly": (365, 20),
+}
+
+# ---------------------------------------------------------------------------
+# Base de données des marchands (organisée par catégorie, utilisée à la fois
+# pour l'identification stricte et pour l'auto-catégorisation).
+# Certains marchands apparaissent dans plusieurs catégories (ex: "Orange" en
+# Téléphonie Mobile ET en Box Internet, "Trade Republic" en Banques & Fintech
+# ET en Investissement & Trading) : un même libellé bancaire ne permet pas de
+# distinguer ces cas dans la réalité. Le matching prend le premier match
+# trouvé selon l'ordre ci-dessous (les entrées plus longues/spécifiques sont
+# toujours testées avant les plus courtes/génériques, cf. `_WHITELIST_INDEX`).
+# ---------------------------------------------------------------------------
+
+SUBSCRIPTION_WHITELIST: dict[str, tuple[str, ...]] = {
+    "Streaming & VOD": (
+        "Netflix", "Disney+", "Prime Video", "Apple TV+", "Max", "Canal+", "Canal+ Séries",
+        "OCS", "Paramount+", "MUBI", "Crunchyroll", "ADN", "Shadowz", "Filmo", "UniversCiné",
+        "Molotov", "Molotov Plus", "France.tv", "TF1+", "M6+", "Arte.tv", "Rakuten TV",
+        "Plex Pass", "Hayu", "BritBox", "AMC+", "Curiosity Stream", "MagellanTV", "Nebula",
+        "Shudder", "Lionsgate+", "Rakuten Wuaki", "YouTube Premium", "Vimeo OTT", "Gaia",
+        "DogTV", "BroadwayHD", "WOW Presents Plus", "Hoichoi", "Acorn TV", "Pass Warner",
+        "Pass Ciné+", "Pass Paramount", "Pass STARZ", "Pass MGM", "Pass AMC",
     ),
-    "Musique": (
-        "SPOTIFY", "DEEZER", "APPLE MUSIC", "YOUTUBE MUSIC", "SOUNDCLOUD", "TIDAL",
+    "Musique & Audio": (
+        "Spotify", "Apple Music", "Deezer", "Amazon Music", "YouTube Music", "Qobuz", "Tidal",
+        "Napster", "SoundCloud Go", "SoundCloud Go+", "Idagio", "Audiomack+", "Bandcamp Fan",
+        "Anghami", "Pandora", "iHeartRadio", "Calm Radio", "TuneIn Premium", "Mixcloud Pro",
     ),
-    "Telephonie": (
-        "ORANGE", "SFR", "BOUYGUES", "FREE MOBILE", "FREE TELECOM", "SOSH",
-        "B AND YOU", "PRIXTEL", "LEBARA", "LYCAMOBILE",
+    "Lecture & Presse": (
+        "Audible", "Kindle Unlimited", "Kobo Plus", "BookBeat", "Nextory", "Youboox", "Scribd",
+        "Everand", "Perlego", "Izneo", "Mangas.io", "Cafeyn", "Readly", "PressReader",
+        "LeKiosk", "Mediapart", "Le Monde", "Le Figaro", "Capital", "Les Échos", "L'Équipe",
+        "Courrier International", "Marianne", "Le Point", "Society", "The Economist",
+        "Financial Times", "New York Times", "Washington Post", "The Guardian", "Libération",
+        "Challenges", "Paris Match", "Ouest-France", "Sud Ouest", "Le Parisien", "La Croix",
+        "Bloomberg", "Reuters",
     ),
-    "Sport": (
-        "BASIC FIT", "FITNESS PARK", "NEONESS", "ONFIT", "KEEPCOOL",
-        "CMG SPORTS", "VIRGIN ACTIVE", "GYMLIB",
+    "Gaming": (
+        "Sony", "PlayStation Plus Essential", "PlayStation Plus Extra",
+        "PlayStation Plus Premium", "Xbox", "Game Pass Core", "Game Pass Standard",
+        "Game Pass Ultimate", "PC Game Pass", "EA Play", "EA Play Pro", "Nintendo",
+        "Nintendo Switch Online", "Nintendo Expansion Pack", "PC", "Ubisoft+", "Battle.net",
+        "WoW Subscription", "Final Fantasy XIV", "RuneScape", "Old School RuneScape",
+        "Black Desert", "GeForce NOW", "Boosteroid", "Shadow PC", "Amazon Luna", "Antstream",
+        "Xbox Cloud Gaming",
     ),
-    "Logement": (
-        "EDF", "ENGIE", "TOTALENERGIES", "VEOLIA", "SUEZ", "ENI ", "LOYER",
-        "ASSURANCE HABITATION",
+    "IA & Outils Dev": (
+        "ChatGPT Plus", "ChatGPT Pro", "Claude Pro", "Claude Max", "Gemini AI Pro",
+        "Perplexity Pro", "Microsoft Copilot Pro", "Cursor Pro", "Windsurf Pro",
+        "GitHub Copilot", "Codeium Pro", "Tabnine", "Lovable", "Bolt.new", "Replit Core", "v0",
+        "Phind Pro", "Midjourney", "Leonardo AI", "Ideogram", "Flux", "DreamStudio", "Runway",
+        "Pika", "Kling AI", "Luma AI", "Hailuo AI", "ElevenLabs", "PlayHT", "Murf AI",
+        "Speechify", "HeyGen", "Synthesia", "Descript", "Gamma", "Beautiful.ai", "Canva Pro",
+        "Notion AI", "Mem AI", "Granola", "Otter AI", "Fireflies AI", "Fathom AI", "DeepL Pro",
+        "Tome",
     ),
-    "Banque & Invest": (
-        "BOURSORAMA", "REVOLUT", "N26", "TRADE REPUBLIC", "DEGIRO", "YOMONI",
-        "LINXEA", "FORTUNEO", "ASSURANCE VIE",
+    "Cloud & Hébergement": (
+        "GitHub Pro", "GitHub Team", "GitLab Premium", "GitLab Ultimate", "Bitbucket",
+        "Vercel Pro", "Netlify Pro", "Cloudflare Pro", "DigitalOcean", "Linode", "Hetzner",
+        "AWS", "Azure", "Google Cloud", "Supabase", "Firebase Blaze", "PlanetScale", "Railway",
+        "Render", "Fly.io", "MongoDB Atlas", "Neon", "Redis Cloud", "n8n Cloud", "Make",
+        "Zapier", "Pipedream", "Postman", "Insomnia", "Docker Pro", "Koyeb", "Coolify Cloud",
+        "Hostinger", "OVHcloud", "Infomaniak", "o2switch", "IONOS", "Namecheap", "Gandi",
+        "Cloudflare Domains",
     ),
-    "Transport": (
-        "SNCF", "RATP", "NAVIGO", "UBER", "BLABLACAR", "TIER", "LIME",
-        "TRAINLINE", "OUIGO", "FLIXBUS",
+    "Logiciels Pro & Productivité": (
+        "Notion", "ClickUp", "Monday", "Asana", "Slack", "Discord Nitro", "Zoom",
+        "Google Workspace", "Microsoft 365", "Dropbox", "Google One", "iCloud+", "MEGA",
+        "pCloud", "Sync.com", "Tresorit", "Box", "Evernote", "Obsidian Sync", "Craft",
+        "Todoist", "TickTick", "Any.do", "Calendly", "Loom", "Miro", "Figma", "FigJam", "Canva",
+        "Grammarly", "LanguageTool", "Proton Unlimited", "Fastmail",
+    ),
+    "Banques & Fintech": (
+        "BoursoBank", "Fortuneo", "Hello Bank", "Monabanq", "Revolut", "N26", "Bunq", "Nickel",
+        "Trade Republic", "Wise", "Lydia", "Sumeria", "Orange Bank", "Crédit Agricole", "BNP",
+        "SG", "Caisse d'Épargne", "Banque Populaire", "Crédit Mutuel", "CIC", "HSBC",
+        "American Express",
+    ),
+    "Téléphonie Mobile": (
+        "Orange", "Sosh", "Free", "Bouygues", "B&You", "SFR", "RED", "Prixtel", "NRJ Mobile",
+        "Syma", "Lebara", "Lyca Mobile", "Auchan Télécom", "Cdiscount Mobile",
+        "La Poste Mobile", "YouPrice", "Mint Mobile",
+    ),
+    "Box Internet": (
+        "Orange", "Freebox", "Bouygues", "SFR", "RED Box", "Starlink", "Nordnet", "K-Net",
+        "Wifirst",
+    ),
+    "Énergie": (
+        "EDF", "Engie", "TotalEnergies", "Ekwateur", "Enercoop", "Mint Énergie",
+        "Ohm Énergie", "Octopus Energy", "Vattenfall", "Alpiq", "Elmy", "Barry Energy",
+        "Gaz de Bordeaux",
+    ),
+    "Mobilité & Transports": (
+        "Ulys", "Bip&Go", "Fulli", "Vinci Autoroutes", "Télépéage APRR", "Chargemap",
+        "Freshmile", "Shell Recharge", "Tesla Premium Connectivity", "Mobilize Charge Pass",
+        "Izivia", "Allego", "Ionity Passport", "Electra", "Fastned", "Navigo", "TER",
+        "TGV Max", "SNCF Carte Avantage", "SNCF Liberté", "TBM", "TCL", "RTM", "CTS",
+        "Tisséo", "STAR", "Vélib'", "Vélo'v", "Dott", "Lime Prime", "Tier", "Cityscoot",
+        "Yego",
+    ),
+    "Sport & Fitness": (
+        "Basic-Fit", "Fitness Park", "KeepCool", "L'Orange Bleue", "Neoness", "ON AIR",
+        "CrossFit", "Club Med Gym", "Wellness Sport Club", "CMG Sports Club",
+        "Urban Sports Club", "ClassPass",
+    ),
+    "Livraison & Courses": (
+        "Uber One", "Deliveroo Plus", "Wolt+", "Amazon Prime", "Carrefour+", "Monopflix",
+        "Casino Max", "Instacart+", "HelloFresh", "Quitoque", "Jow", "Too Good To Go+",
+    ),
+    "Rencontres": (
+        "Tinder", "Bumble", "Happn", "Meetic", "Fruitz", "Adopte", "Elite Rencontre",
+        "DisonsDemain", "OkCupid", "Hinge", "Feeld", "Badoo",
+    ),
+    "Éducation & VPN/Sécurité": (
+        "OpenClassrooms", "Coursera", "Udemy", "Udemy Personal Plan", "Codecademy",
+        "DataCamp", "Brilliant", "Skillshare", "Domestika", "LinkedIn Learning",
+        "Pluralsight", "Educative", "Frontend Masters", "Laracasts", "Scrimba", "MasterClass",
+        "Babbel", "Duolingo Super", "Busuu", "Mosalingua", "Gymglish", "NordVPN", "Surfshark",
+        "ExpressVPN", "CyberGhost", "Proton VPN", "Mullvad", "Private Internet Access",
+        "Bitdefender", "Norton", "Avast", "AVG", "Kaspersky", "ESET", "Malwarebytes",
+        "1Password", "Dashlane", "Keeper", "NordPass", "Bitwarden Premium",
+    ),
+    "Assurances, Mutuelles & Animaux": (
+        "AXA", "MAIF", "MACIF", "GMF", "MMA", "Groupama", "Matmut", "Allianz", "SwissLife",
+        "Direct Assurance", "L'Olivier", "Lovys", "Acheel", "Alan", "AÉSIO", "Malakoff Humanis",
+        "Harmonie Mutuelle", "MGEN", "April", "Apivia", "SantéVet", "Dalma", "Assur O'Poil",
+        "Bulle Bleue", "Kozoo", "Trupanion", "Fidanimo", "Otherwise",
+    ),
+    "Maison & Sécurité": (
+        "Veolia", "Suez", "SAUR", "HomeServe", "Verisure", "Sector Alarm",
+        "Orange Maison Protégée", "IKEA Family+", "Engie Home Services",
+    ),
+    "Investissement & Trading": (
+        "Scalable Capital", "eToro", "Degiro", "Interactive Brokers", "XTB", "Saxo Bank",
+        "Binance", "Coinbase One", "Kraken Pro", "Ledger Recover",
     ),
 }
 
 
-def categorize_merchant(merchant: str) -> str:
-    """Renvoie la première catégorie dont un mot-clé apparaît dans le marchand
-    (déjà nettoyé par `clean_label`), sinon `DEFAULT_CATEGORY`."""
-    label = merchant.upper()
-    for category, keywords in CATEGORY_KEYWORDS.items():
-        if any(keyword in label for keyword in keywords):
-            return category
-    return DEFAULT_CATEGORY
+# ---------------------------------------------------------------------------
+# Matching liste blanche : deux formes de normalisation combinées.
+#
+# 1. Forme "espacée" (ponctuation -> espace) + limites de mots (\b) : utilisée
+#    pour les entrées courtes/génériques ("PC", "AWS", "SG", "Box", "Wise"...)
+#    afin qu'elles ne matchent que comme mot isolé, jamais comme fragment
+#    ("AWS" ne doit pas matcher "AWSOME", "Wise" ne doit pas matcher
+#    "OTHERWISE", "Box" ne doit pas matcher "XBOX").
+# 2. Forme "fusionnée" (ponctuation ET espaces retirés sans substitution) :
+#    utilisée en complément pour les entrées assez longues (>= 5 caractères
+#    fusionnés) afin d'absorber les libellés bancaires qui accolent le
+#    marchand à un suffixe sans séparateur clair (ex: "LEQUIPE.FR" doit
+#    matcher "L'Équipe", "CANAL+ SERIES FR" doit matcher "Canal+ Séries")
+#    quelle que soit la ponctuation d'origine de part et d'autre.
+#
+# Un marchand est reconnu si SOIT le test par mot isolé réussit, SOIT
+# (pour les entrées assez longues) le test fusionné réussit.
+# ---------------------------------------------------------------------------
 
+_FUSED_MATCH_MIN_LENGTH = 5
+
+
+def _normalize_spaced(text: str) -> str:
+    """MAJUSCULES, sans accents, ponctuation réduite à des espaces simples.
+    Ex: "Canal+ Séries" -> "CANAL SERIES", "L'Équipe" -> "L EQUIPE"."""
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    text = text.upper()
+    text = re.sub(r"[^A-Z0-9]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _normalize_fused(text: str) -> str:
+    """Comme `_normalize_spaced`, mais sans aucun espace résiduel.
+    Ex: "L'Équipe" -> "LEQUIPE", "Canal+ Séries" -> "CANALSERIES"."""
+    return _normalize_spaced(text).replace(" ", "")
+
+
+def _build_whitelist_index() -> list[tuple[re.Pattern[str] | None, str, str, str]]:
+    """Précompile (regex mot-isolé, forme fusionnée, nom canonique, catégorie)
+    pour chaque marchand, triés par longueur fusionnée décroissante : les noms
+    spécifiques ("PC Game Pass") sont ainsi toujours testés avant les
+    génériques courts qu'ils contiennent ("PC")."""
+    entries: list[tuple[re.Pattern[str] | None, str, str, str]] = []
+    for category, merchants in SUBSCRIPTION_WHITELIST.items():
+        for merchant in merchants:
+            spaced = _normalize_spaced(merchant)
+            fused = spaced.replace(" ", "")
+            if not fused:
+                continue
+            pattern = re.compile(r"\b" + re.escape(spaced) + r"\b") if spaced else None
+            entries.append((pattern, fused, merchant, category))
+    entries.sort(key=lambda entry: len(entry[1]), reverse=True)
+    return entries
+
+
+_WHITELIST_INDEX = _build_whitelist_index()
+
+
+def match_whitelist(cleaned_label: str) -> tuple[str, str] | None:
+    """Renvoie (nom_marchand_canonique, catégorie) si le libellé nettoyé
+    correspond à un marchand de la liste blanche, sinon None."""
+    spaced_label = _normalize_spaced(cleaned_label)
+    if not spaced_label:
+        return None
+    fused_label = spaced_label.replace(" ", "")
+
+    for pattern, fused_merchant, merchant, category in _WHITELIST_INDEX:
+        if pattern is not None and pattern.search(spaced_label):
+            return merchant, category
+        if len(fused_merchant) >= _FUSED_MATCH_MIN_LENGTH and fused_merchant in fused_label:
+            return merchant, category
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Détection de récurrence + filtre d'activité
+# ---------------------------------------------------------------------------
 
 @dataclass
-class CategorizedSubscription(DetectedSubscription):
+class CategorizedSubscription:
+    merchant: str
+    price: float
+    frequency: str  # "monthly" | "yearly"
+    occurrences: int
+    last_date: str
+    next_estimated_date: str
+    confidence: float  # 0..1
+    source_transaction_ids: list[str]
     category: str
 
 
+def _parse_date(value: str) -> date:
+    return date.fromisoformat(value[:10])
+
+
+def _amount_close(a: float, b: float, tolerance_ratio: float = 0.02, tolerance_abs: float = 0.50) -> bool:
+    diff = abs(abs(a) - abs(b))
+    return diff <= tolerance_abs or diff <= tolerance_ratio * max(abs(a), abs(b))
+
+
+def _shift_months(d: date, months: int) -> date:
+    """Décale une date d'un nombre de mois (négatif = passé), en bornant le
+    jour au dernier jour du mois cible si besoin."""
+    month_index = d.month - 1 + months
+    year = d.year + month_index // 12
+    month = month_index % 12 + 1
+    day = min(d.day, [31, 29 if year % 4 == 0 and (year % 100 != 0 or year % 400 == 0) else 28,
+                      31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1])
+    return date(year, month, day)
+
+
+def _is_current_or_previous_month(d: date, today: date) -> bool:
+    if (d.year, d.month) == (today.year, today.month):
+        return True
+    previous = _shift_months(today, -1)
+    return (d.year, d.month) == (previous.year, previous.month)
+
+
+def _match_frequency(intervals: list[int]) -> tuple[str, float] | None:
+    """Teste si une série d'intervalles (jours) colle à un rythme mensuel ou
+    annuel. Renvoie (fréquence, confiance) ou None si aucun rythme cohérent."""
+    best: tuple[str, float] | None = None
+    for freq_name, (nominal, tolerance) in _FREQUENCIES.items():
+        deviations = [abs(i - nominal) for i in intervals]
+        if all(d <= tolerance for d in deviations):
+            avg_deviation = sum(deviations) / len(deviations)
+            confidence = max(0.0, 1 - (avg_deviation / tolerance))
+            if best is None or confidence > best[1]:
+                best = (freq_name, confidence)
+    return best
+
+
 def analyze_transactions(transactions: list[RawTransaction]) -> list[CategorizedSubscription]:
-    """Point d'entrée principal : détecte les abonnements récurrents puis les
-    auto-catégorise. Renvoie des candidats triés par confiance décroissante."""
-    detected = detect_recurring_subscriptions(transactions)
-    return [
-        CategorizedSubscription(**asdict(subscription), category=categorize_merchant(subscription.merchant))
-        for subscription in detected
-    ]
+    """Point d'entrée principal.
+
+    1. Ne garde que les débits des `ANALYSIS_WINDOW_MONTHS` derniers mois.
+    2. Ne garde que ceux dont le libellé matche la liste blanche stricte.
+    3. Regroupe par marchand canonique + montant proche, détecte une
+       périodicité mensuelle/annuelle si au moins 2 occurrences.
+    4. Ne renvoie que les abonnements toujours actifs : dernière occurrence
+       dans le mois en cours ou précédent, OU périodicité détectée dont la
+       prochaine échéance n'est pas dépassée.
+
+    Note : une périodicité annuelle ne peut mathématiquement pas être
+    confirmée par 2 occurrences dans une fenêtre de 6 mois (l'intervalle
+    dépasse la fenêtre elle-même). Un abonnement annuel n'est donc remonté
+    que si sa dernière occurrence tombe dans le mois en cours ou précédent ;
+    au-delà, faute de second point de mesure, on ne peut pas garantir qu'il
+    est toujours actif et il est légitimement ignoré par le filtre.
+    """
+    today = date.today()
+    window_start = _shift_months(today, -ANALYSIS_WINDOW_MONTHS)
+
+    debits = [tx for tx in transactions if tx.value < 0 and _parse_date(tx.date) >= window_start]
+
+    # Étape liste blanche : (transaction, marchand canonique, catégorie).
+    whitelisted: list[tuple[RawTransaction, str, str]] = []
+    for tx in debits:
+        label = clean_label(tx.wording)
+        if not label:
+            continue
+        match = match_whitelist(label)
+        if match is None:
+            continue
+        merchant, category = match
+        whitelisted.append((tx, merchant, category))
+
+    # Regroupement par marchand canonique.
+    groups: dict[str, list[tuple[RawTransaction, str]]] = {}
+    for tx, merchant, category in whitelisted:
+        groups.setdefault(merchant, []).append((tx, category))
+
+    results: list[CategorizedSubscription] = []
+
+    for merchant, entries in groups.items():
+        category = entries[0][1]
+        txs = [tx for tx, _ in entries]
+
+        # Sous-groupage par montant proche : un même marchand peut avoir
+        # changé d'offre (ex: Netflix Standard -> Premium) en cours de fenêtre.
+        amount_clusters: list[list[RawTransaction]] = []
+        for tx in sorted(txs, key=lambda t: t.date):
+            for cluster in amount_clusters:
+                if _amount_close(cluster[0].value, tx.value):
+                    cluster.append(tx)
+                    break
+            else:
+                amount_clusters.append([tx])
+
+        for cluster in amount_clusters:
+            cluster.sort(key=lambda t: t.date)
+            dates = [_parse_date(t.date) for t in cluster]
+            last_date = dates[-1]
+            recent = _is_current_or_previous_month(last_date, today)
+
+            frequency: str | None = None
+            confidence = 0.5  # valeur par défaut si la périodicité n'est pas mesurable
+            if len(cluster) >= 2:
+                intervals = [(dates[i + 1] - dates[i]).days for i in range(len(dates) - 1)]
+                match = _match_frequency(intervals)
+                if match is not None:
+                    frequency, confidence = match
+
+            if frequency is None:
+                # Une seule occurrence (ou intervalles incohérents) : on ne
+                # peut pas mesurer de périodicité. Le mensuel est l'hypothèse
+                # par défaut (l'immense majorité des services de la liste
+                # blanche), mais seule une occurrence récente justifie de
+                # garder ce candidat (cf. règle du filtre d'activité).
+                if not recent:
+                    continue
+                frequency = "monthly"
+
+            nominal_days = _FREQUENCIES[frequency][0]
+            next_estimated = last_date + timedelta(days=nominal_days)
+            still_due = next_estimated >= today
+
+            if not (recent or still_due):
+                continue  # ni occurrence récente, ni échéance à venir -> plus actif
+
+            avg_price = sum(abs(t.value) for t in cluster) / len(cluster)
+
+            results.append(
+                CategorizedSubscription(
+                    merchant=merchant,
+                    price=round(avg_price, 2),
+                    frequency=frequency,
+                    occurrences=len(cluster),
+                    last_date=last_date.isoformat(),
+                    next_estimated_date=next_estimated.isoformat(),
+                    confidence=round(confidence, 2),
+                    source_transaction_ids=[t.id for t in cluster],
+                    category=category,
+                )
+            )
+
+    results.sort(key=lambda r: (r.confidence, r.occurrences), reverse=True)
+    return results
 
 
 if __name__ == "__main__":
+    today = date.today()
+
+    def _iso(days_ago: int) -> str:
+        return (today - timedelta(days=days_ago)).isoformat()
+
     sample = [
-        RawTransaction(id="1", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date="2024-04-05"),
-        RawTransaction(id="2", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date="2024-05-05"),
-        RawTransaction(id="3", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date="2024-06-06"),
-        RawTransaction(id="4", wording="PRLV SEPA SPOTIFY 99001122", value=-9.99, date="2024-04-12"),
-        RawTransaction(id="5", wording="PRLV SEPA SPOTIFY 99001122", value=-9.99, date="2024-05-12"),
-        RawTransaction(id="6", wording="CB ACHAT BOULANGERIE MARTIN", value=-4.50, date="2024-04-20"),
+        # Netflix : 3 occurrences mensuelles récentes -> actif.
+        RawTransaction(id="1", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(65)),
+        RawTransaction(id="2", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(35)),
+        RawTransaction(id="3", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(5)),
+        # Spotify : une seule occurrence ce mois-ci -> actif malgré l'absence d'historique.
+        RawTransaction(id="4", wording="PRLV SEPA SPOTIFY 99001122", value=-9.99, date=_iso(3)),
+        # Disney+ : dernière occurrence il y a 4 mois, aucune récurrence prouvée -> ignoré (résilié probable).
+        RawTransaction(id="5", wording="PRLV SEPA DISNEY PLUS", value=-8.99, date=_iso(120)),
+        # Marchand hors liste blanche -> toujours ignoré, même récurrent.
+        RawTransaction(id="6", wording="CB ACHAT BOULANGERIE MARTIN", value=-4.50, date=_iso(30)),
+        RawTransaction(id="7", wording="CB ACHAT BOULANGERIE MARTIN", value=-4.50, date=_iso(60)),
+        # Transaction hors fenêtre de 6 mois -> ignorée.
+        RawTransaction(id="8", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(210)),
     ]
+
     for result in analyze_transactions(sample):
         print(result)
