@@ -18,7 +18,12 @@ export function SharedSubscriptionMemberRow({ member, onRemove, removing }: Shar
         <div>
           <p className="flex items-center gap-1.5 text-sm font-medium text-text-main">
             {member.name}
-            {member.is_owner && <Crown className="h-3.5 w-3.5 text-amber-500" />}
+            {member.is_owner && (
+              <span className="inline-flex items-center gap-1 text-amber-600" title="Propriétaire du groupe">
+                <Crown className="h-3.5 w-3.5" />
+                <span className="text-xs font-normal text-text-muted">Propriétaire</span>
+              </span>
+            )}
           </p>
           {member.email && <p className="text-xs text-text-muted">{member.email}</p>}
         </div>

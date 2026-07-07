@@ -198,12 +198,17 @@ class ShareableSubscriptionOut(BaseModel):
     partagé -- volontairement un schéma séparé plutôt que d'ajouter
     is_shared à SubscriptionOut/SubscriptionInput, qui sont utilisés par le
     CRUD abonnements générique (SubscriptionForm) sans rapport avec le
-    partage de groupe."""
+    partage de groupe.
+
+    `display_name` passe par le même moteur Clé Marchand que la Lettre de
+    résiliation (`match_whitelist`) : jamais un libellé bancaire brut, la
+    liste est aussi dédupliquée sur cette base (cf.
+    list_shareable_subscriptions)."""
 
     model_config = ConfigDict(from_attributes=True)
 
     id: str
-    name: str
+    display_name: str
     price: float
     category: str
     is_shared: bool
@@ -211,6 +216,68 @@ class ShareableSubscriptionOut(BaseModel):
 
 class SharedSubscriptionSelectionBody(BaseModel):
     subscription_ids: list[str]
+
+
+SplitMode = Literal["equal", "percentage", "fixed"]
+
+
+class SubscriptionSplitMemberOut(BaseModel):
+    member_id: str
+    member_name: str
+    # Valeur brute stockée (pourcentage ou montant fixe) -- None en mode "equal".
+    share_value: Optional[float] = None
+    # Montant réellement dû par ce membre pour cet abonnement, déjà calculé.
+    computed_amount: float
+
+
+class SubscriptionSplitOut(BaseModel):
+    subscription_id: str
+    display_name: str
+    price: float
+    split_mode: SplitMode
+    members: list[SubscriptionSplitMemberOut]
+
+
+class SubscriptionSplitMemberInput(BaseModel):
+    member_id: str
+    # Requis en mode percentage/fixed, ignoré en mode equal.
+    share_value: Optional[float] = None
+
+
+class SubscriptionSplitUpdateBody(BaseModel):
+    split_mode: SplitMode
+    members: list[SubscriptionSplitMemberInput]
+
+
+class DebtEdgeOut(BaseModel):
+    """Une dette simplifiée : "from" doit "amount" à "to". La liste renvoyée
+    par GET /family/debts est déjà le résultat de l'algorithme de
+    simplification (nombre minimal de transactions pour tout solder)."""
+
+    from_member_id: str
+    from_member_name: str
+    to_member_id: str
+    to_member_name: str
+    amount: float
+
+
+class SettleDebtBody(BaseModel):
+    from_member_id: str
+    to_member_id: str
+    amount: float
+
+
+class SettlementOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    from_member_id: str
+    from_member_name: str
+    to_member_id: str
+    to_member_name: str
+    amount: float
+    period: str
+    created_at: str
 
 
 class CancellableSubscriptionOut(BaseModel):

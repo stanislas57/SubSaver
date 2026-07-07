@@ -6,8 +6,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
-from app.core.subscription_detector import clean_label
-from app.core.transaction_analyzer import match_whitelist
+from app.core.transaction_analyzer import display_merchant_name
 from app.db.session import get_db
 from app.models.subscription import Subscription
 from app.models.user import User
@@ -34,8 +33,7 @@ def list_cancellation_candidates(current_user: User = Depends(get_current_user),
     seen_keys: set[str] = set()
     candidates: list[CancellableSubscriptionOut] = []
     for sub in subs:
-        match = match_whitelist(clean_label(sub.name))
-        display_name = match[0] if match else sub.name
+        display_name = display_merchant_name(sub.name)
         key = display_name.strip().casefold()
         if key in seen_keys:
             continue

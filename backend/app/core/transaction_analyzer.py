@@ -267,6 +267,16 @@ def match_whitelist(cleaned_label: str) -> tuple[str, str] | None:
     return None
 
 
+def display_merchant_name(raw_name: str) -> str:
+    """Nom de marchand normalisé pour affichage (ex: dans un menu ou une
+    liste de sélection) -- passe par le moteur Clé Marchand ci-dessus, avec
+    repli sur le nom brut si aucun match (abonnement ajouté manuellement,
+    hors liste blanche). Réutilisé par la Lettre de résiliation et
+    l'Abonnement partagé pour ne jamais afficher un libellé bancaire brut."""
+    match = match_whitelist(clean_label(raw_name))
+    return match[0] if match else raw_name
+
+
 # ---------------------------------------------------------------------------
 # Détection de récurrence + filtre d'activité
 # ---------------------------------------------------------------------------

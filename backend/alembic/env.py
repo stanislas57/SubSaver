@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.core.config import settings
 from app.db.session import Base
-from app.models import BankTransaction, FamilyMember, MarketOffer, Subscription, User  # noqa: F401 — enregistre les modèles pour autogenerate
+from app.models import BankTransaction, FamilyMember, MarketOffer, Settlement, Subscription, SubscriptionSplit, User  # noqa: F401 — enregistre les modèles pour autogenerate
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

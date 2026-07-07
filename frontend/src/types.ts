@@ -160,12 +160,67 @@ export interface SharedSubscriptionBalance {
  * /family/shareable-subscriptions et /family/shared-subscriptions) --
  * volontairement distinct de `Subscription` : le partage ne concerne que la
  * sélection, pas l'édition complète d'un abonnement. */
+/** `display_name` est déjà normalisé côté backend (moteur Clé Marchand) et la
+ * liste dédupliquée -- jamais un libellé bancaire brut ni un doublon. */
 export interface ShareableSubscription {
   id: string;
-  name: string;
+  display_name: string;
   price: number;
   category: string;
   is_shared: boolean;
+}
+
+export type SplitMode = "equal" | "percentage" | "fixed";
+
+export interface SubscriptionSplitMember {
+  member_id: string;
+  member_name: string;
+  /** Valeur brute stockée (pourcentage ou montant fixe) -- null en mode "equal". */
+  share_value: number | null;
+  /** Montant réellement dû par ce membre pour cet abonnement, déjà calculé côté serveur. */
+  computed_amount: number;
+}
+
+export interface SubscriptionSplit {
+  subscription_id: string;
+  display_name: string;
+  price: number;
+  split_mode: SplitMode;
+  members: SubscriptionSplitMember[];
+}
+
+/** Corps de PUT /family/subscriptions/{id}/split. */
+export interface SubscriptionSplitUpdateInput {
+  split_mode: SplitMode;
+  members: { member_id: string; share_value?: number | null }[];
+}
+
+/** Une dette déjà simplifiée (GET /family/debts) : "from" doit "amount" à "to". */
+export interface DebtEdge {
+  from_member_id: string;
+  from_member_name: string;
+  to_member_id: string;
+  to_member_name: string;
+  amount: number;
+}
+
+/** Corps de POST /family/debts/settle. */
+export interface SettleDebtInput {
+  from_member_id: string;
+  to_member_id: string;
+  amount: number;
+}
+
+/** Ligne d'historique (GET /family/settlements). */
+export interface Settlement {
+  id: string;
+  from_member_id: string;
+  from_member_name: string;
+  to_member_id: string;
+  to_member_name: string;
+  amount: number;
+  period: string;
+  created_at: string;
 }
 
 /** Abonnement dédupliqué et normalisé pour le menu de la Lettre de

@@ -26,4 +26,10 @@ class Subscription(Base):
     # répartition des coûts du groupe, jamais le total global de l'utilisateur.
     is_shared: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
+    # Mode de répartition de CET abonnement entre les membres participants
+    # (cf. SubscriptionSplit) : "equal" (défaut), "percentage" ou "fixed".
+    # Sans lignes SubscriptionSplit associées, ignoré -- le calcul de solde
+    # retombe sur un partage égal entre TOUS les membres du groupe.
+    split_mode: Mapped[str] = mapped_column(String, nullable=False, default="equal")
+
     user: Mapped["User"] = relationship(back_populates="subscriptions")
