@@ -6,6 +6,7 @@ import { RevealText } from "@/components/shared/RevealText";
 import { BentoTile } from "@/components/shared/BentoTile";
 import { CTALink } from "@/components/shared/CTALink";
 import { HowItWorks } from "@/components/shared/HowItWorks";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice, daysUntil } from "@/lib/format";
 
 /** Point d'entrée principal de l'app : vue condensée en 3 cartes Bento
@@ -34,7 +35,7 @@ export function OverviewPage() {
   return (
     <div className="w-full px-6 py-24">
       <div className="mx-auto max-w-6xl">
-        <RevealText as="h1" className="text-5xl font-black tracking-tight text-luxury-text sm:text-6xl">
+        <RevealText as="h1" className="break-words text-3xl font-black tracking-tight text-luxury-text sm:text-5xl lg:text-6xl">
           Vue d'ensemble
         </RevealText>
         <RevealText className="mt-4 max-w-xl text-lg text-luxury-text-light">
@@ -43,6 +44,22 @@ export function OverviewPage() {
 
         <HowItWorks variant="light" className="mt-12 max-w-4xl" />
 
+        {/* Squelette pendant le premier chargement : évite que les cartes
+         * "sautent" d'un état vide (0€, aucun abonnement) vers les vraies
+         * données une fois la requête résolue (bug QA -- effet de flash). */}
+        {subscriptionsQuery.isPending && (
+          <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-3">
+            {Array.from({ length: 3 }, (_, i) => (
+              <div key={i} className="rounded-3xl border border-slate-900/10 bg-white p-8 shadow-md">
+                <Skeleton className="h-11 w-11 rounded-xl" />
+                <Skeleton className="mt-6 h-4 w-40" />
+                <Skeleton className="mt-3 h-10 w-28" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!subscriptionsQuery.isPending && (
         <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-3">
           <BentoTile className="flex flex-col justify-between border-luxury-night bg-luxury-night">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold/15 text-luxury-gold">
@@ -97,6 +114,7 @@ export function OverviewPage() {
             </div>
           </BentoTile>
         </div>
+        )}
 
         <div className="mt-10 flex flex-wrap gap-6">
           <CTALink to="/subscriptions" variant="ghost">

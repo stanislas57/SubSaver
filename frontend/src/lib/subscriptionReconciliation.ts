@@ -77,14 +77,39 @@ function buildInputFromCandidate(
   };
 }
 
+/** Trie les doublons d'une même Clé Marchand par date de départ décroissante :
+ * la plus récente fait référence (cohérent avec la règle d'écrasement du
+ * TransactionAnalyzer -- ne conserver que l'entrée la plus récente). */
+function pickCanonicalSubscription(duplicates: Subscription[]): Subscription {
+  return [...duplicates].sort((a, b) => (b.start_date ?? "").localeCompare(a.start_date ?? ""))[0];
+}
+
 export function reconcileSubscriptions(
   existingSubscriptions: Subscription[],
   newDetectedSubscriptions: DetectedSubscription[],
   trackedMerchantKeys: ReadonlySet<string> = new Set()
 ): SubscriptionReconciliation {
-  const existingByKey = new Map<string, Subscription>();
+  // Regroupe par Clé Marchand -- jamais un Map naïf qui écraserait en
+  // silence : si plusieurs lignes existantes partagent déjà la même clé
+  // (doublons créés avant ce correctif, quand la réconciliation n'existait
+  // pas encore), on doit les retrouver TOUTES pour ne garder que la plus
+  // récente et proposer les autres au nettoyage, au lieu de les ignorer.
+  const existingGroups = new Map<string, Subscription[]>();
   for (const subscription of existingSubscriptions) {
-    existingByKey.set(normalizeMerchantKey(subscription.name), subscription);
+    const key = normalizeMerchantKey(subscription.name);
+    const group = existingGroups.get(key);
+    if (group) group.push(subscription);
+    else existingGroups.set(key, [subscription]);
+  }
+
+  const existingByKey = new Map<string, Subscription>();
+  const preExistingDuplicates: Subscription[] = [];
+  for (const [key, group] of existingGroups) {
+    const canonical = pickCanonicalSubscription(group);
+    existingByKey.set(key, canonical);
+    for (const subscription of group) {
+      if (subscription.id !== canonical.id) preExistingDuplicates.push(subscription);
+    }
   }
 
   const detectedKeys = new Set<string>();
@@ -122,13 +147,25 @@ export function reconcileSubscriptions(
   // retrouvé par un scan bancaire. Un marchand suivi dont la Clé Marchand
   // n'a AUCUNE occurrence dans la nouvelle analyse (source de vérité sur les
   // 6 derniers mois) est candidat à la suppression, et sort du suivi.
-  const toRemove = existingSubscriptions.filter((subscription) => {
+  //
+  // Important : on filtre ici sur UNE seule entrée par clé (existingByKey,
+  // le canonique de chaque groupe), jamais sur existingSubscriptions au
+  // complet -- sinon un marchand à la fois dupliqué ET résilié ferait
+  // apparaître deux fois le même id dans `toRemove` (une fois comme
+  // doublon, une fois comme orphelin).
+  const orphanedCanonical = [...existingByKey.values()].filter((subscription) => {
     const key = normalizeMerchantKey(subscription.name);
     return trackedMerchantKeys.has(key) && !detectedKeys.has(key);
   });
-  for (const subscription of toRemove) {
+  for (const subscription of orphanedCanonical) {
     updatedTrackedMerchantKeys.delete(normalizeMerchantKey(subscription.name));
   }
+
+  // Doublons déjà présents en base (même Clé Marchand, plusieurs lignes) :
+  // toujours proposés au nettoyage, qu'ils soient re-détectés ou non -- ce
+  // n'est jamais légitime d'avoir deux fois "Prixtel", contrairement à un
+  // abonnement orphelin qui peut être manuel.
+  const toRemove = [...preExistingDuplicates, ...orphanedCanonical];
 
   return { toCreate, toUpdate, toRemove, updatedTrackedMerchantKeys };
 }

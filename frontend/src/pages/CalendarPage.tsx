@@ -116,7 +116,7 @@ export function CalendarPage() {
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-luxury-sapphire/10">
             <Calendar className="h-6 w-6 text-luxury-sapphire" />
           </div>
-          <RevealText as="h1" className="text-5xl font-black tracking-tight text-luxury-text sm:text-6xl">
+          <RevealText as="h1" className="break-words text-3xl font-black tracking-tight text-luxury-text sm:text-5xl lg:text-6xl">
             Calendrier des abonnements
           </RevealText>
           <RevealText className="mt-4 max-w-xl text-lg text-luxury-text-light">

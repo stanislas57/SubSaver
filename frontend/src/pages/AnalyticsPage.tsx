@@ -24,16 +24,40 @@ import { RevealText } from "@/components/shared/RevealText";
 import { BentoTile } from "@/components/shared/BentoTile";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const CATEGORY_COLORS = {
-  Streaming: "#0c3c6e",
-  Musique: "#8b5cf6",
-  Sport: "#C5A059",
-  Logement: "#f59e0b",
-  Telephonie: "#06b6d4",
-  Transport: "#ec4899",
-  "Banque & Invest": "#6366f1",
-  Autre: "#6b7280",
-};
+/** Palette étendue (20 teintes distinctes, thème Luxe : Bleu Nuit, Doré, Bleu
+ * clair, Gris perle...) assignée DYNAMIQUEMENT aux catégories réellement
+ * présentes dans les données -- jamais une table statique par nom de
+ * catégorie. Un mapping fixe par nom (ex: {Telephonie: "..."}) devenait
+ * incomplet dès que le TransactionAnalyzer a introduit sa propre taxonomie de
+ * 19 catégories ("Téléphonie Mobile", "Énergie"...), distincte des 8
+ * catégories historiques du formulaire manuel ("Telephonie", "Streaming"...) :
+ * toute catégorie absente de la table retombait sur le même gris que "Autre"
+ * (bug QA : "Autre" et "Téléphonie Mobile" identiques). Assigner par ordre
+ * d'apparition élimine la classe de bug entière, quelle que soit la
+ * taxonomie utilisée. */
+const CATEGORY_COLOR_PALETTE = [
+  "#0c3c6e", // Bleu nuit
+  "#C5A059", // Doré
+  "#2563eb", // Bleu clair
+  "#8b5cf6", // Violet
+  "#0891b2", // Cyan
+  "#dc2626", // Terracotta
+  "#059669", // Émeraude
+  "#ea580c", // Orange brûlé
+  "#7c3aed", // Indigo
+  "#0d9488", // Sarcelle
+  "#b45309", // Ambre foncé
+  "#4338ca", // Bleu-violet
+  "#be185d", // Rose foncé
+  "#65a30d", // Vert olive
+  "#0369a1", // Bleu océan
+  "#92400e", // Brun doré
+  "#6d28d9", // Violet profond
+  "#0f766e", // Sarcelle foncé
+  "#a16207", // Or terreux
+  "#1e3a8a", // Bleu marine
+];
+const FALLBACK_CATEGORY_COLOR = "#94a3b8"; // Gris perle, si la palette est un jour dépassée
 
 export function AnalyticsPage() {
   const { user } = useAuth();
@@ -65,6 +89,17 @@ export function AnalyticsPage() {
       .map(([category, price]) => ({ category, price, value: parseFloat(price.toFixed(2)) }))
       .sort((a, b) => b.price - a.price);
   }, [subs]);
+
+  // Une couleur distincte par catégorie réellement présente, assignée par
+  // ordre d'apparition (la plus grosse dépense reçoit toujours la même
+  // teinte en tête de palette) -- jamais de collision entre 2 catégories.
+  const categoryColorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    categoryData.forEach((entry, index) => {
+      map.set(entry.category, CATEGORY_COLOR_PALETTE[index % CATEGORY_COLOR_PALETTE.length]);
+    });
+    return map;
+  }, [categoryData]);
 
   // Données pour AreaChart : projection future (12 mois)
   const projectionData = useMemo(() => {
@@ -115,7 +150,7 @@ export function AnalyticsPage() {
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-luxury-gold-soft">
             <BarChart3 className="h-6 w-6 text-luxury-gold-deep" />
           </div>
-          <RevealText as="h1" className="text-5xl font-black tracking-tight text-luxury-text sm:text-6xl">
+          <RevealText as="h1" className="break-words text-3xl font-black tracking-tight text-luxury-text sm:text-5xl lg:text-6xl">
             Analytique détaillée
           </RevealText>
           <RevealText className="mt-4 max-w-xl text-lg text-luxury-text-light">
@@ -231,7 +266,7 @@ export function AnalyticsPage() {
                     {categoryData.map((entry) => (
                       <Cell
                         key={`cell-${entry.category}`}
-                        fill={(CATEGORY_COLORS as Record<string, string>)[entry.category] || "#6b7280"}
+                        fill={categoryColorMap.get(entry.category) ?? FALLBACK_CATEGORY_COLOR}
                       />
                     ))}
                   </Pie>

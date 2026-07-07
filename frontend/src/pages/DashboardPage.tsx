@@ -54,7 +54,7 @@ export function DashboardPage() {
       <section className="flex min-h-screen flex-col items-center justify-center bg-luxury-bg px-6 text-center">
         <RevealText
           as="h2"
-          className="max-w-4xl text-6xl font-black leading-[1.05] tracking-tight text-luxury-text sm:text-7xl"
+          className="max-w-4xl break-words text-4xl font-black leading-[1.05] tracking-tight text-luxury-text sm:text-6xl lg:text-7xl"
         >
           Vos abonnements,
           <br />
@@ -124,7 +124,7 @@ export function DashboardPage() {
       {/* Section 3 — Abonnements actifs (parallaxe) */}
       <section className="flex min-h-screen flex-col justify-center bg-luxury-bg px-6 py-24">
         <div className="mx-auto w-full max-w-4xl">
-          <RevealText as="h2" className="text-5xl font-black tracking-tight text-luxury-text">
+          <RevealText as="h2" className="text-3xl font-black tracking-tight text-luxury-text sm:text-5xl">
             Vos abonnements actifs
           </RevealText>
           <div className="mt-12 space-y-4">
@@ -156,7 +156,7 @@ export function DashboardPage() {
           <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-luxury-gold-soft text-luxury-gold-deep">
             <Landmark className="h-6 w-6" />
           </div>
-          <RevealText as="h2" className="text-5xl font-black tracking-tight text-luxury-text">
+          <RevealText as="h2" className="text-3xl font-black tracking-tight text-luxury-text sm:text-5xl">
             Détection bancaire automatique
           </RevealText>
           <RevealText className="mx-auto mt-6 max-w-lg text-lg text-luxury-text-light">

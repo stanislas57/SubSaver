@@ -103,7 +103,7 @@ export function PremiumPage() {
           </span>
         )}
 
-        <RevealText as="h1" className="text-5xl font-black tracking-tight text-luxury-text sm:text-6xl">
+        <RevealText as="h1" className="break-words text-3xl font-black tracking-tight text-luxury-text sm:text-5xl lg:text-6xl">
           {isPremium ? "Tu es membre Premium" : "Passe au Premium"}
         </RevealText>
         <RevealText className="mx-auto mt-4 max-w-xl text-lg text-luxury-text-light">
