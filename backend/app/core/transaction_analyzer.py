@@ -1,17 +1,27 @@
-"""Moteur d'analyse des transactions bancaires -- Liste Blanche Stricte.
+"""Moteur d'analyse des transactions bancaires -- Liste Blanche Stricte
++ Déduplication par Clé Marchand.
 
-Remplace l'ancienne approche "floue" (clustering libre par libellé + montant,
-sans vérification du marchand) par une logique en 3 temps :
+Logique en 4 temps :
 
 1. Fenêtre d'analyse : on ne regarde que les transactions des 6 derniers mois
    (`ANALYSIS_WINDOW_MONTHS`). Tout ce qui est plus ancien est ignoré.
 2. Liste blanche stricte : une transaction n'est retenue comme abonnement QUE
    SI son libellé (nettoyé du bruit bancaire habituel) correspond à l'un des
    marchands de `SUBSCRIPTION_WHITELIST` (matching souple par sous-chaîne,
-   insensible aux accents/casse/ponctuation, avec limites de mots pour éviter
-   les faux positifs sur les entrées courtes comme "PC" ou "AWS"). Tout le
-   reste est ignoré, même si le motif ressemble à une récurrence.
-3. Filtre d'activité : un marchand identifié n'est renvoyé que s'il est
+   strictement insensible à la casse/accents/ponctuation, avec limites de
+   mots pour éviter les faux positifs sur les entrées courtes comme "PC" ou
+   "AWS"). Tout le reste est ignoré (ex: "LIDL", "SOGENAL", un simple billet
+   "SNCF-VOYAGEURS"), même si le motif ressemble à une récurrence. Chaque
+   match est aussitôt normalisé sous sa Clé Marchand canonique (ex:
+   "DEEZERFR DEEZER" ou "deezer premium fr" deviennent tous les deux
+   "Deezer") : c'est cette clé, jamais le libellé brut, qui sert de critère
+   de regroupement.
+3. Regroupement par Clé Marchand (reduce) + règle d'écrasement : toutes les
+   transactions d'un même marchand sont groupées ensemble quel que soit leur
+   montant (un changement de forfait ne doit jamais créer un doublon), puis
+   seule LA PLUS RÉCENTE est conservée comme état final (prix actuel, date de
+   prélèvement) -- les autres ne servent qu'à confirmer la périodicité.
+4. Filtre d'activité : un marchand identifié n'est renvoyé que s'il est
    toujours actif -- soit une occurrence de paiement dans le mois en cours ou
    le mois précédent, soit une périodicité mensuelle/annuelle détectée dont la
    prochaine échéance logique n'est pas dépassée.
@@ -27,6 +37,7 @@ import re
 import unicodedata
 from dataclasses import dataclass
 from datetime import date, timedelta
+from functools import reduce
 
 from app.core.subscription_detector import RawTransaction, clean_label
 
@@ -277,11 +288,6 @@ def _parse_date(value: str) -> date:
     return date.fromisoformat(value[:10])
 
 
-def _amount_close(a: float, b: float, tolerance_ratio: float = 0.02, tolerance_abs: float = 0.50) -> bool:
-    diff = abs(abs(a) - abs(b))
-    return diff <= tolerance_abs or diff <= tolerance_ratio * max(abs(a), abs(b))
-
-
 def _shift_months(d: date, months: int) -> date:
     """Décale une date d'un nombre de mois (négatif = passé), en bornant le
     jour au dernier jour du mois cible si besoin."""
@@ -314,14 +320,44 @@ def _match_frequency(intervals: list[int]) -> tuple[str, float] | None:
     return best
 
 
+def _group_by_merchant_key(
+    whitelisted: list[tuple[RawTransaction, str, str]],
+) -> dict[str, list[tuple[RawTransaction, str]]]:
+    """Regroupe (reduce) les transactions whitelistées par Clé Marchand
+    canonique -- jamais par libellé brut ni par montant. C'est ce qui garantit
+    qu'"EDF" et "EDF CLIENTS PARTICULIERS", ou deux prélèvements Prixtel à des
+    prix différents (changement de forfait), tombent dans le MÊME groupe au
+    lieu de générer un doublon."""
+
+    def _accumulate(
+        acc: dict[str, list[tuple[RawTransaction, str]]],
+        item: tuple[RawTransaction, str, str],
+    ) -> dict[str, list[tuple[RawTransaction, str]]]:
+        tx, merchant_key, category = item
+        acc.setdefault(merchant_key, []).append((tx, category))
+        return acc
+
+    return reduce(_accumulate, whitelisted, {})
+
+
 def analyze_transactions(transactions: list[RawTransaction]) -> list[CategorizedSubscription]:
     """Point d'entrée principal.
 
     1. Ne garde que les débits des `ANALYSIS_WINDOW_MONTHS` derniers mois.
-    2. Ne garde que ceux dont le libellé matche la liste blanche stricte.
-    3. Regroupe par marchand canonique + montant proche, détecte une
-       périodicité mensuelle/annuelle si au moins 2 occurrences.
-    4. Ne renvoie que les abonnements toujours actifs : dernière occurrence
+    2. Ne garde que ceux dont le libellé matche la liste blanche stricte
+       (matching insensible à la casse/accents/ponctuation), et les
+       normalise sous leur Clé Marchand canonique (ex: "DEEZERFR DEEZER"
+       et "deezer premium fr" deviennent tous les deux "Deezer").
+    3. Regroupe (reduce) PAR CLÉ MARCHAND SEULE -- jamais par montant --
+       pour absorber les variations de libellé ET les changements de forfait
+       (prix différent) sous un même abonnement. Détecte une périodicité
+       mensuelle/annuelle sur l'historique complet du marchand (les dates
+       de toutes les occurrences, indépendamment de leur montant).
+    4. Dans chaque groupe, ne conserve que LA TRANSACTION LA PLUS RÉCENTE :
+       c'est elle seule qui définit le prix actuel et la date de
+       prélèvement renvoyés (les anciennes transactions du groupe ne
+       servent qu'à confirmer la récurrence, jamais à l'état final).
+    5. Ne renvoie que les abonnements toujours actifs : dernière occurrence
        dans le mois en cours ou précédent, OU périodicité détectée dont la
        prochaine échéance n'est pas dépassée.
 
@@ -337,7 +373,10 @@ def analyze_transactions(transactions: list[RawTransaction]) -> list[Categorized
 
     debits = [tx for tx in transactions if tx.value < 0 and _parse_date(tx.date) >= window_start]
 
-    # Étape liste blanche : (transaction, marchand canonique, catégorie).
+    # Étape liste blanche : (transaction, Clé Marchand canonique, catégorie).
+    # `match_whitelist` normalise déjà en MAJUSCULES avant comparaison (via
+    # `_normalize_spaced`/`_normalize_fused`) : le matching est donc
+    # strictement insensible à la casse ("Prixtel" == "prixtel" == "PRIXTEL").
     whitelisted: list[tuple[RawTransaction, str, str]] = []
     for tx in debits:
         label = clean_label(tx.wording)
@@ -346,77 +385,64 @@ def analyze_transactions(transactions: list[RawTransaction]) -> list[Categorized
         match = match_whitelist(label)
         if match is None:
             continue
-        merchant, category = match
-        whitelisted.append((tx, merchant, category))
+        merchant_key, category = match
+        whitelisted.append((tx, merchant_key, category))
 
-    # Regroupement par marchand canonique.
-    groups: dict[str, list[tuple[RawTransaction, str]]] = {}
-    for tx, merchant, category in whitelisted:
-        groups.setdefault(merchant, []).append((tx, category))
+    groups = _group_by_merchant_key(whitelisted)
 
     results: list[CategorizedSubscription] = []
 
-    for merchant, entries in groups.items():
-        category = entries[0][1]
-        txs = [tx for tx, _ in entries]
+    for merchant_key, entries in groups.items():
+        entries_by_date = sorted(entries, key=lambda entry: entry[0].date)
+        all_txs = [tx for tx, _ in entries_by_date]
+        latest_tx, category = entries_by_date[-1]
 
-        # Sous-groupage par montant proche : un même marchand peut avoir
-        # changé d'offre (ex: Netflix Standard -> Premium) en cours de fenêtre.
-        amount_clusters: list[list[RawTransaction]] = []
-        for tx in sorted(txs, key=lambda t: t.date):
-            for cluster in amount_clusters:
-                if _amount_close(cluster[0].value, tx.value):
-                    cluster.append(tx)
-                    break
-            else:
-                amount_clusters.append([tx])
+        dates = [_parse_date(t.date) for t in all_txs]
+        last_date = dates[-1]
+        recent = _is_current_or_previous_month(last_date, today)
 
-        for cluster in amount_clusters:
-            cluster.sort(key=lambda t: t.date)
-            dates = [_parse_date(t.date) for t in cluster]
-            last_date = dates[-1]
-            recent = _is_current_or_previous_month(last_date, today)
+        frequency: str | None = None
+        confidence = 0.5  # valeur par défaut si la périodicité n'est pas mesurable
+        if len(all_txs) >= 2:
+            intervals = [(dates[i + 1] - dates[i]).days for i in range(len(dates) - 1)]
+            match = _match_frequency(intervals)
+            if match is not None:
+                frequency, confidence = match
 
-            frequency: str | None = None
-            confidence = 0.5  # valeur par défaut si la périodicité n'est pas mesurable
-            if len(cluster) >= 2:
-                intervals = [(dates[i + 1] - dates[i]).days for i in range(len(dates) - 1)]
-                match = _match_frequency(intervals)
-                if match is not None:
-                    frequency, confidence = match
+        if frequency is None:
+            # Une seule occurrence (ou intervalles incohérents) : on ne peut
+            # pas mesurer de périodicité. Le mensuel est l'hypothèse par
+            # défaut (l'immense majorité des services de la liste blanche),
+            # mais seule une occurrence récente justifie de garder ce
+            # candidat (cf. règle du filtre d'activité).
+            if not recent:
+                continue
+            frequency = "monthly"
 
-            if frequency is None:
-                # Une seule occurrence (ou intervalles incohérents) : on ne
-                # peut pas mesurer de périodicité. Le mensuel est l'hypothèse
-                # par défaut (l'immense majorité des services de la liste
-                # blanche), mais seule une occurrence récente justifie de
-                # garder ce candidat (cf. règle du filtre d'activité).
-                if not recent:
-                    continue
-                frequency = "monthly"
+        nominal_days = _FREQUENCIES[frequency][0]
+        next_estimated = last_date + timedelta(days=nominal_days)
+        still_due = next_estimated >= today
 
-            nominal_days = _FREQUENCIES[frequency][0]
-            next_estimated = last_date + timedelta(days=nominal_days)
-            still_due = next_estimated >= today
+        if not (recent or still_due):
+            continue  # ni occurrence récente, ni échéance à venir -> plus actif
 
-            if not (recent or still_due):
-                continue  # ni occurrence récente, ni échéance à venir -> plus actif
-
-            avg_price = sum(abs(t.value) for t in cluster) / len(cluster)
-
-            results.append(
-                CategorizedSubscription(
-                    merchant=merchant,
-                    price=round(avg_price, 2),
-                    frequency=frequency,
-                    occurrences=len(cluster),
-                    last_date=last_date.isoformat(),
-                    next_estimated_date=next_estimated.isoformat(),
-                    confidence=round(confidence, 2),
-                    source_transaction_ids=[t.id for t in cluster],
-                    category=category,
-                )
+        results.append(
+            CategorizedSubscription(
+                merchant=merchant_key,
+                # Prix et date : uniquement ceux de la transaction la plus
+                # récente (règle d'écrasement), jamais une moyenne sur
+                # l'historique -- un changement de forfait doit se refléter
+                # immédiatement, pas être lissé.
+                price=round(abs(latest_tx.value), 2),
+                frequency=frequency,
+                occurrences=len(all_txs),
+                last_date=last_date.isoformat(),
+                next_estimated_date=next_estimated.isoformat(),
+                confidence=round(confidence, 2),
+                source_transaction_ids=[latest_tx.id],
+                category=category,
             )
+        )
 
     results.sort(key=lambda r: (r.confidence, r.occurrences), reverse=True)
     return results
@@ -429,7 +455,7 @@ if __name__ == "__main__":
         return (today - timedelta(days=days_ago)).isoformat()
 
     sample = [
-        # Netflix : 3 occurrences mensuelles récentes -> actif.
+        # Netflix : 3 occurrences mensuelles récentes -> actif, 1 seul résultat.
         RawTransaction(id="1", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(65)),
         RawTransaction(id="2", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(35)),
         RawTransaction(id="3", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(5)),
@@ -437,11 +463,23 @@ if __name__ == "__main__":
         RawTransaction(id="4", wording="PRLV SEPA SPOTIFY 99001122", value=-9.99, date=_iso(3)),
         # Disney+ : dernière occurrence il y a 4 mois, aucune récurrence prouvée -> ignoré (résilié probable).
         RawTransaction(id="5", wording="PRLV SEPA DISNEY PLUS", value=-8.99, date=_iso(120)),
+        # EDF : changement de forfait (45€ -> 52€) + libellé qui varie -> UN SEUL
+        # résultat à 52€ (le plus récent), pas deux entrées en double.
+        RawTransaction(id="6", wording="PRLV SEPA EDF CLIENTS PARTICULIERS", value=-45.00, date=_iso(35)),
+        RawTransaction(id="7", wording="PRLV SEPA EDF", value=-52.00, date=_iso(5)),
+        # Prixtel : même marchand, casse différente ("prixtel" vs "PRIXTEL") -> regroupés.
+        RawTransaction(id="8", wording="prlv sepa prixtel mobile", value=-8.00, date=_iso(33)),
+        RawTransaction(id="9", wording="PRLV SEPA PRIXTEL MOBILE", value=-10.00, date=_iso(3)),
         # Marchand hors liste blanche -> toujours ignoré, même récurrent.
-        RawTransaction(id="6", wording="CB ACHAT BOULANGERIE MARTIN", value=-4.50, date=_iso(30)),
-        RawTransaction(id="7", wording="CB ACHAT BOULANGERIE MARTIN", value=-4.50, date=_iso(60)),
+        RawTransaction(id="10", wording="CB ACHAT BOULANGERIE MARTIN", value=-4.50, date=_iso(30)),
+        RawTransaction(id="11", wording="CB ACHAT BOULANGERIE MARTIN", value=-4.50, date=_iso(60)),
+        # Faux positifs stricts : jamais dans la liste blanche -> ignorés.
+        RawTransaction(id="12", wording="CB LIDL PARIS 18", value=-32.10, date=_iso(4)),
+        RawTransaction(id="13", wording="VIR SEPA SOGENAL", value=-120.00, date=_iso(4)),
+        RawTransaction(id="14", wording="PRLV METROPOLE DU GRAND NANCY", value=-15.00, date=_iso(4)),
+        RawTransaction(id="15", wording="CB SNCF-VOYAGEURS INTERNET", value=-42.00, date=_iso(4)),
         # Transaction hors fenêtre de 6 mois -> ignorée.
-        RawTransaction(id="8", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(210)),
+        RawTransaction(id="16", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(210)),
     ]
 
     for result in analyze_transactions(sample):
