@@ -2,30 +2,34 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { OtpVerificationForm } from "@/components/auth/OtpVerificationForm";
+import { GoldParticles } from "@/components/auth/GoldParticles";
 
-/** Page d'inscription : design Luxe Lumineux (fond blanc clair, card
- * glassmorphism blanche sur bord fin or). Cohérente avec le reste de l'app
- * (contrairement à LoginPage qui plonge en immersion Bleu Nuit). */
+/** Page d'inscription : même immersion Bleu Nuit + réseau de particules
+ * dorées animé que LoginPage (cohérence des deux écrans d'authentification),
+ * avec une carte glassmorphism centrée sur une seule colonne (pas
+ * d'argumentaire marketing, contrairement à /login). */
 export function RegisterPage() {
   const [pending, setPending] = React.useState<{ email: string; phone: string } | null>(null);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12">
-      {/* Halos subtils d'ambiance */}
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-luxury-night px-6 py-12">
+      <GoldParticles />
+
+      {/* Halos lumineux d'ambiance */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -right-40 top-1/4 h-[400px] w-[400px] rounded-full bg-luxury-gold/5 blur-[140px]" />
-        <div className="absolute -left-32 bottom-1/4 h-[380px] w-[380px] rounded-full bg-luxury-sapphire/5 blur-[140px]" />
+        <div className="absolute -right-40 top-1/4 h-[420px] w-[420px] rounded-full bg-luxury-gold/10 blur-[140px]" />
+        <div className="absolute -left-32 bottom-0 h-[380px] w-[380px] rounded-full bg-luxury-sapphire/30 blur-[140px]" />
       </div>
 
       <div className="relative w-full max-w-sm">
-        {/* Logo en haut mobile */}
+        {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-3">
-          <img src="/logo.svg" alt="SubServer" className="h-12 w-auto" />
-          <span className="font-display text-xl font-bold tracking-tight text-luxury-text">SubServer</span>
+          <img src="/logo-dark-bg.svg" alt="SubServer" className="h-12 w-auto" />
+          <span className="font-display text-xl font-bold tracking-tight text-slate-50">SubServer</span>
         </div>
 
         {/* Carte glassmorphism */}
-        <div className="rounded-3xl border border-slate-900/10 border-t-2 border-t-luxury-gold bg-white/95 p-8 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.08)] backdrop-blur-md">
+        <div className="rounded-3xl border border-luxury-gold/30 bg-white/10 p-8 shadow-[0_24px_64px_-16px_rgba(0,0,0,0.6)] backdrop-blur-xl">
           {pending ? (
             <OtpVerificationForm email={pending.email} phone={pending.phone} />
           ) : (
@@ -34,7 +38,7 @@ export function RegisterPage() {
         </div>
 
         {/* Lien accueil (discret) */}
-        <p className="mt-6 text-center text-xs text-luxury-text-light">
+        <p className="mt-6 text-center text-xs text-slate-400">
           <Link to="/" className="hover:underline">
             ← Retour à l'accueil
           </Link>
