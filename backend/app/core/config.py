@@ -60,6 +60,17 @@ class Settings(BaseSettings):
     # une autre boîte plus tard sans toucher à la configuration SMTP.
     CONTACT_EMAIL: str = "contact.subserver@proton.me"
 
+    # SMS (OTP) — codes de vérification par SMS lors de l'inscription
+    SMS_PROVIDER: str = "dev"  # "dev", "twilio", "vonage", "brevo"
+    TWILIO_ACCOUNT_SID: str = ""
+    TWILIO_AUTH_TOKEN: str = ""
+    TWILIO_PHONE_NUMBER: str = ""
+    VONAGE_API_KEY: str = ""
+    VONAGE_API_SECRET: str = ""
+    BREVO_API_KEY: str = ""
+    OTP_TTL_MINUTES: int = 10
+    OTP_MAX_ATTEMPTS: int = 3
+
     @model_validator(mode="after")
     def _validate_production_safety(self) -> "Settings":
         """Fail-fast en production sur les secrets non configurés : mieux vaut

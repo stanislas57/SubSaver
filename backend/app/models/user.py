@@ -18,6 +18,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     first_name: Mapped[str] = mapped_column(String, nullable=False)
+    phone: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
 
     language: Mapped[str] = mapped_column(String, nullable=False, default="fr")
     theme: Mapped[str] = mapped_column(String, nullable=False, default="light")
@@ -26,8 +27,13 @@ class User(Base):
     is_premium: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     bank_connected: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
-    # Vérification d'email à l'inscription (code 6 chiffres, cf. app/core/email_service.py)
+    # Vérification OTP par SMS à l'inscription (code 6 chiffres)
     is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    otp_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    otp_expires_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    otp_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    # Anciennes colonnes (legacy email verification — à supprimer lors du nettoyage)
     verification_code: Mapped[str | None] = mapped_column(String, nullable=True)
     verification_code_expires_at: Mapped[str | None] = mapped_column(String, nullable=True)
 
