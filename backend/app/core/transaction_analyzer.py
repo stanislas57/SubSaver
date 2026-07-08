@@ -1,30 +1,47 @@
-"""Moteur d'analyse des transactions bancaires -- Liste Blanche Stricte
-+ Déduplication par Clé Marchand.
+"""Moteur d'analyse des transactions bancaires -- pipeline à trois étages :
+Liste Blanche + Empreintes Bancaires (confiance 100%) / Liste Noire
+d'exclusion / Heuristique de récurrence stricte pour marchands inconnus
+(confiance 80%, à valider par l'utilisateur).
 
-Logique en 4 temps :
+Ordre d'évaluation pour chaque transaction (débits des 6 derniers mois) :
 
-1. Fenêtre d'analyse : on ne regarde que les transactions des 6 derniers mois
-   (`ANALYSIS_WINDOW_MONTHS`). Tout ce qui est plus ancien est ignoré.
-2. Liste blanche stricte : une transaction n'est retenue comme abonnement QUE
-   SI son libellé (nettoyé du bruit bancaire habituel) correspond à l'un des
-   marchands de `SUBSCRIPTION_WHITELIST` (matching souple par sous-chaîne,
-   strictement insensible à la casse/accents/ponctuation, avec limites de
-   mots pour éviter les faux positifs sur les entrées courtes comme "PC" ou
-   "AWS"). Tout le reste est ignoré (ex: "LIDL", "SOGENAL", un simple billet
-   "SNCF-VOYAGEURS"), même si le motif ressemble à une récurrence. Chaque
-   match est aussitôt normalisé sous sa Clé Marchand canonique (ex:
-   "DEEZERFR DEEZER" ou "deezer premium fr" deviennent tous les deux
-   "Deezer") : c'est cette clé, jamais le libellé brut, qui sert de critère
-   de regroupement.
-3. Regroupement par Clé Marchand (reduce) + règle d'écrasement : toutes les
-   transactions d'un même marchand sont groupées ensemble quel que soit leur
-   montant (un changement de forfait ne doit jamais créer un doublon), puis
-   seule LA PLUS RÉCENTE est conservée comme état final (prix actuel, date de
-   prélèvement) -- les autres ne servent qu'à confirmer la périodicité.
-4. Filtre d'activité : un marchand identifié n'est renvoyé que s'il est
-   toujours actif -- soit une occurrence de paiement dans le mois en cours ou
-   le mois précédent, soit une périodicité mensuelle/annuelle détectée dont la
-   prochaine échéance logique n'est pas dépassée.
+1. Liste blanche + empreintes bancaires (`SUBSCRIPTION_WHITELIST` +
+   `BANK_LABEL_ALIASES`) : si le libellé nettoyé correspond à un marchand
+   connu -- soit sous son nom humain ("Netflix"), soit sous son empreinte
+   bancaire réelle ("APPLE.COM/BILL", "COMUTITRES", "MTCH*TINDER") -- la
+   transaction est un abonnement certain (confiance 1.0). Le match est
+   normalisé sous sa Clé Marchand canonique (ex: "APPLE.COM/BILL 0,99" et
+   "ITUNES.COM" deviennent tous les deux "Apple (App Store / iCloud)"),
+   c'est cette clé qui sert de critère de regroupement.
+   TESTÉE EN PREMIER : c'est ce qui permet à "Auchan Télécom" (whitelist) de
+   survivre au blocage de "AUCHAN" (blacklist grande distribution), ou à
+   "Crédit Agricole" (banque) de survivre aux mots-clés de crédit conso.
+2. Liste noire (`EXCLUSION_BLACKLIST`) : dépenses récurrentes qui ne sont PAS
+   des abonnements au sens de l'app -- grande distribution, loyers,
+   remboursements de prêts, impôts, virements d'épargne, retraits. Bloquées
+   ici, AVANT toute analyse de récurrence : un prélèvement "LOYER" tous les
+   30 jours ne doit jamais remonter, même avec un rythme parfait.
+3. Heuristique marchand inconnu : ni whitelisté ni blacklisté. Retenu
+   seulement si le motif est celui d'un abonnement quasi certain --
+   au moins 3 occurrences, TOUS les intervalles à ~30/31 jours (tolérance
+   serrée), montant fixe et < 50 € -- avec confiance 0.8 : le candidat est
+   présenté à l'utilisateur pour validation, jamais intégré d'office.
+   Aucun montant minimum nulle part : un prélèvement récurrent de 0,99 €
+   (iCloud) est un signal fort, pas du bruit.
+
+Regroupement et état final :
+- Marchands whitelistés : groupés PAR CLÉ MARCHAND seule (un changement de
+  forfait ne crée jamais de doublon), seule LA PLUS RÉCENTE transaction
+  définit le prix/la date renvoyés.
+- Cas particulier facturation centralisée (`STORE_BILLING_MERCHANTS`) :
+  "APPLE.COM/BILL" ou "GOOGLE PLAY" agrègent PLUSIEURS services (iCloud,
+  Snap+, un achat one-shot...) sous le même libellé. Ces marchands-là sont
+  sous-groupés par montant, et chaque sous-groupe doit prouver une VRAIE
+  récurrence mesurée (jamais l'hypothèse "1 occurrence récente = mensuel",
+  qui transformerait tout achat d'app en abonnement). Chaque récurrence
+  confirmée sort comme un candidat distinct ("Apple (App Store / iCloud)" à
+  0,99 € + un autre à 4,49 €...) que l'utilisateur renomme ensuite dans la
+  modale de validation (champ Nom éditable) en "iCloud", "Snap+", etc.
 
 Module pur (aucune dépendance DB/FastAPI), testable isolément avec un simple
 tableau de transactions. Ne dépend de `subscription_detector` que pour deux
@@ -124,6 +141,16 @@ SUBSCRIPTION_WHITELIST: dict[str, tuple[str, ...]] = {
         "pCloud", "Sync.com", "Tresorit", "Box", "Evernote", "Obsidian Sync", "Craft",
         "Todoist", "TickTick", "Any.do", "Calendly", "Loom", "Miro", "Figma", "FigJam", "Canva",
         "Grammarly", "LanguageTool", "Proton Unlimited", "Fastmail",
+        "Adobe Creative Cloud", "Adobe Photoshop", "Adobe Lightroom",
+    ),
+    # Un seul nom canonique par service : les variantes de libellé
+    # ("SNAPCHAT", "TWITTER BLUE"...) passent par BANK_LABEL_ALIASES, jamais
+    # par une seconde entrée whitelist -- deux noms canoniques pour le même
+    # service casseraient le regroupement par Clé Marchand.
+    "Réseaux & Médias sociaux": (
+        "Snap+", "X Premium", "LinkedIn Premium",
+        "Telegram Premium", "Reddit Premium", "Meta Verified", "Twitch Turbo",
+        "OnlyFans", "Patreon",
     ),
     "Banques & Fintech": (
         "BoursoBank", "Fortuneo", "Hello Bank", "Monabanq", "Revolut", "N26", "Bunq", "Nickel",
@@ -158,9 +185,14 @@ SUBSCRIPTION_WHITELIST: dict[str, tuple[str, ...]] = {
         "CrossFit", "Club Med Gym", "Wellness Sport Club", "CMG Sports Club",
         "Urban Sports Club", "ClassPass",
     ),
+    # NB : les programmes de fidélité de la grande distribution (Carrefour+,
+    # Casino Max, Monopflix...) sont volontairement ABSENTS : la grande
+    # distribution est entièrement exclue par la liste noire (cf.
+    # EXCLUSION_BLACKLIST), ces récurrences ne sont pas des abonnements au
+    # sens de l'app.
     "Livraison & Courses": (
-        "Uber One", "Deliveroo Plus", "Wolt+", "Amazon Prime", "Carrefour+", "Monopflix",
-        "Casino Max", "Instacart+", "HelloFresh", "Quitoque", "Jow", "Too Good To Go+",
+        "Uber One", "Deliveroo Plus", "Wolt+", "Amazon Prime", "Instacart+", "HelloFresh",
+        "Quitoque", "Jow", "Too Good To Go+",
     ),
     "Rencontres": (
         "Tinder", "Bumble", "Happn", "Meetic", "Fruitz", "Adopte", "Elite Rencontre",
@@ -191,6 +223,133 @@ SUBSCRIPTION_WHITELIST: dict[str, tuple[str, ...]] = {
     ),
 }
 
+
+# ---------------------------------------------------------------------------
+# Empreintes bancaires : les banques n'écrivent JAMAIS "iCloud" ou "Snap+"
+# sur un relevé -- elles écrivent "APPLE.COM/BILL", "ITUNES.COM",
+# "MTCH*TINDER" ou "COMUTITRES". Cette table mappe ces libellés réels vers la
+# Clé Marchand canonique + sa catégorie. Chaque empreinte passe par le même
+# moteur de normalisation que la whitelist (insensible casse/accents/
+# ponctuation, limites de mots pour les entrées courtes), donc
+# "CB APPLE.COM/BILL 0,99EUR" comme "APL*ITUNES.COM" matchent.
+#
+# Cas des stores (Apple/Google) : la facturation est centralisée -- un
+# abonnement Snap+ souscrit sur iPhone apparaît sous "APPLE.COM/BILL", pas
+# sous "SNAP". Impossible de distinguer le service depuis le relevé : on
+# regroupe sous un marchand-parapluie ("Apple (App Store / iCloud)") que
+# l'utilisateur renomme ensuite dans la modale de validation. Ces marchands
+# sont listés dans STORE_BILLING_MERCHANTS et reçoivent un traitement
+# spécial (sous-groupage par montant + récurrence mesurée obligatoire, cf.
+# docstring du module).
+# ---------------------------------------------------------------------------
+
+BANK_LABEL_ALIASES: dict[str, tuple[str, str]] = {
+    # --- Cloud & Logiciels ---
+    "APPLE.COM/BILL": ("Apple (App Store / iCloud)", "Logiciels Pro & Productivité"),
+    "APPLE.COM BILL": ("Apple (App Store / iCloud)", "Logiciels Pro & Productivité"),
+    "ITUNES.COM": ("Apple (App Store / iCloud)", "Logiciels Pro & Productivité"),
+    "ITUNES": ("Apple (App Store / iCloud)", "Logiciels Pro & Productivité"),
+    "APL*ITUNES": ("Apple (App Store / iCloud)", "Logiciels Pro & Productivité"),
+    "APPLE SERVICES": ("Apple (App Store / iCloud)", "Logiciels Pro & Productivité"),
+    # Google : les libellés spécifiques (YouTube, One) sont plus longs, donc
+    # testés AVANT le parapluie générique "GOOGLE PLAY" (tri par longueur).
+    "GOOGLE YOUTUBE": ("YouTube Premium", "Streaming & VOD"),
+    "GOOGLE YOUTUBEPREMIUM": ("YouTube Premium", "Streaming & VOD"),
+    "GOOGLE STORAGE": ("Google One", "Logiciels Pro & Productivité"),
+    "GOOGLE GOOGLE ONE": ("Google One", "Logiciels Pro & Productivité"),
+    "GOOGLE PLAY": ("Google Play (abonnement)", "Logiciels Pro & Productivité"),
+    "GOOGLE PAYMENT": ("Google Play (abonnement)", "Logiciels Pro & Productivité"),
+    "MSFT": ("Microsoft 365", "Logiciels Pro & Productivité"),
+    "MSBILL.INFO": ("Microsoft 365", "Logiciels Pro & Productivité"),
+    "MICROSOFT*365": ("Microsoft 365", "Logiciels Pro & Productivité"),
+    "ADOBE": ("Adobe Creative Cloud", "Logiciels Pro & Productivité"),
+    "OPENAI": ("ChatGPT (OpenAI)", "IA & Outils Dev"),
+    "CHATGPT": ("ChatGPT (OpenAI)", "IA & Outils Dev"),
+    "ANTHROPIC": ("Claude Pro", "IA & Outils Dev"),
+    # --- Réseaux & Médias ---
+    "SNAP INC": ("Snap+", "Réseaux & Médias sociaux"),
+    "SNAPCHAT": ("Snap+", "Réseaux & Médias sociaux"),
+    "TWITTER": ("X Premium", "Réseaux & Médias sociaux"),
+    "TWITTER BLUE": ("X Premium", "Réseaux & Médias sociaux"),
+    "X CORP": ("X Premium", "Réseaux & Médias sociaux"),
+    "LINKEDIN": ("LinkedIn Premium", "Réseaux & Médias sociaux"),
+    "LNKD.IN": ("LinkedIn Premium", "Réseaux & Médias sociaux"),
+    # Match Group : facturation Tinder par carte ("MTCH*TINDER" ou "MTCH" seul).
+    "MTCH": ("Tinder", "Rencontres"),
+    "DISCORD": ("Discord Nitro", "Logiciels Pro & Productivité"),
+    # --- Streaming (formes bancaires spécifiques ; les noms humains sont
+    # déjà dans la whitelist et matchent la plupart des libellés) ---
+    "AMZNPRIME": ("Amazon Prime", "Livraison & Courses"),
+    "AMZN PRIME": ("Amazon Prime", "Livraison & Courses"),
+    "PRIMEVIDEO": ("Prime Video", "Streaming & VOD"),
+    "DISNEYPLUS": ("Disney+", "Streaming & VOD"),
+    "HELP.MAX.COM": ("Max", "Streaming & VOD"),
+    # --- Transports & Mobilité ---
+    # Le prélèvement Navigo n'affiche JAMAIS "Navigo" : l'organisme de
+    # facturation d'Île-de-France Mobilités s'appelle Comutitres.
+    "COMUTITRES": ("Navigo", "Mobilité & Transports"),
+    "IDF MOBILITES": ("Navigo", "Mobilité & Transports"),
+    "ILE DE FRANCE MOBILITES": ("Navigo", "Mobilité & Transports"),
+    "UBER *ONE": ("Uber One", "Livraison & Courses"),
+    "TGVMAX": ("TGV Max", "Mobilité & Transports"),
+    "SNCF CARTE AVANTAGE": ("SNCF Carte Avantage", "Mobilité & Transports"),
+    # --- Utilitaires & Télécoms (formes bancaires longues) ---
+    "EDF CLIENTS PARTICULIERS": ("EDF", "Énergie"),
+    "FREE MOBILE": ("Free", "Téléphonie Mobile"),
+    "FREE HAUTDEBIT": ("Freebox", "Box Internet"),
+    "FREE TELECOM": ("Free", "Téléphonie Mobile"),
+    "BOUYGUES TELECOM": ("Bouygues", "Téléphonie Mobile"),
+    "ORANGE SA": ("Orange", "Téléphonie Mobile"),
+}
+
+# Marchands-parapluie de facturation centralisée : un même libellé bancaire y
+# agrège plusieurs services (abonnements ET achats one-shot). Traitement
+# spécial dans analyze_transactions : sous-groupage par montant + récurrence
+# mesurée obligatoire (cf. docstring du module).
+STORE_BILLING_MERCHANTS: frozenset[str] = frozenset(
+    {"Apple (App Store / iCloud)", "Google Play (abonnement)"}
+)
+
+# ---------------------------------------------------------------------------
+# Liste noire d'exclusion : dépenses récurrentes qui ne sont PAS des
+# abonnements au sens de l'app. Évaluée APRÈS la whitelist (ce qui protège
+# "Auchan Télécom" ou "Crédit Agricole") mais AVANT l'heuristique de
+# récurrence : un loyer parfaitement mensuel ne doit jamais remonter.
+# Même moteur de matching que la whitelist (mot isolé pour les entrées
+# courtes, sous-chaîne fusionnée pour les longues).
+# ---------------------------------------------------------------------------
+
+EXCLUSION_BLACKLIST: dict[str, tuple[str, ...]] = {
+    "Grande distribution": (
+        "CARREFOUR", "AUCHAN", "LECLERC", "E.LECLERC", "LIDL", "ALDI", "INTERMARCHE",
+        "SUPER U", "HYPER U", "SYSTEME U", "MONOPRIX", "FRANPRIX", "CASINO", "GEANT CASINO",
+        "CORA", "NETTO", "PICARD", "GRAND FRAIS", "BIOCOOP", "NATURALIA", "LEADER PRICE",
+        "SPAR", "VIVAL", "PROXI", "MATCH SUPERMARCHE",
+    ),
+    "Loyers & immobilier": (
+        "LOYER", "FONCIA", "NEXITY", "CITYA", "ORPI", "LAFORET", "GUY HOQUET",
+        "SQUARE HABITAT", "CDC HABITAT", "ICF HABITAT", "PARIS HABITAT", "SEQENS", "RIVP",
+        "CROUS", "ACTION LOGEMENT",
+    ),
+    "Prêts & crédits": (
+        "PRET", "REMBOURSEMENT PRET", "REMB PRET", "ECHEANCE", "MENSUALITE",
+        "CREDIT IMMOBILIER", "CREDIT CONSO", "CREDIT RENOUVELABLE", "RACHAT DE CREDIT",
+        "COFIDIS", "CETELEM", "SOFINCO", "FRANFINANCE", "YOUNITED", "FLOA", "ONEY",
+    ),
+    "Impôts & administrations": (
+        "DGFIP", "DGFIP FINANCES PUBLIQUES", "DIRECTION GENERALE DES FINANCES",
+        "TRESOR PUBLIC", "IMPOT", "IMPOTS", "TAXE FONCIERE", "TAXE HABITATION",
+        "PRELEVEMENT A LA SOURCE", "URSSAF", "ANTAI", "AMENDE", "AMENDES", "TIMBRE FISCAL",
+    ),
+    "Épargne & virements internes": (
+        "LIVRET A", "LIVRET", "PEL", "CEL", "PEA", "ASSURANCE VIE", "VERSEMENT PROGRAMME",
+        "VIREMENT EPARGNE", "EPARGNE", "VIREMENT PERMANENT", "VIR PERMANENT",
+        "VIREMENT INTERNE",
+    ),
+    "Espèces": (
+        "RETRAIT", "RETRAIT DAB", "DAB",
+    ),
+}
 
 # ---------------------------------------------------------------------------
 # Matching liste blanche : deux formes de normalisation combinées.
@@ -232,23 +391,68 @@ def _normalize_fused(text: str) -> str:
 
 def _build_whitelist_index() -> list[tuple[re.Pattern[str] | None, str, str, str]]:
     """Précompile (regex mot-isolé, forme fusionnée, nom canonique, catégorie)
-    pour chaque marchand, triés par longueur fusionnée décroissante : les noms
-    spécifiques ("PC Game Pass") sont ainsi toujours testés avant les
-    génériques courts qu'ils contiennent ("PC")."""
+    pour chaque marchand -- entrées "humaines" de la whitelist ET empreintes
+    bancaires (BANK_LABEL_ALIASES, qui pointent vers leur nom canonique) --
+    triés par longueur fusionnée décroissante : les motifs spécifiques
+    ("GOOGLE YOUTUBE", "PC Game Pass") sont ainsi toujours testés avant les
+    génériques courts qu'ils contiennent ("GOOGLE PLAY", "PC")."""
     entries: list[tuple[re.Pattern[str] | None, str, str, str]] = []
+
+    def _add(searched_text: str, canonical: str, category: str) -> None:
+        spaced = _normalize_spaced(searched_text)
+        fused = spaced.replace(" ", "")
+        if not fused:
+            return
+        pattern = re.compile(r"\b" + re.escape(spaced) + r"\b") if spaced else None
+        entries.append((pattern, fused, canonical, category))
+
     for category, merchants in SUBSCRIPTION_WHITELIST.items():
         for merchant in merchants:
-            spaced = _normalize_spaced(merchant)
-            fused = spaced.replace(" ", "")
-            if not fused:
-                continue
-            pattern = re.compile(r"\b" + re.escape(spaced) + r"\b") if spaced else None
-            entries.append((pattern, fused, merchant, category))
+            _add(merchant, merchant, category)
+    for bank_label, (canonical, category) in BANK_LABEL_ALIASES.items():
+        _add(bank_label, canonical, category)
+
     entries.sort(key=lambda entry: len(entry[1]), reverse=True)
     return entries
 
 
 _WHITELIST_INDEX = _build_whitelist_index()
+
+
+def _build_blacklist_index() -> list[tuple[re.Pattern[str] | None, str]]:
+    """Même machinerie que la whitelist (mot isolé + forme fusionnée) pour les
+    mots-clés d'exclusion."""
+    entries: list[tuple[re.Pattern[str] | None, str]] = []
+    for keywords in EXCLUSION_BLACKLIST.values():
+        for keyword in keywords:
+            spaced = _normalize_spaced(keyword)
+            fused = spaced.replace(" ", "")
+            if not fused:
+                continue
+            pattern = re.compile(r"\b" + re.escape(spaced) + r"\b") if spaced else None
+            entries.append((pattern, fused))
+    entries.sort(key=lambda entry: len(entry[1]), reverse=True)
+    return entries
+
+
+_BLACKLIST_INDEX = _build_blacklist_index()
+
+
+def is_excluded(cleaned_label: str) -> bool:
+    """True si le libellé nettoyé correspond à une dépense récurrente hors
+    périmètre (grande distribution, loyer, prêt, impôts, épargne, retrait) --
+    à n'appeler qu'APRÈS un échec de `match_whitelist`, cf. docstring."""
+    spaced_label = _normalize_spaced(cleaned_label)
+    if not spaced_label:
+        return False
+    fused_label = spaced_label.replace(" ", "")
+
+    for pattern, fused_keyword in _BLACKLIST_INDEX:
+        if pattern is not None and pattern.search(spaced_label):
+            return True
+        if len(fused_keyword) >= _FUSED_MATCH_MIN_LENGTH and fused_keyword in fused_label:
+            return True
+    return False
 
 
 def match_whitelist(cleaned_label: str) -> tuple[str, str] | None:
@@ -350,109 +554,198 @@ def _group_by_merchant_key(
     return reduce(_accumulate, whitelisted, {})
 
 
-def analyze_transactions(transactions: list[RawTransaction]) -> list[CategorizedSubscription]:
-    """Point d'entrée principal.
+# ---------------------------------------------------------------------------
+# Heuristique "marchand inconnu" : seuils du système de score.
+# Whitelist/empreinte bancaire = confiance 1.0 (abonnement certain).
+# Marchand inconnu, non blacklisté, avec récurrence quasi parfaite (~30/31
+# jours), montant fixe et < 50 € = confiance 0.8 (à valider par l'utilisateur
+# dans la modale de détection -- jamais intégré d'office).
+# ---------------------------------------------------------------------------
 
-    1. Ne garde que les débits des `ANALYSIS_WINDOW_MONTHS` derniers mois.
-    2. Ne garde que ceux dont le libellé matche la liste blanche stricte
-       (matching insensible à la casse/accents/ponctuation), et les
-       normalise sous leur Clé Marchand canonique (ex: "DEEZERFR DEEZER"
-       et "deezer premium fr" deviennent tous les deux "Deezer").
-    3. Regroupe (reduce) PAR CLÉ MARCHAND SEULE -- jamais par montant --
-       pour absorber les variations de libellé ET les changements de forfait
-       (prix différent) sous un même abonnement. Détecte une périodicité
-       mensuelle/annuelle sur l'historique complet du marchand (les dates
-       de toutes les occurrences, indépendamment de leur montant).
-    4. Dans chaque groupe, ne conserve que LA TRANSACTION LA PLUS RÉCENTE :
-       c'est elle seule qui définit le prix actuel et la date de
-       prélèvement renvoyés (les anciennes transactions du groupe ne
-       servent qu'à confirmer la récurrence, jamais à l'état final).
-    5. Ne renvoie que les abonnements toujours actifs : dernière occurrence
-       dans le mois en cours ou précédent, OU périodicité détectée dont la
-       prochaine échéance n'est pas dépassée.
+WHITELIST_CONFIDENCE = 1.0
+HEURISTIC_CONFIDENCE = 0.8
+_HEURISTIC_MIN_OCCURRENCES = 3        # 2 intervalles mesurés minimum
+_HEURISTIC_MONTHLY_NOMINAL = 30       # cible "exactement 30/31 jours"...
+_HEURISTIC_MONTHLY_TOLERANCE = 3      # ...soit 27-33 j (mois de 28-31 j + décalage week-end)
+_HEURISTIC_MAX_PRICE = 50.0           # au-delà, trop risqué sans whitelist
+_AMOUNT_CLUSTER_TOLERANCE = 0.50      # "montant fixe" : ± 0,50 €
+_HEURISTIC_CATEGORY = "Autre"
+
+
+def _cluster_by_amount(txs: list[RawTransaction]) -> list[list[RawTransaction]]:
+    """Sous-groupe des transactions par montant quasi identique (± 0,50 €),
+    chaque cluster trié par date. Utilisé pour les marchands-parapluie
+    (plusieurs services sous un même libellé Apple/Google) et pour
+    l'heuristique marchand inconnu (exigence de montant fixe)."""
+    clusters: list[list[RawTransaction]] = []
+    for tx in sorted(txs, key=lambda t: t.date):
+        for cluster in clusters:
+            if abs(abs(cluster[0].value) - abs(tx.value)) <= _AMOUNT_CLUSTER_TOLERANCE:
+                cluster.append(tx)
+                break
+        else:
+            clusters.append([tx])
+    return clusters
+
+
+def _build_candidate(
+    merchant: str,
+    txs: list[RawTransaction],
+    frequency: str,
+    confidence: float,
+    category: str,
+    today: date,
+) -> CategorizedSubscription | None:
+    """Construit un candidat à partir d'un groupe daté, en appliquant le
+    filtre d'activité (occurrence récente OU prochaine échéance à venir) et
+    la règle d'écrasement (prix/date = transaction la plus récente, jamais
+    une moyenne -- un changement de forfait se reflète immédiatement)."""
+    txs = sorted(txs, key=lambda t: t.date)
+    latest_tx = txs[-1]
+    last_date = _parse_date(latest_tx.date)
+    nominal_days = _FREQUENCIES[frequency][0]
+    next_estimated = last_date + timedelta(days=nominal_days)
+
+    recent = _is_current_or_previous_month(last_date, today)
+    still_due = next_estimated >= today
+    if not (recent or still_due):
+        return None  # ni occurrence récente, ni échéance à venir -> plus actif
+
+    return CategorizedSubscription(
+        merchant=merchant,
+        price=round(abs(latest_tx.value), 2),
+        frequency=frequency,
+        occurrences=len(txs),
+        last_date=last_date.isoformat(),
+        next_estimated_date=next_estimated.isoformat(),
+        confidence=confidence,
+        source_transaction_ids=[latest_tx.id],
+        category=category,
+    )
+
+
+def _intervals_of(txs: list[RawTransaction]) -> list[int]:
+    dates = sorted(_parse_date(t.date) for t in txs)
+    return [(dates[i + 1] - dates[i]).days for i in range(len(dates) - 1)]
+
+
+def _is_strict_monthly(intervals: list[int]) -> bool:
+    """True si TOUS les intervalles collent au rythme ~30/31 jours (tolérance
+    serrée) -- le critère "récurrence parfaite" de l'heuristique marchand
+    inconnu, volontairement plus strict que `_match_frequency` (whitelist)."""
+    return bool(intervals) and all(
+        abs(i - _HEURISTIC_MONTHLY_NOMINAL) <= _HEURISTIC_MONTHLY_TOLERANCE for i in intervals
+    )
+
+
+def analyze_transactions(transactions: list[RawTransaction]) -> list[CategorizedSubscription]:
+    """Point d'entrée principal -- pipeline complet décrit dans le docstring
+    du module : whitelist+empreintes (confiance 1.0) / blacklist (exclu) /
+    heuristique marchand inconnu (confiance 0.8, à valider).
+
+    Aucun montant minimum : les micro-transactions (0,99 € iCloud, 2,99 €
+    Snap+) sont des signaux d'abonnement de plein droit.
 
     Note : une périodicité annuelle ne peut mathématiquement pas être
     confirmée par 2 occurrences dans une fenêtre de 6 mois (l'intervalle
-    dépasse la fenêtre elle-même). Un abonnement annuel n'est donc remonté
-    que si sa dernière occurrence tombe dans le mois en cours ou précédent ;
-    au-delà, faute de second point de mesure, on ne peut pas garantir qu'il
-    est toujours actif et il est légitimement ignoré par le filtre.
+    dépasse la fenêtre elle-même). Un abonnement annuel whitelisté n'est donc
+    remonté que si sa dernière occurrence tombe dans le mois en cours ou
+    précédent ; au-delà, faute de second point de mesure, on ne peut pas
+    garantir qu'il est toujours actif et il est légitimement ignoré.
     """
     today = date.today()
     window_start = _shift_months(today, -ANALYSIS_WINDOW_MONTHS)
 
     debits = [tx for tx in transactions if tx.value < 0 and _parse_date(tx.date) >= window_start]
 
-    # Étape liste blanche : (transaction, Clé Marchand canonique, catégorie).
-    # `match_whitelist` normalise déjà en MAJUSCULES avant comparaison (via
-    # `_normalize_spaced`/`_normalize_fused`) : le matching est donc
-    # strictement insensible à la casse ("Prixtel" == "prixtel" == "PRIXTEL").
+    # Tri des débits en trois lots : whitelistés (avec Clé Marchand), exclus
+    # (blacklist, jetés ici AVANT toute analyse de récurrence), inconnus
+    # (candidats heuristique). L'ordre whitelist-puis-blacklist est
+    # intentionnel : "AUCHAN TELECOM" doit matcher la whitelist Téléphonie
+    # avant que "AUCHAN" (blacklist grande distribution) ne puisse le bloquer.
     whitelisted: list[tuple[RawTransaction, str, str]] = []
+    unknown_by_label: dict[str, list[RawTransaction]] = {}
     for tx in debits:
         label = clean_label(tx.wording)
         if not label:
             continue
         match = match_whitelist(label)
-        if match is None:
+        if match is not None:
+            merchant_key, category = match
+            whitelisted.append((tx, merchant_key, category))
             continue
-        merchant_key, category = match
-        whitelisted.append((tx, merchant_key, category))
-
-    groups = _group_by_merchant_key(whitelisted)
+        if is_excluded(label):
+            continue
+        unknown_by_label.setdefault(label, []).append(tx)
 
     results: list[CategorizedSubscription] = []
 
+    # --- Étage 1 : marchands whitelistés (confiance 1.0) -------------------
+    groups = _group_by_merchant_key(whitelisted)
     for merchant_key, entries in groups.items():
         entries_by_date = sorted(entries, key=lambda entry: entry[0].date)
         all_txs = [tx for tx, _ in entries_by_date]
-        latest_tx, category = entries_by_date[-1]
+        category = entries_by_date[-1][1]
 
-        dates = [_parse_date(t.date) for t in all_txs]
-        last_date = dates[-1]
-        recent = _is_current_or_previous_month(last_date, today)
+        if merchant_key in STORE_BILLING_MERCHANTS:
+            # Facturation centralisée Apple/Google : un même libellé mélange
+            # abonnements ET achats one-shot. Chaque montant distinct doit
+            # prouver une récurrence MESURÉE (jamais l'hypothèse "1
+            # occurrence récente = mensuel") pour sortir comme candidat --
+            # sinon tout achat d'app deviendrait un faux abonnement.
+            for cluster in _cluster_by_amount(all_txs):
+                if len(cluster) < 2:
+                    continue
+                freq_match = _match_frequency(_intervals_of(cluster))
+                if freq_match is None:
+                    continue
+                candidate = _build_candidate(
+                    merchant_key, cluster, freq_match[0], WHITELIST_CONFIDENCE, category, today
+                )
+                if candidate:
+                    results.append(candidate)
+            continue
 
+        # Marchand whitelisté classique : groupé par Clé Marchand seule (un
+        # changement de forfait ne crée jamais de doublon).
         frequency: str | None = None
-        confidence = 0.5  # valeur par défaut si la périodicité n'est pas mesurable
         if len(all_txs) >= 2:
-            intervals = [(dates[i + 1] - dates[i]).days for i in range(len(dates) - 1)]
-            match = _match_frequency(intervals)
-            if match is not None:
-                frequency, confidence = match
+            freq_match = _match_frequency(_intervals_of(all_txs))
+            if freq_match is not None:
+                frequency = freq_match[0]
 
         if frequency is None:
-            # Une seule occurrence (ou intervalles incohérents) : on ne peut
-            # pas mesurer de périodicité. Le mensuel est l'hypothèse par
-            # défaut (l'immense majorité des services de la liste blanche),
-            # mais seule une occurrence récente justifie de garder ce
-            # candidat (cf. règle du filtre d'activité).
-            if not recent:
+            # Une seule occurrence (ou intervalles incohérents) : le mensuel
+            # est l'hypothèse par défaut, mais seule une occurrence récente
+            # justifie de garder ce candidat.
+            last_date = _parse_date(all_txs[-1].date)
+            if not _is_current_or_previous_month(last_date, today):
                 continue
             frequency = "monthly"
 
-        nominal_days = _FREQUENCIES[frequency][0]
-        next_estimated = last_date + timedelta(days=nominal_days)
-        still_due = next_estimated >= today
-
-        if not (recent or still_due):
-            continue  # ni occurrence récente, ni échéance à venir -> plus actif
-
-        results.append(
-            CategorizedSubscription(
-                merchant=merchant_key,
-                # Prix et date : uniquement ceux de la transaction la plus
-                # récente (règle d'écrasement), jamais une moyenne sur
-                # l'historique -- un changement de forfait doit se refléter
-                # immédiatement, pas être lissé.
-                price=round(abs(latest_tx.value), 2),
-                frequency=frequency,
-                occurrences=len(all_txs),
-                last_date=last_date.isoformat(),
-                next_estimated_date=next_estimated.isoformat(),
-                confidence=round(confidence, 2),
-                source_transaction_ids=[latest_tx.id],
-                category=category,
-            )
+        candidate = _build_candidate(
+            merchant_key, all_txs, frequency, WHITELIST_CONFIDENCE, category, today
         )
+        if candidate:
+            results.append(candidate)
+
+    # --- Étage 3 : marchands inconnus (confiance 0.8, à valider) -----------
+    # (l'étage 2, la blacklist, a déjà éliminé ses transactions plus haut)
+    for label, txs in unknown_by_label.items():
+        for cluster in _cluster_by_amount(txs):
+            if len(cluster) < _HEURISTIC_MIN_OCCURRENCES:
+                continue
+            if abs(cluster[-1].value) >= _HEURISTIC_MAX_PRICE:
+                continue
+            if not _is_strict_monthly(_intervals_of(cluster)):
+                continue
+            candidate = _build_candidate(
+                # .title() : libellé bancaire brut rendu lisible ("SELARL KINE
+                # DUPONT" -> "Selarl Kine Dupont") -- renommable dans la modale.
+                label.title(), cluster, "monthly", HEURISTIC_CONFIDENCE, _HEURISTIC_CATEGORY, today
+            )
+            if candidate:
+                results.append(candidate)
 
     results.sort(key=lambda r: (r.confidence, r.occurrences), reverse=True)
     return results
@@ -480,16 +773,44 @@ if __name__ == "__main__":
         # Prixtel : même marchand, casse différente ("prixtel" vs "PRIXTEL") -> regroupés.
         RawTransaction(id="8", wording="prlv sepa prixtel mobile", value=-8.00, date=_iso(33)),
         RawTransaction(id="9", wording="PRLV SEPA PRIXTEL MOBILE", value=-10.00, date=_iso(3)),
-        # Marchand hors liste blanche -> toujours ignoré, même récurrent.
+        # Marchand inconnu, seulement 2 occurrences -> ignoré (il en faut 3).
         RawTransaction(id="10", wording="CB ACHAT BOULANGERIE MARTIN", value=-4.50, date=_iso(30)),
         RawTransaction(id="11", wording="CB ACHAT BOULANGERIE MARTIN", value=-4.50, date=_iso(60)),
-        # Faux positifs stricts : jamais dans la liste blanche -> ignorés.
+        # Blacklist : grande distribution, impôts, épargne, loyer -> exclus
+        # AVANT analyse de récurrence, même avec un rythme parfait.
         RawTransaction(id="12", wording="CB LIDL PARIS 18", value=-32.10, date=_iso(4)),
-        RawTransaction(id="13", wording="VIR SEPA SOGENAL", value=-120.00, date=_iso(4)),
-        RawTransaction(id="14", wording="PRLV METROPOLE DU GRAND NANCY", value=-15.00, date=_iso(4)),
-        RawTransaction(id="15", wording="CB SNCF-VOYAGEURS INTERNET", value=-42.00, date=_iso(4)),
+        RawTransaction(id="13", wording="CB CARREFOUR PARIS 11", value=-64.20, date=_iso(4)),
+        RawTransaction(id="14", wording="CB CARREFOUR PARIS 11", value=-64.20, date=_iso(34)),
+        RawTransaction(id="15", wording="PRLV DGFIP IMPOT REVENU", value=-250.00, date=_iso(4)),
+        RawTransaction(id="16", wording="VIR PERMANENT LIVRET A", value=-200.00, date=_iso(4)),
+        RawTransaction(id="17", wording="PRLV SEPA LOYER AGENCE FONCIA", value=-750.00, date=_iso(2)),
+        # Empreintes bancaires cryptiques -> résolues et détectées (100%).
+        # iCloud à 0,99 € : micro-transaction, jamais filtrée sur le montant.
+        RawTransaction(id="18", wording="CB APPLE.COM/BILL 0,99EUR", value=-0.99, date=_iso(63)),
+        RawTransaction(id="19", wording="CB APPLE.COM/BILL 0,99EUR", value=-0.99, date=_iso(33)),
+        RawTransaction(id="20", wording="CB APPLE.COM/BILL 0,99EUR", value=-0.99, date=_iso(3)),
+        # Achat d'app one-shot via le même libellé Apple -> PAS un abonnement
+        # (récurrence mesurée obligatoire pour les marchands-parapluie).
+        RawTransaction(id="21", wording="CB APPLE.COM/BILL 19,99EUR", value=-19.99, date=_iso(10)),
+        # Navigo : le prélèvement réel s'appelle COMUTITRES.
+        RawTransaction(id="22", wording="PRLV SEPA COMUTITRES NAVIGO ANNUEL", value=-88.80, date=_iso(33)),
+        RawTransaction(id="23", wording="PRLV SEPA COMUTITRES NAVIGO ANNUEL", value=-88.80, date=_iso(3)),
+        # Tinder facturé via Match Group.
+        RawTransaction(id="24", wording="CB MTCH*TINDER 421000", value=-14.99, date=_iso(32)),
+        RawTransaction(id="25", wording="CB MTCH*TINDER 421000", value=-14.99, date=_iso(2)),
+        # Marchand inconnu, récurrence parfaite (30 j), montant fixe < 50 € ->
+        # candidat heuristique à 80%, catégorie "Autre", à valider.
+        RawTransaction(id="26", wording="PRLV SEPA SALLE ESCALADE VERTICAL", value=-24.90, date=_iso(63)),
+        RawTransaction(id="27", wording="PRLV SEPA SALLE ESCALADE VERTICAL", value=-24.90, date=_iso(33)),
+        RawTransaction(id="28", wording="PRLV SEPA SALLE ESCALADE VERTICAL", value=-24.90, date=_iso(3)),
+        # Marchand inconnu récurrent mais > 50 € -> ignoré (trop risqué sans whitelist).
+        RawTransaction(id="29", wording="PRLV SEPA CABINET OSTEO DURAND", value=-65.00, date=_iso(63)),
+        RawTransaction(id="30", wording="PRLV SEPA CABINET OSTEO DURAND", value=-65.00, date=_iso(33)),
+        RawTransaction(id="31", wording="PRLV SEPA CABINET OSTEO DURAND", value=-65.00, date=_iso(3)),
+        # Ordre whitelist-avant-blacklist : Auchan Télécom survit à "AUCHAN".
+        RawTransaction(id="32", wording="PRLV SEPA AUCHAN TELECOM MOBILE", value=-9.99, date=_iso(3)),
         # Transaction hors fenêtre de 6 mois -> ignorée.
-        RawTransaction(id="16", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(210)),
+        RawTransaction(id="33", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(210)),
     ]
 
     for result in analyze_transactions(sample):

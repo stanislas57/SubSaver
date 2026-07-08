@@ -176,8 +176,15 @@ export function BankReportModal({
                     </button>
                   </div>
 
-                  <p className="mt-2 text-xs text-luxury-text-light">
-                    {formatPrice(c.price, currency)} · {FREQUENCY_LABELS[c.frequency]} · {Math.round(c.confidence * 100)}% confiance
+                  <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-luxury-text-light">
+                    <span>
+                      {formatPrice(c.price, currency)} · {FREQUENCY_LABELS[c.frequency]} · {Math.round(c.confidence * 100)}% confiance
+                    </span>
+                    {c.confidence < 1 && (
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-800">
+                        Marchand inconnu — à vérifier
+                      </span>
+                    )}
                   </p>
 
                   <div className="mt-2">
