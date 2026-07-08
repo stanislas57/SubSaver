@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.email_service import send_password_reset_email, send_verification_code_email
+from app.core.email_service import send_password_reset_email
 from app.core.rate_limit import limiter
 from app.core.security import create_access_token, generate_verification_code, hash_password, verify_password
 from app.core.sms_service import mask_phone, send_otp_sms
@@ -21,7 +21,6 @@ from app.schemas import (
     RegisterBody,
     RegisterResult,
     ResetPasswordBody,
-    VerifyEmailBody,
     VerifyOtpBody,
 )
 
@@ -142,36 +141,6 @@ def verify_otp(request: Request, body: VerifyOtpBody, db: Session = Depends(get_
     return AuthResponse(access_token=create_access_token(user.id), token_type="bearer", user=user)
 
 
-@router.post("/verify-email", response_model=AuthResponse)
-@limiter.limit("10/minute")
-def verify_email(request: Request, body: VerifyEmailBody, db: Session = Depends(get_db)):
-    """Legacy endpoint — maintenu pour compatibilité arrière."""
-    user = db.query(User).filter(User.email == body.email).first()
-    if not user or not user.verification_code:
-        raise HTTPException(status_code=400, detail="Aucune vérification en attente pour cet email.")
-
-    if user.verification_attempts >= MAX_CODE_ATTEMPTS:
-        raise HTTPException(
-            status_code=429,
-            detail="Trop de tentatives avec un code incorrect. Demande un nouveau code.",
-        )
-    if _is_expired(user.verification_code_expires_at):
-        raise HTTPException(status_code=400, detail="Code expiré. Demande un nouveau code.")
-    if user.verification_code != body.code:
-        user.verification_attempts += 1
-        db.commit()
-        raise HTTPException(status_code=400, detail="Code incorrect.")
-
-    user.is_verified = True
-    user.verification_code = None
-    user.verification_code_expires_at = None
-    user.verification_attempts = 0
-    db.commit()
-    db.refresh(user)
-
-    return AuthResponse(access_token=create_access_token(user.id), token_type="bearer", user=user)
-
-
 @router.post("/resend-otp", response_model=MessageResult)
 @limiter.limit("3/5minutes")
 def resend_otp(request: Request, body: EmailBody, db: Session = Depends(get_db)):
@@ -193,21 +162,6 @@ def resend_otp(request: Request, body: EmailBody, db: Session = Depends(get_db))
         except Exception as e:
             logger.error(f"Erreur lors du renvoi du SMS OTP pour {body.email}: {e}")
 
-    return MessageResult(message=GENERIC_CODE_SENT_MESSAGE)
-
-
-@router.post("/resend-code", response_model=MessageResult)
-@limiter.limit("3/5minutes")
-def resend_code(request: Request, body: EmailBody, db: Session = Depends(get_db)):
-    """Legacy endpoint — maintenu pour compatibilité arrière (email)."""
-    user = db.query(User).filter(User.email == body.email).first()
-    if user and not user.is_verified:
-        code = generate_verification_code()
-        user.verification_code = code
-        user.verification_code_expires_at = _code_expiry().isoformat()
-        user.verification_attempts = 0  # nouveau code -> nouvelle chance, compteur remis à zéro
-        db.commit()
-        send_verification_code_email(user.email, code)
     return MessageResult(message=GENERIC_CODE_SENT_MESSAGE)
 
 
@@ -249,7 +203,7 @@ def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Ses
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect.")
 
     if not user.is_verified:
-        raise HTTPException(status_code=403, detail="Compte non vérifié. Vérifie ton email avant de te connecter.")
+        raise HTTPException(status_code=403, detail="Compte non vérifié. Vérifie ton téléphone avant de te connecter.")
 
     # Connexion réussie : on lève le verrou et on repart avec un compteur propre.
     user.failed_login_attempts = 0

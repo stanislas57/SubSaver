@@ -48,18 +48,6 @@ def _code_email_body(title: str, intro: str, code: str, footer: str = "") -> str
     """
 
 
-def send_verification_code_email(to: str, code: str) -> None:
-    send_email(
-        to,
-        subject="Ton code de vérification SubServer",
-        html_body=_code_email_body(
-            "Vérifie ton adresse e-mail",
-            "Voici ton code de vérification pour activer ton compte SubServer :",
-            code,
-        ),
-    )
-
-
 def send_password_reset_email(to: str, code: str) -> None:
     send_email(
         to,

@@ -17,6 +17,9 @@ export interface User {
   id: string;
   email: string;
   first_name: string;
+  /** null pour les comptes créés avant l'introduction de la vérification par
+   * SMS -- toujours renseigné pour les comptes créés depuis. */
+  phone: string | null;
   language: Language;
   theme: Theme;
   currency: Currency;
@@ -30,7 +33,7 @@ export interface User {
   charter_accepted_at: string | null;
 }
 
-/** Réponse de POST /auth/login et POST /auth/verify-email (schéma Token). */
+/** Réponse de POST /auth/login et POST /auth/verify-otp (schéma Token). */
 export interface AuthResponse {
   access_token: string;
   token_type: string;
@@ -38,10 +41,10 @@ export interface AuthResponse {
 }
 
 /** Réponse de POST /auth/register : le compte n'est pas encore actif, un code
- * de vérification à 6 chiffres vient d'être envoyé par email. */
+ * de vérification à 6 chiffres vient d'être envoyé par SMS. */
 export interface RegisterResult {
-  email: string;
-  message: string;
+  phone_masked: string;
+  attempts_remaining: number;
 }
 
 export interface MessageResult {

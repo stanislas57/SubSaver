@@ -10,9 +10,15 @@ import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 
+const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+
 const schema = z.object({
   firstName: z.string().min(1, "Prénom requis").max(50),
   email: z.string().email("Email invalide"),
+  phone: z
+    .string()
+    .min(1, "Téléphone requis")
+    .regex(phoneRegex, "Format international requis (ex: +33612345678)"),
   password: z.string().min(8, "8 caractères minimum"),
 });
 
@@ -22,7 +28,7 @@ const inputClassName = "border-luxury-text/20 bg-luxury-bg placeholder:text-luxu
 
 export interface RegisterFormProps {
   /** Appelé une fois le code de vérification envoyé, pour passer à l'étape suivante. */
-  onRegistered: (email: string) => void;
+  onRegistered: (email: string, phone: string) => void;
 }
 
 export function RegisterForm({ onRegistered }: RegisterFormProps) {
@@ -36,8 +42,8 @@ export function RegisterForm({ onRegistered }: RegisterFormProps) {
 
   async function onSubmit(values: FormValues) {
     try {
-      await registerUser(values.email, values.password, values.firstName);
-      onRegistered(values.email);
+      await registerUser(values.email, values.password, values.firstName, values.phone);
+      onRegistered(values.email, values.phone);
     } catch {
       // erreur déjà exposée via registerError
     }
@@ -58,6 +64,24 @@ export function RegisterForm({ onRegistered }: RegisterFormProps) {
         <Label htmlFor="email" className="text-luxury-text">Email</Label>
         <Input id="email" type="email" autoComplete="email" error={!!errors.email} className={inputClassName} {...register("email")} />
         {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
+      </div>
+
+      <div>
+        <Label htmlFor="phone" className="text-luxury-text">Téléphone</Label>
+        <Input
+          id="phone"
+          type="tel"
+          autoComplete="tel"
+          placeholder="+33 6 12 34 56 78"
+          error={!!errors.phone}
+          className={inputClassName}
+          {...register("phone")}
+        />
+        {errors.phone ? (
+          <p className="mt-1 text-xs text-red-500">{errors.phone.message}</p>
+        ) : (
+          <p className="mt-1 text-xs text-luxury-text-light">Format international, avec indicatif</p>
+        )}
       </div>
 
       <div>

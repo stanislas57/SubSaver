@@ -15,7 +15,9 @@ class UserOut(BaseModel):
     id: str
     email: str
     first_name: str
-    phone: str
+    # Optional : les comptes créés avant l'introduction de la vérification par
+    # SMS n'ont pas de téléphone enregistré (cf. migration a7b3c2d1e4f5).
+    phone: Optional[str] = None
     language: Language
     theme: Theme
     currency: Currency
@@ -57,11 +59,6 @@ class VerifyOtpBody(BaseModel):
         if not v.isdigit() or len(v) != 6:
             raise ValueError("Le code OTP doit contenir 6 chiffres")
         return v
-
-
-class VerifyEmailBody(BaseModel):
-    email: str
-    code: str
 
 
 class EmailBody(BaseModel):

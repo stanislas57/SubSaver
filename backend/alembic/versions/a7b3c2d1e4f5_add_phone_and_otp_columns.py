@@ -18,19 +18,17 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Ajouter le champ phone (obligatoire, unique)
-    # Comme c'est une colonne unique sur une table existante, on utilise server_default
-    # pour les comptes existants, puis on le retire une fois appliqué.
-    op.add_column('users', sa.Column('phone', sa.String(), nullable=False, server_default=''))
+    # Nullable : les comptes déjà existants n'ont pas de téléphone connu.
+    # PostgreSQL autorise plusieurs valeurs NULL dans un index unique (NULL
+    # n'est jamais égal à NULL), donc pas de conflit -- pas besoin de
+    # server_default ici, contrairement à un champ NOT NULL classique.
+    op.add_column('users', sa.Column('phone', sa.String(), nullable=True))
     op.create_index(op.f('ix_users_phone'), 'users', ['phone'], unique=True)
 
     # Ajouter les colonnes OTP
     op.add_column('users', sa.Column('otp_code', sa.String(), nullable=True))
     op.add_column('users', sa.Column('otp_expires_at', sa.String(), nullable=True))
     op.add_column('users', sa.Column('otp_attempts', sa.Integer(), nullable=False, server_default='0'))
-
-    # Retirer les server_default une fois appliqué
-    op.alter_column('users', 'phone', server_default=None)
     op.alter_column('users', 'otp_attempts', server_default=None)
 
 

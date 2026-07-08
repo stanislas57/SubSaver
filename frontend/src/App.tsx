@@ -64,10 +64,13 @@ export default function App() {
         <AuthProvider>
           <Routes>
             <Route element={<GuestOnlyRoute />}>
-              {/* /login a son propre écran immersif plein-page (fond Bleu Nuit animé) */}
+              {/* /login et /register ont chacun leur propre écran plein-page
+                  (fond immersif Bleu Nuit pour /login, carte Luxe Lumineux
+                  pour /register) : ni l'un ni l'autre ne passe par AuthLayout,
+                  qui fournirait un logo/carte redondants avec les leurs. */}
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
               <Route element={<AuthLayout />}>
-                <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               </Route>
             </Route>

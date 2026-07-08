@@ -18,7 +18,11 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     first_name: Mapped[str] = mapped_column(String, nullable=False)
-    phone: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
+    # Nullable : les comptes créés avant l'introduction de la vérification par
+    # SMS (cf. migration a7b3c2d1e4f5) n'ont pas de téléphone enregistré.
+    # L'unicité Postgres autorise plusieurs NULL, donc pas de conflit entre
+    # ces anciens comptes.
+    phone: Mapped[str | None] = mapped_column(String, unique=True, nullable=True, index=True)
 
     language: Mapped[str] = mapped_column(String, nullable=False, default="fr")
     theme: Mapped[str] = mapped_column(String, nullable=False, default="light")
@@ -33,10 +37,6 @@ class User(Base):
     otp_expires_at: Mapped[str | None] = mapped_column(String, nullable=True)
     otp_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
-    # Anciennes colonnes (legacy email verification — à supprimer lors du nettoyage)
-    verification_code: Mapped[str | None] = mapped_column(String, nullable=True)
-    verification_code_expires_at: Mapped[str | None] = mapped_column(String, nullable=True)
-
     # Réinitialisation de mot de passe (même mécanisme : code 6 chiffres par email)
     reset_code: Mapped[str | None] = mapped_column(String, nullable=True)
     reset_code_expires_at: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -45,7 +45,6 @@ class User(Base):
     # zéro à chaque succès ou à chaque nouveau code émis (register/resend/forgot).
     failed_login_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     locked_until: Mapped[str | None] = mapped_column(String, nullable=True)
-    verification_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     reset_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # Powens (Open Banking) — 1 utilisateur SubServer = 1 utilisateur Powens

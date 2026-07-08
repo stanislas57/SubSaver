@@ -11,25 +11,30 @@ import type { AuthResponse, MessageResult, RegisterResult } from "@/types";
 const LOGIN_TIMEOUT_MS = 45_000;
 
 export const authService = {
-  /** POST /auth/register — le compte n'est pas actif tant que /auth/verify-email n'a pas été appelé. */
-  async register(email: string, password: string, firstName: string): Promise<RegisterResult> {
+  /** POST /auth/register — le compte n'est pas actif tant que /auth/verify-otp n'a pas été appelé. */
+  async register(email: string, password: string, firstName: string, phone: string): Promise<RegisterResult> {
     const { data } = await axiosClient.post<RegisterResult>("/auth/register", {
       email,
       password,
       first_name: firstName,
+      phone,
     });
     return data;
   },
 
-  /** POST /auth/verify-email — valide le code à 6 chiffres et connecte l'utilisateur. */
-  async verifyEmail(email: string, code: string): Promise<AuthResponse> {
-    const { data } = await axiosClient.post<AuthResponse>("/auth/verify-email", { email, code });
+  /** POST /auth/verify-otp — valide le code SMS à 6 chiffres et connecte l'utilisateur. */
+  async verifyOtp(email: string, phone: string, otpCode: string): Promise<AuthResponse> {
+    const { data } = await axiosClient.post<AuthResponse>("/auth/verify-otp", {
+      email,
+      phone,
+      otp_code: otpCode,
+    });
     return data;
   },
 
-  /** POST /auth/resend-code */
-  async resendCode(email: string): Promise<MessageResult> {
-    const { data } = await axiosClient.post<MessageResult>("/auth/resend-code", { email });
+  /** POST /auth/resend-otp */
+  async resendOtp(email: string): Promise<MessageResult> {
+    const { data } = await axiosClient.post<MessageResult>("/auth/resend-otp", { email });
     return data;
   },
 

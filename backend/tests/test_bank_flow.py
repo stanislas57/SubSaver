@@ -82,14 +82,17 @@ class TestCallback:
         state = up.parse_qs(up.urlparse(connect.json()["webview_url"]).query)["state"][0]
 
         other_email = f"other-{uuid.uuid4().hex[:8]}@example.com"
+        other_phone = f"+336{uuid.uuid4().int % 100000000:08d}"
         client.post(
             "/api/v1/auth/register",
-            json={"email": other_email, "password": "Test1234!", "first_name": "X"},
+            json={"email": other_email, "password": "Test1234!", "first_name": "X", "phone": other_phone},
         )
         db = SessionLocal()
-        other_code = db.query(User).filter(User.email == other_email).first().verification_code
+        other_code = db.query(User).filter(User.email == other_email).first().otp_code
         db.close()
-        other = client.post("/api/v1/auth/verify-email", json={"email": other_email, "code": other_code}).json()
+        other = client.post(
+            "/api/v1/auth/verify-otp", json={"email": other_email, "phone": other_phone, "otp_code": other_code}
+        ).json()
         other_headers = {"Authorization": f"Bearer {other['access_token']}"}
 
         response = client.post(

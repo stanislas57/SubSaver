@@ -13,14 +13,14 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   isLoggingIn: boolean;
   loginError: string | null;
-  register: (email: string, password: string, firstName: string) => Promise<void>;
+  register: (email: string, password: string, firstName: string, phone: string) => Promise<void>;
   isRegistering: boolean;
   registerError: string | null;
-  verifyEmail: (email: string, code: string) => Promise<void>;
-  isVerifyingEmail: boolean;
-  verifyEmailError: string | null;
-  resendCode: (email: string) => Promise<void>;
-  isResendingCode: boolean;
+  verifyOtp: (email: string, phone: string, otpCode: string) => Promise<void>;
+  isVerifyingOtp: boolean;
+  verifyOtpError: string | null;
+  resendOtp: (email: string) => Promise<void>;
+  isResendingOtp: boolean;
   forgotPassword: (email: string) => Promise<void>;
   isSendingResetCode: boolean;
   forgotPasswordError: string | null;
@@ -75,17 +75,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const registerMutation = useMutation({
-    mutationFn: ({ email, password, firstName }: { email: string; password: string; firstName: string }) =>
-      authService.register(email, password, firstName),
+    mutationFn: ({ email, password, firstName, phone }: { email: string; password: string; firstName: string; phone: string }) =>
+      authService.register(email, password, firstName, phone),
   });
 
-  const verifyEmailMutation = useMutation({
-    mutationFn: ({ email, code }: { email: string; code: string }) => authService.verifyEmail(email, code),
+  const verifyOtpMutation = useMutation({
+    mutationFn: ({ email, phone, otpCode }: { email: string; phone: string; otpCode: string }) =>
+      authService.verifyOtp(email, phone, otpCode),
     onSuccess: applyAuthResponse,
   });
 
-  const resendCodeMutation = useMutation({
-    mutationFn: (email: string) => authService.resendCode(email),
+  const resendOtpMutation = useMutation({
+    mutationFn: (email: string) => authService.resendOtp(email),
   });
 
   const forgotPasswordMutation = useMutation({
@@ -111,16 +112,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await loginMutation.mutateAsync({ email, password });
   }
 
-  async function register(email: string, password: string, firstName: string) {
-    await registerMutation.mutateAsync({ email, password, firstName });
+  async function register(email: string, password: string, firstName: string, phone: string) {
+    await registerMutation.mutateAsync({ email, password, firstName, phone });
   }
 
-  async function verifyEmail(email: string, code: string) {
-    await verifyEmailMutation.mutateAsync({ email, code });
+  async function verifyOtp(email: string, phone: string, otpCode: string) {
+    await verifyOtpMutation.mutateAsync({ email, phone, otpCode });
   }
 
-  async function resendCode(email: string) {
-    await resendCodeMutation.mutateAsync(email);
+  async function resendOtp(email: string) {
+    await resendOtpMutation.mutateAsync(email);
   }
 
   async function forgotPassword(email: string) {
@@ -157,11 +158,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     register,
     isRegistering: registerMutation.isPending,
     registerError: registerMutation.isError ? getErrorMessage(registerMutation.error, "Impossible de créer le compte.") : null,
-    verifyEmail,
-    isVerifyingEmail: verifyEmailMutation.isPending,
-    verifyEmailError: verifyEmailMutation.isError ? getErrorMessage(verifyEmailMutation.error, "Code invalide.") : null,
-    resendCode,
-    isResendingCode: resendCodeMutation.isPending,
+    verifyOtp,
+    isVerifyingOtp: verifyOtpMutation.isPending,
+    verifyOtpError: verifyOtpMutation.isError ? getErrorMessage(verifyOtpMutation.error, "Code invalide.") : null,
+    resendOtp,
+    isResendingOtp: resendOtpMutation.isPending,
     forgotPassword,
     isSendingResetCode: forgotPasswordMutation.isPending,
     forgotPasswordError: forgotPasswordMutation.isError ? getErrorMessage(forgotPasswordMutation.error) : null,

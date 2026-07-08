@@ -32,24 +32,27 @@ def client():
 
 @pytest.fixture
 def registered_user(client):
-    """Crée un utilisateur de test, passe l'étape de vérification email (le code
-    est lu directement en base, un vrai email n'est jamais envoyé en test),
-    et renvoie (token, user_id, email)."""
+    """Crée un utilisateur de test, passe l'étape de vérification par SMS (le
+    code OTP est lu directement en base, aucun SMS n'est réellement envoyé en
+    test), et renvoie (token, user_id, email, phone)."""
     email = f"e2e-{uuid.uuid4().hex[:10]}@example.com"
+    phone = f"+336{uuid.uuid4().int % 100000000:08d}"
     response = client.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": "Test1234!", "first_name": "E2E"},
+        json={"email": email, "password": "Test1234!", "first_name": "E2E", "phone": phone},
     )
     assert response.status_code == 201, response.text
 
     db = SessionLocal()
-    code = db.query(User).filter(User.email == email).first().verification_code
+    otp_code = db.query(User).filter(User.email == email).first().otp_code
     db.close()
 
-    verify_response = client.post("/api/v1/auth/verify-email", json={"email": email, "code": code})
+    verify_response = client.post(
+        "/api/v1/auth/verify-otp", json={"email": email, "phone": phone, "otp_code": otp_code}
+    )
     assert verify_response.status_code == 200, verify_response.text
     data = verify_response.json()
-    return {"token": data["access_token"], "user_id": data["user"]["id"], "email": email}
+    return {"token": data["access_token"], "user_id": data["user"]["id"], "email": email, "phone": phone}
 
 
 @pytest.fixture
