@@ -293,6 +293,17 @@ class SettlementOut(BaseModel):
     created_at: str
 
 
+class SendReminderBody(BaseModel):
+    """Corps de POST /family/debts/remind -- le membre relancé est toujours
+    le débiteur ("from" d'un DebtEdgeOut) : dans le modèle en étoile de cette
+    fonctionnalité, le créditeur est systématiquement le propriétaire du
+    groupe (celui dont la carte paie les abonnements), donc jamais transmis
+    explicitement ici."""
+
+    member_id: str
+    amount: float
+
+
 class CancellableSubscriptionOut(BaseModel):
     """Version dédupliquée et normalisée des abonnements pour le menu de la
     Lettre de résiliation -- `display_name` passe par le même moteur de

@@ -1,5 +1,6 @@
 import * as React from "react";
-import { ArrowRight, PartyPopper, History } from "lucide-react";
+import { toast } from "sonner";
+import { ArrowRight, PartyPopper, History, Bell } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorAlert } from "@/components/ui/alert";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -7,21 +8,48 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { useDebts, useSettleDebt, useSettlements } from "@/hooks/useSharedSubscription";
+import {
+  useDebts,
+  useSendDebtReminder,
+  useSettleDebt,
+  useSettlements,
+  useSharedSubscriptionGroup,
+} from "@/hooks/useSharedSubscription";
+import { useAuth } from "@/contexts/AuthContext";
 import { formatPrice, formatDateTime } from "@/lib/format";
 import { getErrorMessage } from "@/api/axiosClient";
 import type { Currency, DebtEdge } from "@/types";
 
+const FRENCH_MONTHS = [
+  "janvier", "février", "mars", "avril", "mai", "juin",
+  "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+];
+
+function currentPeriodLabel(): string {
+  const now = new Date();
+  return `${FRENCH_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+}
+
+function todayLabel(): string {
+  const now = new Date();
+  return `${now.getDate()} ${FRENCH_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+}
+
 /** Onglet "Dettes" : qui doit combien à qui, déjà simplifié côté serveur
- * (nombre minimal de transactions), avec bouton "Marquer comme remboursé" et
- * historique des règlements passés -- la brique centrale qui transforme le
- * simple diviseur de coût en vrai outil à la Tricount. */
+ * (nombre minimal de transactions), avec bouton "Marquer comme remboursé",
+ * bouton "Relancer" (envoi d'un e-mail de rappel au débiteur) et historique
+ * des règlements passés -- la brique centrale qui transforme le simple
+ * diviseur de coût en vrai outil à la Tricount. */
 export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
+  const { user } = useAuth();
   const debtsQuery = useDebts();
   const settlementsQuery = useSettlements();
+  const groupQuery = useSharedSubscriptionGroup();
   const settleDebt = useSettleDebt();
+  const sendReminder = useSendDebtReminder();
   const [debtToSettle, setDebtToSettle] = React.useState<DebtEdge | null>(null);
   const [amount, setAmount] = React.useState("");
+  const [debtToRemind, setDebtToRemind] = React.useState<DebtEdge | null>(null);
 
   function openSettleDialog(debt: DebtEdge) {
     setDebtToSettle(debt);
@@ -37,6 +65,31 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
       { onSuccess: () => setDebtToSettle(null) }
     );
   }
+
+  function closeReminderDialog() {
+    setDebtToRemind(null);
+    sendReminder.reset();
+  }
+
+  function confirmReminder() {
+    if (!debtToRemind) return;
+    sendReminder.mutate(
+      { member_id: debtToRemind.from_member_id, amount: debtToRemind.amount },
+      {
+        onSuccess: () => {
+          toast.success(`Rappel envoyé à ${debtToRemind.from_member_name}.`);
+          closeReminderDialog();
+        },
+        onError: (error) => {
+          toast.error(getErrorMessage(error, "Impossible d'envoyer le rappel."));
+        },
+      }
+    );
+  }
+
+  const debtorEmail = debtToRemind
+    ? groupQuery.data?.members.find((m) => m.id === debtToRemind.from_member_id)?.email
+    : null;
 
   return (
     <div className="space-y-6">
@@ -59,24 +112,39 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
         )}
         {debtsQuery.data && debtsQuery.data.length > 0 && (
           <div className="space-y-2">
-            {debtsQuery.data.map((debt) => (
-              <div
-                key={`${debt.from_member_id}-${debt.to_member_id}`}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-4"
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-2 text-sm">
-                  <span className="font-medium text-text-main">{debt.from_member_name}</span>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-text-muted" />
-                  <span className="font-medium text-text-main">{debt.to_member_name}</span>
-                  <span className="ml-1 shrink-0 font-display font-bold text-text-main">
-                    {formatPrice(debt.amount, currency)}
-                  </span>
+            {debtsQuery.data.map((debt) => {
+              const hasEmail = !!groupQuery.data?.members.find((m) => m.id === debt.from_member_id)?.email;
+              return (
+                <div
+                  key={`${debt.from_member_id}-${debt.to_member_id}`}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-4"
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-2 text-sm">
+                    <span className="font-medium text-text-main">{debt.from_member_name}</span>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-text-muted" />
+                    <span className="font-medium text-text-main">{debt.to_member_name}</span>
+                    <span className="ml-1 shrink-0 font-display font-bold text-text-main">
+                      {formatPrice(debt.amount, currency)}
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      title={hasEmail ? `Envoyer un rappel par e-mail à ${debt.from_member_name}` : "Aucune adresse e-mail enregistrée pour ce membre"}
+                      disabled={!hasEmail}
+                      onClick={() => setDebtToRemind(debt)}
+                    >
+                      <Bell className="h-4 w-4" />
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => openSettleDialog(debt)}>
+                      Marquer comme remboursé
+                    </Button>
+                  </div>
                 </div>
-                <Button type="button" variant="outline" size="sm" onClick={() => openSettleDialog(debt)}>
-                  Marquer comme remboursé
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -147,6 +215,66 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
             </Button>
             <Button type="button" onClick={confirmSettle} loading={settleDebt.isPending} disabled={!(Number(amount) > 0)}>
               Confirmer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!debtToRemind} onOpenChange={(open) => !open && closeReminderDialog()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Envoyer un rappel</DialogTitle>
+            <DialogDescription>
+              {debtToRemind && `Un e-mail sera envoyé à ${debtToRemind.from_member_name}${debtorEmail ? ` (${debtorEmail})` : ""}.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {debtToRemind && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 rounded-lg border border-border bg-surface p-3 text-sm">
+                <div>
+                  <p className="text-xs text-text-muted">Membre</p>
+                  <p className="font-medium text-text-main">{debtToRemind.from_member_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-text-muted">Montant</p>
+                  <p className="font-display font-bold text-text-main">{formatPrice(debtToRemind.amount, currency)}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-xs text-text-muted">Raison</p>
+                  <p className="font-medium text-text-main">Abonnements partagés — {currentPeriodLabel()}</p>
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-text-muted">Aperçu du message</p>
+                <div className="rounded-lg border border-border p-3 text-sm text-text-main">
+                  <p>Bonjour {debtToRemind.from_member_name},</p>
+                  <p className="mt-2">
+                    {user?.first_name ?? "Le gestionnaire"} te rappelle ta part sur les abonnements partagés SubServer.
+                  </p>
+                  <p className="mt-2">
+                    Montant dû : <strong>{formatPrice(debtToRemind.amount, currency)}</strong>
+                    <br />
+                    Raison : Abonnements partagés — {currentPeriodLabel()}
+                    <br />
+                    Date de la demande : {todayLabel()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {sendReminder.isError && (
+            <ErrorAlert message={getErrorMessage(sendReminder.error, "Impossible d'envoyer le rappel.")} compact />
+          )}
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={closeReminderDialog}>
+              Annuler
+            </Button>
+            <Button type="button" onClick={confirmReminder} loading={sendReminder.isPending}>
+              {sendReminder.isPending ? "Envoi en cours..." : "Envoyer le rappel"}
             </Button>
           </DialogFooter>
         </DialogContent>

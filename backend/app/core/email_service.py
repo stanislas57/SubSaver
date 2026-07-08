@@ -61,6 +61,71 @@ def send_password_reset_email(to: str, code: str) -> None:
     )
 
 
+_CURRENCY_SYMBOLS = {"EUR": "€", "USD": "$", "GBP": "£", "SEK": "kr"}
+
+
+def format_price(amount: float, currency: str) -> str:
+    """Formatage simple, cohérent avec `formatPrice` côté frontend (cf.
+    frontend/src/lib/format.ts) sans dépendre des locales système (pas
+    toujours installées sur l'hébergeur) : "2,99 €", "$2.99", "2,99 kr"..."""
+    symbol = _CURRENCY_SYMBOLS.get(currency, currency)
+    has_cents = abs(amount - round(amount)) > 0.001
+    value = f"{amount:,.2f}".replace(",", " ").replace(".", ",") if has_cents else f"{round(amount):,}".replace(",", " ")
+    if currency == "USD":
+        value = value.replace(",", ".").replace(" ", ",")
+        return f"{symbol}{value}"
+    return f"{value} {symbol}"
+
+
+def send_debt_reminder_email(
+    to: str, member_first_name: str, owner_name: str, amount: float, currency: str, period_label: str, request_date: str
+) -> None:
+    """Relance de paiement envoyée par le propriétaire du groupe Abonnement
+    partagé à un membre débiteur (cf. POST /family/debts/remind). Purement
+    informatif -- pas de lien de paiement, l'app ne fait que suivre des
+    dettes entre proches, elle n'encaisse rien."""
+    safe_first_name = html.escape(member_first_name)
+    safe_owner_name = html.escape(owner_name)
+    safe_period = html.escape(period_label)
+    price = format_price(amount, currency)
+
+    html_body = f"""
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; background: #f8fafc;">
+      <div style="background: #0A1128; padding: 24px 32px; border-radius: 12px 12px 0 0;">
+        <span style="color: #D4AF37; font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">SubServer</span>
+      </div>
+      <div style="background: #ffffff; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="margin: 0 0 16px; color: #0f172a; font-size: 15px;">Bonjour {safe_first_name},</p>
+        <p style="margin: 0 0 24px; color: #475569; font-size: 15px; line-height: 1.6;">
+          {safe_owner_name} te rappelle ta part sur les abonnements partagés SubServer.
+        </p>
+
+        <div style="background: #FAF6EA; border: 1px solid #D4AF37; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
+          <p style="margin: 0 0 4px; color: #64748b; font-size: 13px;">Montant dû</p>
+          <p style="margin: 0; color: #0A1128; font-size: 32px; font-weight: 700;">{price}</p>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #334155;">
+          <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0; color: #64748b;">Raison</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600;">Abonnements partagés — {safe_period}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #64748b;">Date de la demande</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: 600;">{request_date}</td>
+          </tr>
+        </table>
+
+        <p style="margin: 24px 0 0; color: #94a3b8; font-size: 12px; line-height: 1.5;">
+          Ce message a été envoyé automatiquement depuis SubServer à la demande de {safe_owner_name}.
+          Réglez directement avec cette personne (virement, espèces...) -- SubServer ne gère aucun paiement.
+        </p>
+      </div>
+    </div>
+    """
+    send_email(to, subject=f"{owner_name} te rappelle {price} pour vos abonnements partagés", html_body=html_body)
+
+
 def send_contact_email(name: str, from_email: str, subject: str, message: str) -> None:
     """Transfère un message du formulaire de contact public vers
     `settings.CONTACT_EMAIL`, avec `Reply-To` positionné sur l'adresse du

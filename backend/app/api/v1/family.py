@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.email_service import send_debt_reminder_email
+from app.core.rate_limit import limiter
 from app.core.transaction_analyzer import display_merchant_name
 from app.db.session import get_db
 from app.models.family_member import FamilyMember
@@ -18,6 +20,8 @@ from app.schemas import (
     FamilyGroupOut,
     FamilyMemberBody,
     FamilyMemberOut,
+    MessageResult,
+    SendReminderBody,
     SettleDebtBody,
     SettlementOut,
     ShareableSubscriptionOut,
@@ -28,6 +32,22 @@ from app.schemas import (
 )
 
 router = APIRouter(prefix="/family", tags=["family"])
+
+_FRENCH_MONTHS = [
+    "janvier", "février", "mars", "avril", "mai", "juin",
+    "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+]
+
+
+def _period_label(period: str) -> str:
+    """"2026-07" -> "juillet 2026" (pas de dépendance à la locale système)."""
+    year, month = period.split("-")
+    return f"{_FRENCH_MONTHS[int(month) - 1]} {year}"
+
+
+def _today_label() -> str:
+    now = datetime.now(timezone.utc)
+    return f"{now.day} {_FRENCH_MONTHS[now.month - 1]} {now.year}"
 
 # Tolérance (même devise que les montants) sous laquelle un solde est
 # considéré comme réglé -- absorbe les arrondis flottants en cascade.
@@ -476,6 +496,41 @@ def settle_debt(
     db.commit()
 
     return get_family_debts(current_user, db)
+
+
+@router.post("/debts/remind", response_model=MessageResult)
+@limiter.limit("10/hour")
+def send_debt_reminder(
+    request: Request,
+    body: SendReminderBody,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Envoie un e-mail de relance de paiement au membre débiteur -- limité en
+    débit (10/heure) car chaque appel déclenche un envoi d'e-mail réel,
+    identique en principe à /contact. Le créditeur est toujours l'appelant
+    (modèle en étoile centré sur le propriétaire, cf. _compute_net_balances)."""
+    members = _get_deduplicated_members(db, current_user.id)
+    member = next((m for m in members if m.id == body.member_id), None)
+    if not member:
+        raise HTTPException(status_code=404, detail="Membre introuvable.")
+    if member.is_owner:
+        raise HTTPException(status_code=400, detail="Impossible de s'envoyer un rappel à soi-même.")
+    if not member.email:
+        raise HTTPException(status_code=400, detail="Ce membre n'a pas d'adresse e-mail enregistrée.")
+    if body.amount <= 0:
+        raise HTTPException(status_code=400, detail="Le montant doit être positif.")
+
+    send_debt_reminder_email(
+        to=member.email,
+        member_first_name=member.name,
+        owner_name=current_user.first_name,
+        amount=body.amount,
+        currency=current_user.currency,
+        period_label=_period_label(_current_period()),
+        request_date=_today_label(),
+    )
+    return MessageResult(message=f"Rappel envoyé à {member.name}.")
 
 
 @router.get("/settlements", response_model=list[SettlementOut])
