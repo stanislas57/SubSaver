@@ -1,3 +1,5 @@
+import logging
+import time
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -19,6 +21,8 @@ from app.schemas import (
     ResetPasswordBody,
     VerifyEmailBody,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -119,7 +123,18 @@ def resend_code(request: Request, body: EmailBody, db: Session = Depends(get_db)
 @router.post("/login", response_model=AuthResponse)
 @limiter.limit("10/minute")
 def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Chronomètre chaque phase (requête DB, vérification bcrypt, commit,
+    génération du token) et journalise le détail dès que le login entier
+    dépasse 500ms -- objectif : isoler immédiatement en logs si un login lent
+    vient de la base, du coût bcrypt, ou d'autre chose (jamais d'appel externe
+    synchrone ici : ni Powens ni calcul analytique ne sont déclenchés par ce
+    endpoint, vérifié à la lecture du code)."""
+    login_start = time.perf_counter()
+
+    query_start = time.perf_counter()
     user = db.query(User).filter(User.email == form.username).first()
+    query_ms = (time.perf_counter() - query_start) * 1000
+
     if not user:
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect.")
 
@@ -129,7 +144,11 @@ def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Ses
             detail=f"Trop de tentatives échouées. Réessaie dans {LOGIN_LOCKOUT_MINUTES} minutes.",
         )
 
-    if not verify_password(form.password, user.hashed_password):
+    verify_start = time.perf_counter()
+    password_ok = verify_password(form.password, user.hashed_password)
+    verify_ms = (time.perf_counter() - verify_start) * 1000
+
+    if not password_ok:
         user.failed_login_attempts += 1
         if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
             user.locked_until = (
@@ -146,9 +165,23 @@ def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Ses
     user.locked_until = None
     # Tracé CRM (cf. Back-Office Admin) : date de dernière connexion.
     user.last_login_at = datetime.now(timezone.utc).isoformat()
-    db.commit()
 
-    return AuthResponse(access_token=create_access_token(user.id), token_type="bearer", user=user)
+    commit_start = time.perf_counter()
+    db.commit()
+    commit_ms = (time.perf_counter() - commit_start) * 1000
+
+    token_start = time.perf_counter()
+    access_token = create_access_token(user.id)
+    token_ms = (time.perf_counter() - token_start) * 1000
+
+    total_ms = (time.perf_counter() - login_start) * 1000
+    if total_ms >= 500:
+        logger.warning(
+            "[LOGIN LENT] total=%.0fms (requête=%.0fms, bcrypt=%.0fms, commit=%.0fms, jwt=%.0fms) email=%s",
+            total_ms, query_ms, verify_ms, commit_ms, token_ms, form.username,
+        )
+
+    return AuthResponse(access_token=access_token, token_type="bearer", user=user)
 
 
 @router.post("/forgot-password", response_model=MessageResult)

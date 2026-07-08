@@ -1,6 +1,15 @@
 import { axiosClient } from "@/api/axiosClient";
 import type { AuthResponse, MessageResult, RegisterResult } from "@/types";
 
+/** Timeout dédié au login, plus généreux que le timeout global (20s) : un
+ * hébergeur en cold start (ex: instance gratuite endormie après inactivité)
+ * peut mettre jusqu'à 40-50s à répondre à la toute première requête sans que
+ * ce soit pour autant un dysfonctionnement -- couper trop tôt ferait échouer
+ * un login qui aurait fini par réussir. Le feedback progressif côté UI
+ * (LoginForm) prévient l'utilisateur que c'est normal au-delà de quelques
+ * secondes plutôt que de le laisser face à un spinner muet. */
+const LOGIN_TIMEOUT_MS = 45_000;
+
 export const authService = {
   /** POST /auth/register — le compte n'est pas actif tant que /auth/verify-email n'a pas été appelé. */
   async register(email: string, password: string, firstName: string): Promise<RegisterResult> {
@@ -31,6 +40,7 @@ export const authService = {
     form.set("password", password);
     const { data } = await axiosClient.post<AuthResponse>("/auth/login", form, {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      timeout: LOGIN_TIMEOUT_MS,
     });
     return data;
   },

@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,6 +21,35 @@ type FormValues = z.infer<typeof schema>;
 const inputClassName =
   "border-white/20 bg-white/10 text-slate-50 placeholder:text-slate-400 focus-visible:border-luxury-gold/70 focus-visible:ring-luxury-gold/30";
 
+/** Messages affichés selon le temps écoulé depuis le clic sur "Se connecter"
+ * -- un login normal ne dépasse jamais la 1ère étape, les suivantes ne sont
+ * vues que si le serveur met vraiment du temps à répondre (ex: cold start
+ * d'un hébergeur après une période d'inactivité). Sans ça, l'utilisateur ne
+ * voit qu'un spinner muet pendant un temps anormalement long, sans savoir si
+ * l'app a planté ou si ça va aboutir. */
+const LOADING_STAGES = [
+  { afterMs: 0, label: "Authentification..." },
+  { afterMs: 3_000, label: "Vérification de tes identifiants..." },
+  { afterMs: 8_000, label: "Le serveur met plus de temps que prévu (ça peut arriver après une période d'inactivité)..." },
+] as const;
+
+function useLoadingStageLabel(active: boolean): string | null {
+  const [stageIndex, setStageIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!active) {
+      setStageIndex(0);
+      return;
+    }
+    const timers = LOADING_STAGES.slice(1).map((stage, i) =>
+      setTimeout(() => setStageIndex(i + 1), stage.afterMs)
+    );
+    return () => timers.forEach(clearTimeout);
+  }, [active]);
+
+  return active ? LOADING_STAGES[stageIndex].label : null;
+}
+
 export function LoginForm() {
   const { login, isLoggingIn, loginError } = useAuth();
   const {
@@ -27,6 +57,7 @@ export function LoginForm() {
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  const loadingStageLabel = useLoadingStageLabel(isLoggingIn);
 
   async function onSubmit(values: FormValues) {
     try {
@@ -61,6 +92,11 @@ export function LoginForm() {
       <Button type="submit" className="w-full" loading={isLoggingIn}>
         Se connecter
       </Button>
+      {loadingStageLabel && (
+        <p className="text-center text-xs text-slate-400" role="status">
+          {loadingStageLabel}
+        </p>
+      )}
 
       <p className="text-center text-sm text-slate-300">
         Pas encore de compte ?{" "}
