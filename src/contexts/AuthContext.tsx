@@ -14,13 +14,16 @@ interface AuthContextValue {
   isLoggingIn: boolean;
   isRegistering: boolean;
   isVerifyingOtp: boolean;
+  isResendingOtp: boolean;
   otpError: string | null;
+  otpResent: boolean;
   otpPhoneMasked: string | null;
   otpAttemptsRemaining: number;
   isOtpStep: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, firstName: string, phone: string) => Promise<void>;
   verifyOtp: (email: string, phone: string, otpCode: string) => Promise<void>;
+  resendOtp: (email: string) => Promise<void>;
   clearOtpState: () => void;
   logout: () => void;
 }
@@ -70,6 +73,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const resendOtpMutation = useMutation({
+    mutationFn: (email: string) => authService.resendOtp(email),
+    onSuccess: () => {
+      setOtpAttemptsRemaining(3);
+      verifyOtpMutation.reset();
+    },
+  });
+
   const logout = React.useCallback(() => {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     setHasToken(false);
@@ -95,9 +106,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoggingIn: loginMutation.isPending,
     isRegistering: registerMutation.isPending,
     isVerifyingOtp: verifyOtpMutation.isPending,
+    isResendingOtp: resendOtpMutation.isPending,
     otpError: verifyOtpMutation.error
       ? getErrorMessage(verifyOtpMutation.error, "Code OTP invalide ou expiré.")
       : null,
+    otpResent: resendOtpMutation.isSuccess,
     otpPhoneMasked,
     otpAttemptsRemaining,
     isOtpStep: !!otpPhoneMasked,
@@ -109,6 +122,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     verifyOtp: async (email, phone, otpCode) => {
       await verifyOtpMutation.mutateAsync({ email, phone, otpCode });
+    },
+    resendOtp: async (email) => {
+      await resendOtpMutation.mutateAsync(email);
     },
     clearOtpState,
     logout,

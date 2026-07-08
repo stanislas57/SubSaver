@@ -23,6 +23,11 @@ export const authService = {
     return data;
   },
 
+  /** POST /auth/resend-otp — renvoie un nouveau code par SMS. */
+  async resendOtp(email: string): Promise<void> {
+    await axiosClient.post("/auth/resend-otp", { email });
+  },
+
   /** POST /auth/login — contrat OAuth2PasswordRequestForm (x-www-form-urlencoded). */
   async login(email: string, password: string): Promise<AuthResponse> {
     const form = new URLSearchParams();
