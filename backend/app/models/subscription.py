@@ -3,6 +3,7 @@ import uuid
 from sqlalchemy import Boolean, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.transaction_analyzer import display_merchant_name
 from app.db.session import Base
 
 
@@ -33,3 +34,11 @@ class Subscription(Base):
     split_mode: Mapped[str] = mapped_column(String, nullable=False, default="equal")
 
     user: Mapped["User"] = relationship(back_populates="subscriptions")
+
+    @property
+    def display_name(self) -> str:
+        """Nom normalisé pour affichage (moteur Clé Marchand) -- jamais le
+        libellé bancaire brut. Propriété calculée (pas une colonne) exposée
+        via SubscriptionOut pour toute vue (ex: Calendrier) sans dupliquer
+        cette logique de nettoyage côté frontend."""
+        return display_merchant_name(self.name)

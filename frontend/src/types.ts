@@ -76,10 +76,14 @@ export interface Subscription {
   /** Lecture seule (jamais dans SubscriptionInput) -- statut de partage,
    * utilisé par exemple par le filtre Personnels/Partagés de l'Analytique. */
   is_shared: boolean;
+  /** Lecture seule (jamais dans SubscriptionInput) -- nom normalisé (moteur
+   * Clé Marchand), jamais le libellé bancaire brut. Utilisé par ex. par le
+   * Calendrier pour ne jamais afficher un badge tronqué illisible. */
+  display_name: string;
 }
 
 /** Corps commun à POST /subscriptions et PUT /subscriptions/{id}. */
-export type SubscriptionInput = Omit<Subscription, "id" | "is_shared">;
+export type SubscriptionInput = Omit<Subscription, "id" | "is_shared" | "display_name">;
 
 // ---------------------------------------------------------------------------
 // Banque

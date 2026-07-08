@@ -86,6 +86,9 @@ class SubscriptionOut(BaseModel):
     # Personnels/Partagés de l'Analytique) sans coupler le CRUD générique
     # d'abonnement à la logique d'Abonnement partagé.
     is_shared: bool = False
+    # Champ en lecture seule (jamais dans SubscriptionInput) : nom normalisé
+    # (moteur Clé Marchand), jamais le libellé bancaire brut -- ex: Calendrier.
+    display_name: str = ""
 
 
 class SubscriptionInput(BaseModel):
