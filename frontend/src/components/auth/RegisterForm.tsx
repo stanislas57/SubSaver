@@ -2,7 +2,8 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -10,15 +11,9 @@ import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 
-const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-
 const schema = z.object({
   firstName: z.string().min(1, "Prénom requis").max(50),
   email: z.string().email("Email invalide"),
-  phone: z
-    .string()
-    .min(1, "Téléphone requis")
-    .regex(phoneRegex, "Format international requis (ex: +33612345678)"),
   password: z.string().min(8, "8 caractères minimum"),
 });
 
@@ -30,12 +25,8 @@ type FormValues = z.infer<typeof schema>;
 const inputClassName =
   "border-white/20 bg-white/10 text-slate-50 placeholder:text-slate-400 focus-visible:border-luxury-gold/70 focus-visible:ring-luxury-gold/30";
 
-export interface RegisterFormProps {
-  /** Appelé une fois le code de vérification envoyé, pour passer à l'étape suivante. */
-  onRegistered: (email: string, phone: string) => void;
-}
-
-export function RegisterForm({ onRegistered }: RegisterFormProps) {
+export function RegisterForm() {
+  const navigate = useNavigate();
   const { register: registerUser, isRegistering, registerError } = useAuth();
   const [showPassword, setShowPassword] = React.useState(false);
   const {
@@ -46,8 +37,9 @@ export function RegisterForm({ onRegistered }: RegisterFormProps) {
 
   async function onSubmit(values: FormValues) {
     try {
-      await registerUser(values.email, values.password, values.firstName, values.phone);
-      onRegistered(values.email, values.phone);
+      await registerUser(values.email, values.password, values.firstName);
+      toast.success("Compte créé ! Connecte-toi pour continuer.");
+      navigate("/login");
     } catch {
       // erreur déjà exposée via registerError
     }
@@ -68,24 +60,6 @@ export function RegisterForm({ onRegistered }: RegisterFormProps) {
         <Label htmlFor="email" className="text-slate-200">Email</Label>
         <Input id="email" type="email" autoComplete="email" error={!!errors.email} className={inputClassName} {...register("email")} />
         {errors.email && <p className="mt-1 text-xs text-red-300">{errors.email.message}</p>}
-      </div>
-
-      <div>
-        <Label htmlFor="phone" className="text-slate-200">Téléphone</Label>
-        <Input
-          id="phone"
-          type="tel"
-          autoComplete="tel"
-          placeholder="+33 6 12 34 56 78"
-          error={!!errors.phone}
-          className={inputClassName}
-          {...register("phone")}
-        />
-        {errors.phone ? (
-          <p className="mt-1 text-xs text-red-300">{errors.phone.message}</p>
-        ) : (
-          <p className="mt-1 text-xs text-slate-400">Format international, avec indicatif</p>
-        )}
       </div>
 
       <div>

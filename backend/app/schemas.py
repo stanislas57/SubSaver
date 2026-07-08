@@ -15,9 +15,6 @@ class UserOut(BaseModel):
     id: str
     email: str
     first_name: str
-    # Optional : les comptes créés avant l'introduction de la vérification par
-    # SMS n'ont pas de téléphone enregistré (cf. migration a7b3c2d1e4f5).
-    phone: Optional[str] = None
     language: Language
     theme: Theme
     currency: Currency
@@ -32,33 +29,6 @@ class RegisterBody(BaseModel):
     email: str
     password: str
     first_name: str
-    phone: str
-
-    @field_validator("phone")
-    @classmethod
-    def validate_phone(cls, v: str) -> str:
-        import re
-        if not re.match(r"^\+?[1-9]\d{1,14}$", v):
-            raise ValueError("Format de téléphone invalide (format international requis)")
-        return v
-
-
-class RegisterResult(BaseModel):
-    phone_masked: str
-    attempts_remaining: int
-
-
-class VerifyOtpBody(BaseModel):
-    email: str
-    phone: str
-    otp_code: str
-
-    @field_validator("otp_code")
-    @classmethod
-    def validate_otp(cls, v: str) -> str:
-        if not v.isdigit() or len(v) != 6:
-            raise ValueError("Le code OTP doit contenir 6 chiffres")
-        return v
 
 
 class EmailBody(BaseModel):

@@ -18,11 +18,6 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     first_name: Mapped[str] = mapped_column(String, nullable=False)
-    # Nullable : les comptes créés avant l'introduction de la vérification par
-    # SMS (cf. migration a7b3c2d1e4f5) n'ont pas de téléphone enregistré.
-    # L'unicité Postgres autorise plusieurs NULL, donc pas de conflit entre
-    # ces anciens comptes.
-    phone: Mapped[str | None] = mapped_column(String, unique=True, nullable=True, index=True)
 
     language: Mapped[str] = mapped_column(String, nullable=False, default="fr")
     theme: Mapped[str] = mapped_column(String, nullable=False, default="light")
@@ -31,11 +26,10 @@ class User(Base):
     is_premium: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     bank_connected: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
-    # Vérification OTP par SMS à l'inscription (code 6 chiffres)
-    is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    otp_code: Mapped[str | None] = mapped_column(String, nullable=True)
-    otp_expires_at: Mapped[str | None] = mapped_column(String, nullable=True)
-    otp_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # Le compte est actif dès la création (pas de vérification email/SMS) --
+    # conservé à True par défaut pour tous les nouveaux comptes ; la colonne
+    # reste pour les comptes déjà en base d'avant ce changement.
+    is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     # Réinitialisation de mot de passe (même mécanisme : code 6 chiffres par email)
     reset_code: Mapped[str | None] = mapped_column(String, nullable=True)

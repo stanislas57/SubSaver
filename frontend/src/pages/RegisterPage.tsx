@@ -1,16 +1,14 @@
-import * as React from "react";
 import { Link } from "react-router-dom";
 import { RegisterForm } from "@/components/auth/RegisterForm";
-import { OtpVerificationForm } from "@/components/auth/OtpVerificationForm";
 import { GoldParticles } from "@/components/auth/GoldParticles";
 
 /** Page d'inscription : même immersion Bleu Nuit + réseau de particules
  * dorées animé que LoginPage (cohérence des deux écrans d'authentification),
  * avec une carte glassmorphism centrée sur une seule colonne (pas
- * d'argumentaire marketing, contrairement à /login). */
+ * d'argumentaire marketing, contrairement à /login). Inscription en une
+ * étape : le compte est actif immédiatement, l'utilisateur est redirigé vers
+ * /login pour se connecter. */
 export function RegisterPage() {
-  const [pending, setPending] = React.useState<{ email: string; phone: string } | null>(null);
-
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-luxury-night px-6 py-12">
       <GoldParticles />
@@ -30,11 +28,7 @@ export function RegisterPage() {
 
         {/* Carte glassmorphism */}
         <div className="rounded-3xl border border-luxury-gold/30 bg-white/10 p-8 shadow-[0_24px_64px_-16px_rgba(0,0,0,0.6)] backdrop-blur-xl">
-          {pending ? (
-            <OtpVerificationForm email={pending.email} phone={pending.phone} />
-          ) : (
-            <RegisterForm onRegistered={(email, phone) => setPending({ email, phone })} />
-          )}
+          <RegisterForm />
         </div>
 
         {/* Lien accueil (discret) */}

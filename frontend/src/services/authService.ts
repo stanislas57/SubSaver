@@ -1,5 +1,5 @@
 import { axiosClient } from "@/api/axiosClient";
-import type { AuthResponse, MessageResult, RegisterResult } from "@/types";
+import type { AuthResponse, MessageResult } from "@/types";
 
 /** Timeout dédié au login, plus généreux que le timeout global (20s) : un
  * hébergeur en cold start (ex: instance gratuite endormie après inactivité)
@@ -11,30 +11,13 @@ import type { AuthResponse, MessageResult, RegisterResult } from "@/types";
 const LOGIN_TIMEOUT_MS = 45_000;
 
 export const authService = {
-  /** POST /auth/register — le compte n'est pas actif tant que /auth/verify-otp n'a pas été appelé. */
-  async register(email: string, password: string, firstName: string, phone: string): Promise<RegisterResult> {
-    const { data } = await axiosClient.post<RegisterResult>("/auth/register", {
+  /** POST /auth/register — le compte est actif immédiatement, aucune vérification requise. */
+  async register(email: string, password: string, firstName: string): Promise<MessageResult> {
+    const { data } = await axiosClient.post<MessageResult>("/auth/register", {
       email,
       password,
       first_name: firstName,
-      phone,
     });
-    return data;
-  },
-
-  /** POST /auth/verify-otp — valide le code SMS à 6 chiffres et connecte l'utilisateur. */
-  async verifyOtp(email: string, phone: string, otpCode: string): Promise<AuthResponse> {
-    const { data } = await axiosClient.post<AuthResponse>("/auth/verify-otp", {
-      email,
-      phone,
-      otp_code: otpCode,
-    });
-    return data;
-  },
-
-  /** POST /auth/resend-otp */
-  async resendOtp(email: string): Promise<MessageResult> {
-    const { data } = await axiosClient.post<MessageResult>("/auth/resend-otp", { email });
     return data;
   },
 

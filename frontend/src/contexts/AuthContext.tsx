@@ -13,14 +13,9 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   isLoggingIn: boolean;
   loginError: string | null;
-  register: (email: string, password: string, firstName: string, phone: string) => Promise<void>;
+  register: (email: string, password: string, firstName: string) => Promise<void>;
   isRegistering: boolean;
   registerError: string | null;
-  verifyOtp: (email: string, phone: string, otpCode: string) => Promise<void>;
-  isVerifyingOtp: boolean;
-  verifyOtpError: string | null;
-  resendOtp: (email: string) => Promise<void>;
-  isResendingOtp: boolean;
   forgotPassword: (email: string) => Promise<void>;
   isSendingResetCode: boolean;
   forgotPasswordError: string | null;
@@ -75,18 +70,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const registerMutation = useMutation({
-    mutationFn: ({ email, password, firstName, phone }: { email: string; password: string; firstName: string; phone: string }) =>
-      authService.register(email, password, firstName, phone),
-  });
-
-  const verifyOtpMutation = useMutation({
-    mutationFn: ({ email, phone, otpCode }: { email: string; phone: string; otpCode: string }) =>
-      authService.verifyOtp(email, phone, otpCode),
-    onSuccess: applyAuthResponse,
-  });
-
-  const resendOtpMutation = useMutation({
-    mutationFn: (email: string) => authService.resendOtp(email),
+    mutationFn: ({ email, password, firstName }: { email: string; password: string; firstName: string }) =>
+      authService.register(email, password, firstName),
   });
 
   const forgotPasswordMutation = useMutation({
@@ -112,16 +97,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await loginMutation.mutateAsync({ email, password });
   }
 
-  async function register(email: string, password: string, firstName: string, phone: string) {
-    await registerMutation.mutateAsync({ email, password, firstName, phone });
-  }
-
-  async function verifyOtp(email: string, phone: string, otpCode: string) {
-    await verifyOtpMutation.mutateAsync({ email, phone, otpCode });
-  }
-
-  async function resendOtp(email: string) {
-    await resendOtpMutation.mutateAsync(email);
+  async function register(email: string, password: string, firstName: string) {
+    await registerMutation.mutateAsync({ email, password, firstName });
   }
 
   async function forgotPassword(email: string) {
@@ -158,11 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     register,
     isRegistering: registerMutation.isPending,
     registerError: registerMutation.isError ? getErrorMessage(registerMutation.error, "Impossible de créer le compte.") : null,
-    verifyOtp,
-    isVerifyingOtp: verifyOtpMutation.isPending,
-    verifyOtpError: verifyOtpMutation.isError ? getErrorMessage(verifyOtpMutation.error, "Code invalide.") : null,
-    resendOtp,
-    isResendingOtp: resendOtpMutation.isPending,
     forgotPassword,
     isSendingResetCode: forgotPasswordMutation.isPending,
     forgotPasswordError: forgotPasswordMutation.isError ? getErrorMessage(forgotPasswordMutation.error) : null,
