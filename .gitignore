@@ -1,3 +1,19 @@
-node_modules
-dist
+# OS
+.DS_Store
+
+# Editors
+.vscode/
+.claude/
+
+# Node / frontend
+node_modules/
+dist/
+*.tsbuildinfo
 .env
+
+# Python / backend
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/.env

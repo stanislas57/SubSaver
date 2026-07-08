@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================================
+   SubServer — Design tokens "Luxe" : fond clair, texte Bleu Nuit, accents Or
+===================================================================== */
+:root {
+  --bg-app: #f8fafc;
+  --bg-sidebar: #0a1128;
+  --surface: #ffffff;
+  --surface-hover: #f1f5f9;
+
+  --primary: #c5a059;
+  --primary-hover: #b08d3f;
+  --primary-light: #faf6ea;
+  --accent: #d4af37;
+
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-sidebar: #94a3b8;
+
+  --border: #e2e8f0;
+  --border-sidebar: #1e293b;
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 8px 16px -4px rgba(59, 130, 246, 0.08);
+  --shadow-lg: 0 20px 24px -4px rgba(0, 0, 0, 0.1);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+html.dark {
+  --bg-app: #0f172a;
+  --bg-sidebar: #020617;
+  --surface: #1e293b;
+  --surface-hover: #334155;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --border-sidebar: #1e293b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: "Inter", sans-serif;
+  background: var(--bg-app);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Lexend", "Inter", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }

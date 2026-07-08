@@ -1,0 +1,58 @@
+# SubServer — Claude Rules
+
+## Stack obligatoire
+- **Frontend** : React 19 + Vite + TypeScript
+- **CSS** : Tailwind CSS (custom theme en tailwind.config.js)
+- **Animations** : GSAP (préféré à Framer Motion pour les animations complexes)
+- **Backend** : FastAPI + SQLAlchemy + Alembic (pas de modifications sans accord)
+
+## Design System
+
+### Philosophie
+- **Minimaliste & Premium** : style Apple / Stripe
+- **Espace** : large spacing, respirant, pas de surcharge visuelle
+- **Effets visuels** : glassmorphism, backdrop blur, subtle shadows
+- **Couleurs** : utiliser les variables CSS du thème (voir `src/index.css` et `tailwind.config.js`)
+
+### Composants UI
+- Réutiliser les primitives existantes (`src/components/ui/`)
+- Nouvelles icônes : `lucide-react` uniquement
+- Animations : préférer GSAP pour les transitions complexes, Tailwind pour les transitions simples
+
+## Code
+
+### Directives
+1. **Concision** : renvoie UNIQUEMENT les fichiers modifiés/créés
+2. **Pas de redondance** : ne reduplique pas de code existant, réutilise les hooks/services/composants
+3. **Types stricts** : TypeScript `strict: true`, types explicites sur les interfaces React
+4. **Imports** : utilise l'alias `@/` (résolu dans `vite.config.ts`)
+
+### Pas de commentaires
+- Sauf si la raison (WHY) n'est pas évidente
+- Pas de docstrings multi-lignes
+
+### Structure fichiers
+```
+src/
+├── components/ui/          # Primitives (réutilisables)
+├── components/shared/      # Composants métier réutilisables (StatCard, FeatureBox, etc.)
+├── pages/                  # Pages (1 fichier = 1 route)
+├── hooks/                  # Hooks personnalisés
+├── services/               # Appels API (auth, subscription, bank, market, etc.)
+├── lib/                    # Utils (format, motion, cancellationLetter, etc.)
+└── contexts/               # Contextes React (AuthContext, etc.)
+```
+
+### Tests & Vérification
+- Avant chaque commit : `npm run build` doit passer sans erreur
+- TypeScript check : `npm run typecheck` (exécuté dans le build)
+- Pas de console.warn / console.error en dev non-supprimés
+
+## Variables d'environnement
+- Ne jamais committer `.env` (`.env.example` seulement)
+- Frontend : `VITE_API_BASE_URL`, `VITE_STRIPE_BILLING_URL`
+- Backend : voir `backend/.env.example` (DATABASE_URL, SECRET_KEY, POWENS_*, etc.)
+
+## Déploiement (Render)
+- Frontend : Root Directory = `frontend`, Build = `npm install && npm run build`, Publish = `dist`
+- Backend : Root Directory = `backend`, Runtime = Python 3.11+
