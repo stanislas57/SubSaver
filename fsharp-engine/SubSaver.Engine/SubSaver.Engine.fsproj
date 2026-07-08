@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- L'ordre de compilation F# est significatif : Domain d'abord, Detection
+       en dernier (dépend de tout le reste). -->
+  <ItemGroup>
+    <Compile Include="Domain.fs" />
+    <Compile Include="Sanitization.fs" />
+    <Compile Include="KnownMerchants.fs" />
+    <Compile Include="Detection.fs" />
+  </ItemGroup>
+
+</Project>

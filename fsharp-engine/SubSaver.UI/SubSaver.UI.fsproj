@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Projet destiné à être transpilé par Fable (dotnet fable), pas exécuté
+         en .NET : il produit du JavaScript consommable par l'app React. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="ValidationView.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../SubSaver.Engine/SubSaver.Engine.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fable.Core" Version="4.3.0" />
+    <PackageReference Include="Feliz" Version="2.8.0" />
+  </ItemGroup>
+
+</Project>
