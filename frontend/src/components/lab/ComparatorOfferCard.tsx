@@ -22,6 +22,12 @@ export interface ComparatorOfferCardProps {
  * pas le composant. */
 export function ComparatorOfferCard({ offer, currency, isCheapest, isBestMatch, currentPrice }: ComparatorOfferCardProps) {
   const savings = currentPrice ? currentPrice - offer.price : null;
+  // Tolère un backend pas encore redéployé/migré sur le nouveau schéma (champ
+  // absent du JSON plutôt que simplement vide) : évite un crash de rendu qui
+  // blanchirait toute la page en l'absence d'ErrorBoundary.
+  const attributes = offer.attributes ?? [];
+  const annualPrice = offer.annual_price ?? null;
+  const setupFee = offer.setup_fee ?? null;
 
   return (
     <Card className={cn((isCheapest || isBestMatch) && "border-accent ring-1 ring-accent")}>
@@ -48,9 +54,9 @@ export function ComparatorOfferCard({ offer, currency, isCheapest, isBestMatch, 
           <div className="shrink-0 text-right">
             <p className="font-display text-xl font-bold text-text-main">{formatPrice(offer.price, currency)}</p>
             <p className="text-xs text-text-muted">{offer.engagement}</p>
-            {offer.annual_price !== null && (
+            {annualPrice !== null && (
               <p className="text-xs text-accent">
-                ou {formatPrice(offer.annual_price, currency)}/an
+                ou {formatPrice(annualPrice, currency)}/an
               </p>
             )}
           </div>
@@ -62,16 +68,16 @@ export function ComparatorOfferCard({ offer, currency, isCheapest, isBestMatch, 
           </p>
         )}
 
-        {offer.setup_fee !== null && (
+        {setupFee !== null && (
           <p className="mt-2 rounded-md bg-warning/10 px-2 py-1 text-xs font-medium text-warning">
-            Frais à prévoir : {formatPrice(offer.setup_fee, currency)}
+            Frais à prévoir : {formatPrice(setupFee, currency)}
             {offer.setup_fee_note ? ` — ${offer.setup_fee_note}` : ""}
           </p>
         )}
 
-        {offer.attributes.length > 0 && (
+        {attributes.length > 0 && (
           <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 border-y border-border py-3 text-xs">
-            {offer.attributes.slice(0, 4).map((attr) => (
+            {attributes.slice(0, 4).map((attr) => (
               <div key={attr.key} className="min-w-0">
                 <dt className="flex items-center gap-1 text-text-muted">
                   <ListChecks className="h-3 w-3 shrink-0" /> {attr.label}
@@ -83,12 +89,12 @@ export function ComparatorOfferCard({ offer, currency, isCheapest, isBestMatch, 
         )}
 
         <div className="mt-3 space-y-1">
-          {offer.pros.slice(0, 3).map((pro) => (
+          {(offer.pros ?? []).slice(0, 3).map((pro) => (
             <p key={pro} className="flex items-center gap-1.5 text-xs text-text-main">
               <Check className="h-3 w-3 shrink-0 text-accent" /> {pro}
             </p>
           ))}
-          {offer.cons.slice(0, 2).map((con) => (
+          {(offer.cons ?? []).slice(0, 2).map((con) => (
             <p key={con} className="flex items-center gap-1.5 text-xs text-text-muted">
               <X className="h-3 w-3 shrink-0 text-red-400" /> {con}
             </p>

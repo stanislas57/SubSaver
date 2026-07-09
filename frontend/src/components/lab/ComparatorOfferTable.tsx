@@ -18,7 +18,10 @@ export interface ComparatorOfferTableProps {
  * offre suffisent à occuper les colonnes propres à la famille (VOD, forfait
  * mobile...) sans devoir connaître la catégorie à l'avance. */
 export function ComparatorOfferTable({ offers, currency, cheapestId, bestMatchId }: ComparatorOfferTableProps) {
-  const attributeColumns = offers[0]?.attributes.slice(0, 2).map((attr) => attr.label) ?? [];
+  // Tolère un backend pas encore redéployé/migré sur le nouveau schéma (champ
+  // absent du JSON plutôt que simplement vide) : évite un crash de rendu qui
+  // blanchirait toute la page en l'absence d'ErrorBoundary.
+  const attributeColumns = (offers[0]?.attributes ?? []).slice(0, 2).map((attr) => attr.label);
 
   return (
     <div className="overflow-x-auto rounded-lg border border-border">
@@ -60,11 +63,11 @@ export function ComparatorOfferTable({ offers, currency, cheapestId, bestMatchId
               </td>
               <td className="p-3">
                 <p className="font-display font-bold text-text-main">{formatPrice(offer.price, currency)}/mois</p>
-                {offer.annual_price !== null && (
-                  <p className="text-xs text-accent">ou {formatPrice(offer.annual_price, currency)}/an</p>
+                {(offer.annual_price ?? null) !== null && (
+                  <p className="text-xs text-accent">ou {formatPrice(offer.annual_price as number, currency)}/an</p>
                 )}
               </td>
-              {offer.attributes.slice(0, 2).map((attr) => (
+              {(offer.attributes ?? []).slice(0, 2).map((attr) => (
                 <td key={attr.key} className="p-3 text-text-main">{attr.value}</td>
               ))}
               <td className="p-3 text-text-muted">{offer.engagement}</td>
