@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ContactModal } from "@/components/layout/ContactModal";
 import { pageTransition } from "@/lib/motion";
 import { PremiumWelcomeGate } from "@/components/shared/PremiumWelcomeGate";
+import { BankConnectPromptGate } from "@/components/bank/BankConnectPromptGate";
 
 /** Thème clair et luxueux : structure plein-écran avec TopNavbar fixée,
  * contenu aéré et lumineux avec halos discrets en arrière-plan. */
@@ -24,6 +25,10 @@ export function AppLayout() {
       {/* Capte le retour de paiement Stripe quelle que soit la page authentifiée
        * sur laquelle il atterrit (cf. PremiumWelcomeGate). */}
       <PremiumWelcomeGate />
+
+      {/* Invite à connecter sa banque dès la première connexion, une fois
+       * la charte acceptée (cf. BankConnectPromptGate). */}
+      <BankConnectPromptGate />
 
       <TopNavbar />
 
