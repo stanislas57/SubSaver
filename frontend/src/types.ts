@@ -117,6 +117,16 @@ export interface BankCallbackResult {
 // Comparateur marché
 // ---------------------------------------------------------------------------
 
+/** Caractéristique propre à la famille de l'offre (ex: "Qualité vidéo" en VOD,
+ * "Enveloppe Data" en forfaits mobiles) -- liste plutôt que colonnes dédiées,
+ * pour que le même modèle serve toutes les familles sans changement de schéma
+ * à chaque nouvelle catégorie ajoutée. */
+export interface MarketOfferAttribute {
+  key: string;
+  label: string;
+  value: string;
+}
+
 export interface MarketOffer {
   id: string;
   category: string;
@@ -130,6 +140,12 @@ export interface MarketOffer {
   link: string;
   /** Date (YYYY-MM-DD) de dernière vérification manuelle du tarif. */
   price_checked_at: string;
+  /** Prix annuel remisé (facturé en une fois), null si pas de formule annuelle. */
+  annual_price: number | null;
+  /** Frais unique de mise en service / résiliation anticipée, null si aucun frais caché. */
+  setup_fee: number | null;
+  setup_fee_note: string | null;
+  attributes: MarketOfferAttribute[];
 }
 
 // ---------------------------------------------------------------------------

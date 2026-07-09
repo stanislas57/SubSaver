@@ -163,6 +163,12 @@ class BankStatusOut(BaseModel):
     total_transactions: int
 
 
+class MarketOfferAttributeOut(BaseModel):
+    key: str
+    label: str
+    value: str
+
+
 class MarketOfferOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -177,6 +183,10 @@ class MarketOfferOut(BaseModel):
     cons: list[str]
     link: str
     price_checked_at: str
+    annual_price: Optional[float] = None
+    setup_fee: Optional[float] = None
+    setup_fee_note: Optional[str] = None
+    attributes: list[MarketOfferAttributeOut] = Field(default_factory=list)
 
 
 class FamilyMemberOut(BaseModel):
