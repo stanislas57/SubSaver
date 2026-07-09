@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { SubscriptionList } from "@/components/subscriptions/SubscriptionList";
 import { SubscriptionForm } from "@/components/subscriptions/SubscriptionForm";
 import { BankConsentModal } from "@/components/bank/BankConsentModal";
+import { BankScanPromptModal } from "@/components/bank/BankScanPromptModal";
 import { BankReportModal, type CandidateReview } from "@/components/bank/BankReportModal";
 import {
   loadTrackedMerchantKeys,
@@ -44,6 +45,7 @@ export function SubscriptionsPage() {
   const [editing, setEditing] = React.useState<Subscription | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | undefined>();
   const [consentOpen, setConsentOpen] = React.useState(false);
+  const [scanPromptOpen, setScanPromptOpen] = React.useState(false);
   const [reportOpen, setReportOpen] = React.useState(false);
   const [candidates, setCandidates] = React.useState<DetectedSubscription[]>([]);
   const [validating, setValidating] = React.useState(false);
@@ -72,6 +74,14 @@ export function SubscriptionsPage() {
   /** Tunnel de détection : consentement (1) -> sync + algo (2) -> rapport + validation (3). */
   function handleOpenConsent() {
     setConsentOpen(true);
+  }
+
+  /** CTA de la pop-up post-connexion bancaire : enchaîne sur le tunnel de
+   * détection existant (le consentement explicite reste requis avant de
+   * lancer l'algorithme sur les transactions). */
+  function handleScanPromptCta() {
+    setScanPromptOpen(false);
+    handleOpenConsent();
   }
 
   function handleConsent() {
@@ -228,6 +238,12 @@ export function SubscriptionsPage() {
     const state = params.get("state");
     if (!state) return;
 
+    // Laisse 2s après la confirmation de connexion avant de proposer le scan
+    // (cf. BankScanPromptModal) : le temps que le toast de succès s'affiche
+    // et que l'utilisateur assimile que sa banque est bien connectée, plutôt
+    // qu'un enchaînement immédiat qui donnerait l'impression d'être bousculé.
+    let scanPromptTimer: ReturnType<typeof setTimeout> | undefined;
+
     bankCallback.mutate(
       {
         state,
@@ -236,11 +252,16 @@ export function SubscriptionsPage() {
         error_description: params.get("error_description") ?? undefined,
       },
       {
-        onSuccess: () => toast.success("Banque connectée avec succès."),
+        onSuccess: () => {
+          toast.success("Banque connectée avec succès.");
+          scanPromptTimer = setTimeout(() => setScanPromptOpen(true), 2000);
+        },
         onError: (error) => toast.error(getErrorMessage(error)),
         onSettled: () => navigate("/subscriptions", { replace: true }),
       },
     );
+
+    return () => clearTimeout(scanPromptTimer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -298,6 +319,8 @@ export function SubscriptionsPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <BankScanPromptModal open={scanPromptOpen} onOpenChange={setScanPromptOpen} onScan={handleScanPromptCta} />
 
       <BankConsentModal
         open={consentOpen}
