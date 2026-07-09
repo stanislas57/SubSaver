@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock, ShieldCheck, ArrowRight, RefreshCw, Landmark, Clock, Receipt } from "lucide-react";
 import { toast } from "sonner";
@@ -7,6 +8,7 @@ import { useMagnetic } from "@/hooks/useMagnetic";
 import { RevealText } from "@/components/shared/RevealText";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BankSecurityAssuranceModal } from "@/components/bank/BankSecurityAssuranceModal";
 import { getErrorMessage } from "@/api/axiosClient";
 import { formatDateTime } from "@/lib/format";
 
@@ -19,6 +21,7 @@ export function BankConnectPage() {
   const syncTransactions = useSyncTransactions();
   const bankStatus = useBankStatus();
   const magneticRef = useMagnetic<HTMLButtonElement>(0.25, 16);
+  const [showAssurance, setShowAssurance] = useState(false);
 
   function handleConnect() {
     bankConnectUrl.mutate(undefined, {
@@ -113,7 +116,7 @@ export function BankConnectPage() {
       ) : (
         <button
           ref={magneticRef}
-          onClick={handleConnect}
+          onClick={() => setShowAssurance(true)}
           disabled={bankConnectUrl.isPending}
           style={{ willChange: "transform" }}
           className="group relative mt-12 flex h-40 w-40 items-center justify-center rounded-full bg-luxury-night text-white shadow-[0_0_0_0_rgba(10,17,40,0)] transition-shadow duration-300 hover:shadow-[0_0_60px_10px_rgba(212,175,55,0.35)] disabled:opacity-60"
@@ -143,6 +146,17 @@ export function BankConnectPage() {
           Tes identifiants bancaires ne transitent jamais par nos serveurs
         </p>
       </div>
+
+      <BankSecurityAssuranceModal
+        open={showAssurance}
+        onOpenChange={setShowAssurance}
+        onConfirm={() => {
+          setShowAssurance(false);
+          handleConnect();
+        }}
+        onLater={() => setShowAssurance(false)}
+        connecting={bankConnectUrl.isPending}
+      />
     </div>
   );
 }
