@@ -227,13 +227,6 @@ export interface SettleDebtInput {
   amount: number;
 }
 
-/** Corps de POST /family/debts/remind -- le créditeur est toujours
- * l'utilisateur connecté (modèle en étoile), jamais transmis explicitement. */
-export interface SendReminderInput {
-  member_id: string;
-  amount: number;
-}
-
 /** Ligne d'historique (GET /family/settlements). */
 export interface Settlement {
   id: string;

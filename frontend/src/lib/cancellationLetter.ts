@@ -1,4 +1,5 @@
 import type { CancellableSubscription, User } from "@/types";
+import { generateMailtoLink } from "@/lib/mailto";
 
 /**
  * Génère une lettre de résiliation type à partir des données déjà en cache
@@ -42,5 +43,5 @@ ${user.first_name}`;
 export function buildCancellationMailto(subscription: CancellableSubscription, letter: string): string {
   const to = `contact@${subscription.domain}`;
   const subject = `Résiliation de mon abonnement ${subscription.display_name}`;
-  return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(letter)}`;
+  return generateMailtoLink(to, subject, letter);
 }

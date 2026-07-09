@@ -1,10 +1,8 @@
 import { axiosClient } from "@/api/axiosClient";
 import type {
   DebtEdge,
-  MessageResult,
   Settlement,
   SettleDebtInput,
-  SendReminderInput,
   ShareableSubscription,
   SharedSubscriptionBalance,
   SharedSubscriptionGroup,
@@ -81,12 +79,6 @@ export const sharedSubscriptionService = {
   /** GET /family/settlements */
   async getSettlements(): Promise<Settlement[]> {
     const { data } = await axiosClient.get<Settlement[]>("/family/settlements");
-    return data;
-  },
-
-  /** POST /family/debts/remind — envoie un e-mail de relance au membre débiteur. */
-  async sendReminder(input: SendReminderInput): Promise<MessageResult> {
-    const { data } = await axiosClient.post<MessageResult>("/family/debts/remind", input);
     return data;
   },
 };

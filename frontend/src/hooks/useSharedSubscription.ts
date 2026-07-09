@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { sharedSubscriptionService } from "@/services/sharedSubscriptionService";
-import type { SendReminderInput, SettleDebtInput, SubscriptionSplitUpdateInput } from "@/types";
+import type { SettleDebtInput, SubscriptionSplitUpdateInput } from "@/types";
 
 const QUERY_KEY = "shared-subscription";
 
@@ -96,10 +96,4 @@ export function useSettleDebt() {
 
 export function useSettlements() {
   return useQuery({ queryKey: [QUERY_KEY, "settlements"], queryFn: sharedSubscriptionService.getSettlements });
-}
-
-export function useSendDebtReminder() {
-  return useMutation({
-    mutationFn: (input: SendReminderInput) => sharedSubscriptionService.sendReminder(input),
-  });
 }

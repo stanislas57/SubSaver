@@ -1,6 +1,5 @@
 import * as React from "react";
-import { toast } from "sonner";
-import { ArrowRight, PartyPopper, History, Bell } from "lucide-react";
+import { ArrowRight, PartyPopper, History, Bell, Mail } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorAlert } from "@/components/ui/alert";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -8,15 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import {
-  useDebts,
-  useSendDebtReminder,
-  useSettleDebt,
-  useSettlements,
-  useSharedSubscriptionGroup,
-} from "@/hooks/useSharedSubscription";
+import { useDebts, useSettleDebt, useSettlements, useSharedSubscriptionGroup } from "@/hooks/useSharedSubscription";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatPrice, formatDateTime } from "@/lib/format";
+import { generateMailtoLink } from "@/lib/mailto";
 import { getErrorMessage } from "@/api/axiosClient";
 import type { Currency, DebtEdge } from "@/types";
 
@@ -35,18 +29,32 @@ function todayLabel(): string {
   return `${now.getDate()} ${FRENCH_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
 }
 
+/** Corps du message de relance -- identique à l'aperçu affiché dans la
+ * modale, pour que ce que l'utilisateur voit soit bien ce qui part une fois
+ * envoyé depuis son propre client mail. */
+function buildReminderMessage(debt: DebtEdge, currency: Currency, senderFirstName?: string): string {
+  return `Bonjour ${debt.from_member_name},
+
+${senderFirstName ?? "Le gestionnaire"} te rappelle ta part sur les abonnements partagés SubSaver.
+
+Montant dû : ${formatPrice(debt.amount, currency)}
+Raison : Abonnements partagés — ${currentPeriodLabel()}
+Date de la demande : ${todayLabel()}`;
+}
+
 /** Onglet "Dettes" : qui doit combien à qui, déjà simplifié côté serveur
  * (nombre minimal de transactions), avec bouton "Marquer comme remboursé",
- * bouton "Relancer" (envoi d'un e-mail de rappel au débiteur) et historique
- * des règlements passés -- la brique centrale qui transforme le simple
- * diviseur de coût en vrai outil à la Tricount. */
+ * bouton "Envoyer la notification" (mailto: vers le débiteur, depuis la
+ * propre adresse de l'utilisateur -- pas d'envoi serveur, cf. même logique
+ * que la lettre de résiliation dans lib/mailto.ts) et historique des
+ * règlements passés -- la brique centrale qui transforme le simple diviseur
+ * de coût en vrai outil à la Tricount. */
 export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
   const { user } = useAuth();
   const debtsQuery = useDebts();
   const settlementsQuery = useSettlements();
   const groupQuery = useSharedSubscriptionGroup();
   const settleDebt = useSettleDebt();
-  const sendReminder = useSendDebtReminder();
   const [debtToSettle, setDebtToSettle] = React.useState<DebtEdge | null>(null);
   const [amount, setAmount] = React.useState("");
   const [debtToRemind, setDebtToRemind] = React.useState<DebtEdge | null>(null);
@@ -68,23 +76,17 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
 
   function closeReminderDialog() {
     setDebtToRemind(null);
-    sendReminder.reset();
   }
 
+  /** Ouvre le client mail par défaut de l'utilisateur, destinataire et
+   * message pré-remplis -- aucun appel serveur, le message part directement
+   * de l'adresse personnelle de l'utilisateur. */
   function confirmReminder() {
-    if (!debtToRemind) return;
-    sendReminder.mutate(
-      { member_id: debtToRemind.from_member_id, amount: debtToRemind.amount },
-      {
-        onSuccess: () => {
-          toast.success(`Rappel envoyé à ${debtToRemind.from_member_name}.`);
-          closeReminderDialog();
-        },
-        onError: (error) => {
-          toast.error(getErrorMessage(error, "Impossible d'envoyer le rappel."));
-        },
-      }
-    );
+    if (!debtToRemind || !debtorEmail) return;
+    const subject = `Règlement pour nos abonnements partagés — ${currentPeriodLabel()}`;
+    const body = buildReminderMessage(debtToRemind, currency, user?.first_name);
+    window.location.href = generateMailtoLink(debtorEmail, subject, body);
+    closeReminderDialog();
   }
 
   const debtorEmail = debtToRemind
@@ -132,7 +134,7 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      title={hasEmail ? `Envoyer un rappel par e-mail à ${debt.from_member_name}` : "Aucune adresse e-mail enregistrée pour ce membre"}
+                      title={hasEmail ? `Envoyer la notification par e-mail à ${debt.from_member_name}` : "Aucune adresse e-mail enregistrée pour ce membre"}
                       disabled={!hasEmail}
                       onClick={() => setDebtToRemind(debt)}
                     >
@@ -223,9 +225,10 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
       <Dialog open={!!debtToRemind} onOpenChange={(open) => !open && closeReminderDialog()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Envoyer un rappel</DialogTitle>
+            <DialogTitle>Envoyer la notification</DialogTitle>
             <DialogDescription>
-              {debtToRemind && `Un e-mail sera envoyé à ${debtToRemind.from_member_name}${debtorEmail ? ` (${debtorEmail})` : ""}.`}
+              {debtToRemind &&
+                `Ouvre ton client mail par défaut, message pré-rempli à destination de ${debtToRemind.from_member_name}${debtorEmail ? ` (${debtorEmail})` : ""}.`}
             </DialogDescription>
           </DialogHeader>
 
@@ -265,16 +268,12 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
             </div>
           )}
 
-          {sendReminder.isError && (
-            <ErrorAlert message={getErrorMessage(sendReminder.error, "Impossible d'envoyer le rappel.")} compact />
-          )}
-
           <DialogFooter>
             <Button type="button" variant="outline" onClick={closeReminderDialog}>
               Annuler
             </Button>
-            <Button type="button" onClick={confirmReminder} loading={sendReminder.isPending}>
-              {sendReminder.isPending ? "Envoi en cours..." : "Envoyer le rappel"}
+            <Button type="button" onClick={confirmReminder}>
+              <Mail className="h-4 w-4" /> Envoyer la notification
             </Button>
           </DialogFooter>
         </DialogContent>
