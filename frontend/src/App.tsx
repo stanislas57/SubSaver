@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ProtectedRoute, GuestOnlyRoute, PremiumOnlyRoute } from "@/routes/ProtectedRoute";
 import { AdminRouteGuard } from "@/routes/AdminRouteGuard";
 import { AuthLayout } from "@/layouts/AuthLayout";
@@ -10,11 +10,11 @@ import { AppLayout } from "@/layouts/AppLayout";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { PageSpinner } from "@/components/ui/spinner";
 
+import { LandingPage } from "@/pages/LandingPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import { OverviewPage } from "@/pages/OverviewPage";
-import { DashboardPage } from "@/pages/DashboardPage";
 import { BankConnectPage } from "@/pages/BankConnectPage";
 import { SubscriptionsPage } from "@/pages/SubscriptionsPage";
 import { SubscriptionAddPage } from "@/pages/SubscriptionAddPage";
@@ -37,12 +37,18 @@ const AnalyticsPage = lazy(() =>
   import("@/pages/AnalyticsPage").then((m) => ({ default: m.AnalyticsPage }))
 );
 
-/** Redirige "/" vers "/overview" en conservant la query string (ex: si
- * Stripe redirige vers la racine du site avec ?premium=true, le paramètre
- * ne doit pas être perdu avant même que la page ne se charge). */
-function RootRedirect() {
+/** "/" sert la landing page publique aux visiteurs, et redirige les
+ * utilisateurs déjà connectés vers "/overview" -- avant cette page, la racine
+ * redirigeait systématiquement vers /overview, ce qui laissait tout visiteur
+ * non authentifié atterrir directement sur l'écran de connexion. */
+function RootPage() {
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
-  return <Navigate to={`/overview${location.search}`} replace />;
+
+  if (isLoading) return <PageSpinner label="Chargement…" />;
+  if (isAuthenticated) return <Navigate to={`/overview${location.search}`} replace />;
+
+  return <LandingPage />;
 }
 
 const queryClient = new QueryClient({
@@ -81,7 +87,11 @@ export default function App() {
 
               <Route element={<AppLayout />}>
                 <Route path="/overview" element={<OverviewPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
+                {/* /dashboard était une seconde page d'accueil, redondante avec
+                 * /overview (mêmes métriques, présentation marketing en plus) et
+                 * jamais reliée depuis la navigation -- fusionnée dans /overview,
+                 * cette route ne sert plus qu'à ne pas casser d'anciens liens. */}
+                <Route path="/dashboard" element={<Navigate to="/overview" replace />} />
                 <Route path="/bank-connect" element={<BankConnectPage />} />
                 <Route path="/subscriptions" element={<SubscriptionsPage />} />
                 <Route path="/subscriptions/add" element={<SubscriptionAddPage />} />
@@ -117,7 +127,7 @@ export default function App() {
               </Route>
             </Route>
 
-            <Route path="/" element={<RootRedirect />} />
+            <Route path="/" element={<RootPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </AuthProvider>

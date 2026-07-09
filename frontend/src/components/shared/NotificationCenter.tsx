@@ -42,7 +42,13 @@ function computeAlerts(subscriptions: ReturnType<typeof useSubscriptions>["data"
   return alerts;
 }
 
-export function NotificationCenter() {
+export interface NotificationCenterProps {
+  /** Style du bouton déclencheur -- surchargeable pour s'intégrer sur un
+   * fond sombre (ex: TopNavbar) plutôt que sur un fond clair. */
+  triggerClassName?: string;
+}
+
+export function NotificationCenter({ triggerClassName }: NotificationCenterProps = {}) {
   const { data: subscriptions } = useSubscriptions();
   const [open, setOpen] = React.useState(false);
   const alerts = computeAlerts(subscriptions);
@@ -51,7 +57,10 @@ export function NotificationCenter() {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative flex h-9 w-9 items-center justify-center rounded-full text-text-muted hover:bg-surface-hover hover:text-text-main"
+        className={cn(
+          "relative flex h-9 w-9 items-center justify-center rounded-full text-text-muted hover:bg-surface-hover hover:text-text-main",
+          triggerClassName
+        )}
         aria-label="Notifications"
       >
         <Bell className="h-4 w-4" />

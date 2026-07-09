@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useBankConnectUrl, useBankStatus, useSyncTransactions } from "@/hooks/useBank";
 import { useMagnetic } from "@/hooks/useMagnetic";
 import { RevealText } from "@/components/shared/RevealText";
+import { OnboardingSteps } from "@/components/shared/OnboardingSteps";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BankSecurityAssuranceModal } from "@/components/bank/BankSecurityAssuranceModal";
@@ -48,6 +49,8 @@ export function BankConnectPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-luxury-bg px-6 text-center">
+      {!user?.bank_connected && <OnboardingSteps current={3} />}
+
       <RevealText as="h1" className="max-w-lg text-4xl font-black tracking-tight text-luxury-text sm:text-5xl">
         {user?.bank_connected ? "Ta banque est connectée" : "Sécurise ta connexion bancaire"}
       </RevealText>
@@ -56,6 +59,23 @@ export function BankConnectPage() {
           ? "Tes transactions sont synchronisées automatiquement. Tu peux relancer une détection à tout moment."
           : "Un seul geste pour connecter ta banque et laisser SubSaver isoler tes abonnements récurrents."}
       </RevealText>
+
+      {/* Repères de confiance remontés avant le geste de connexion (et non plus
+       * seulement dans la modale déclenchée au clic) : agrément ACPR/DSP2 et
+       * chiffrement visibles au moment où l'utilisateur évalue s'il continue. */}
+      {!user?.bank_connected && (
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-900/10 bg-white px-3 py-1 text-[11px] font-semibold text-luxury-text-light shadow-sm">
+            <ShieldCheck className="h-3.5 w-3.5 text-luxury-gold-deep" /> Powens, agréé ACPR
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-900/10 bg-white px-3 py-1 text-[11px] font-semibold text-luxury-text-light shadow-sm">
+            <Lock className="h-3.5 w-3.5 text-luxury-gold-deep" /> Conforme DSP2
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-900/10 bg-white px-3 py-1 text-[11px] font-semibold text-luxury-text-light shadow-sm">
+            Chiffrement bout-en-bout
+          </span>
+        </div>
+      )}
 
       {/* Indicateurs de réassurance : établissement, dernière synchro, volume
        * -- remplace le message générique "Ta banque est connectée" qui ne

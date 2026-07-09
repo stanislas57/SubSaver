@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageSpinner } from "@/components/ui/spinner";
-import { STRIPE_BILLING_URL } from "@/api/config";
 import { CharterGate } from "@/components/shared/CharterGate";
+import { PremiumUpsellScreen } from "@/components/shared/PremiumUpsellScreen";
 
 /** Racine de toutes les routes authentifiées (AppLayout + /success). On monte
  * CharterGate ici plutôt que dans AppLayout : /success (retour Stripe) est
@@ -27,23 +27,22 @@ export function GuestOnlyRoute() {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) return <PageSpinner label="Chargement…" />;
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated) return <Navigate to="/overview" replace />;
 
   return <Outlet />;
 }
 
 /** Route protégée pour les fonctionnalités Premium (BtoB, Extraction Comptable, etc).
- * Redirige vers Stripe si l'utilisateur n'est pas Premium. */
+ * Affiche un paywall contextuel (PremiumUpsellScreen) plutôt que de rediriger
+ * instantanément et silencieusement vers Stripe -- l'utilisateur voit ce qu'il
+ * débloquerait avant de décider d'y aller, et reste dans l'app tant qu'il n'a
+ * pas cliqué explicitement "Passer Premium". */
 export function PremiumOnlyRoute() {
   const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) return <PageSpinner label="Vérification de l'accès…" />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (!user?.is_premium) {
-    // Redirection vers Stripe pour l'achat Premium
-    window.location.href = STRIPE_BILLING_URL;
-    return null;
-  }
+  if (!user?.is_premium) return <PremiumUpsellScreen />;
 
   return <Outlet />;
 }

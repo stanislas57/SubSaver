@@ -4,12 +4,49 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Smartphone } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
+
+const SOCIAL_PROVIDERS = [
+  { id: "google", label: "Google", initial: "G" },
+  { id: "apple", label: "Apple", initial: "A" },
+  { id: "microsoft", label: "Microsoft", initial: "M" },
+] as const;
+
+/** Boutons de connexion sociale -- désactivés : aucun fournisseur OAuth n'est
+ * encore branché côté backend. Affichés pour matérialiser la cible produit et
+ * recueillir de la demande, mais explicitement non-cliquables (curseur
+ * "not-allowed" + badge "Bientôt") pour ne jamais laisser croire que l'option
+ * fonctionne déjà. */
+function SocialLoginRow() {
+  function handleClick(label: string) {
+    toast.info(`Connexion avec ${label} — bientôt disponible.`);
+  }
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {SOCIAL_PROVIDERS.map((provider) => (
+        <button
+          key={provider.id}
+          type="button"
+          onClick={() => handleClick(provider.label)}
+          aria-disabled
+          title={`Connexion avec ${provider.label} — bientôt disponible`}
+          className="group relative flex cursor-not-allowed flex-col items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 py-3 text-slate-300 opacity-60 transition-colors hover:opacity-80"
+        >
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-xs font-bold">
+            {provider.initial}
+          </span>
+          <span className="text-[11px] font-medium">{provider.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const schema = z.object({
   firstName: z.string().min(1, "Prénom requis").max(50),
@@ -45,9 +82,40 @@ export function RegisterForm() {
     }
   }
 
+  function handlePhoneTabClick() {
+    toast.info("Inscription par téléphone (vérification SMS) — bientôt disponible. Utilise ton email pour l'instant.");
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <div className="space-y-5">
       <h2 className="font-display text-xl font-bold text-slate-50">Créer un compte</h2>
+
+      <SocialLoginRow />
+
+      <div className="flex items-center gap-3 text-xs text-slate-400">
+        <span className="h-px flex-1 bg-white/10" />
+        ou
+        <span className="h-px flex-1 bg-white/10" />
+      </div>
+
+      {/* Sélecteur email / téléphone : l'onglet téléphone matérialise la cible
+       * (vérification par SMS) mais reste désactivé tant que le backend ne
+       * gère ni champ téléphone ni envoi d'OTP -- l'onglet email, seul
+       * fonctionnel, reste la voie active par défaut. */}
+      <div className="flex gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
+        <span className="flex-1 rounded-lg bg-white/10 py-1.5 text-center text-xs font-semibold text-slate-50">
+          Email
+        </span>
+        <button
+          type="button"
+          onClick={handlePhoneTabClick}
+          className="flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium text-slate-400 opacity-70"
+        >
+          <Smartphone className="h-3.5 w-3.5" /> Téléphone
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {registerError && <ErrorAlert message={registerError} compact />}
 
       <div>
@@ -95,6 +163,7 @@ export function RegisterForm() {
           Se connecter
         </Link>
       </p>
-    </form>
+      </form>
+    </div>
   );
 }

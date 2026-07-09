@@ -18,10 +18,10 @@ interface DialogContentProps extends React.ComponentProps<typeof DialogPrimitive
 export function DialogContent({ className, children, hideCloseButton, ...props }: DialogContentProps) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-luxury-night/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-luxury-night/50 backdrop-blur-md duration-200 data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out" />
       <DialogPrimitive.Content
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-900/10 border-t-2 border-t-luxury-gold bg-white p-8 shadow-luxury-lg focus:outline-none max-h-[85vh] overflow-y-auto",
+          "fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-900/10 border-t-2 border-t-luxury-gold bg-white/95 p-8 shadow-luxury-lg backdrop-blur-xl focus:outline-none max-h-[85vh] overflow-y-auto duration-200 data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95",
           className
         )}
         {...props}

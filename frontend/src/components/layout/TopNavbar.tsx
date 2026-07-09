@@ -2,10 +2,12 @@ import * as React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { LogOut, Menu, X, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { NotificationCenter } from "@/components/shared/NotificationCenter";
 
 const NAV_LINKS = [
   { to: "/overview", label: "Vue d'ensemble" },
   { to: "/subscriptions", label: "Abonnements" },
+  { to: "/lab/comparator", label: "Comparateur" },
   { to: "/analytics", label: "Analytique" },
   { to: "/calendar", label: "Calendrier" },
   { to: "/bank-connect", label: "Banque" },
@@ -62,6 +64,9 @@ export function TopNavbar() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <div className="hidden md:block">
+            <NotificationCenter triggerClassName="text-slate-300 hover:bg-white/10 hover:text-slate-50" />
+          </div>
           <button
             onClick={() => navigate("/profile")}
             className="hidden h-8 w-8 items-center justify-center rounded-full bg-luxury-gold/15 text-xs font-bold text-luxury-gold transition-colors duration-200 hover:bg-luxury-gold/25 md:flex"

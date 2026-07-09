@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ContactModal } from "@/components/layout/ContactModal";
 import { pageTransition } from "@/lib/motion";
 import { PremiumWelcomeGate } from "@/components/shared/PremiumWelcomeGate";
+import { GoalGate } from "@/components/shared/GoalGate";
 import { BankConnectPromptGate } from "@/components/bank/BankConnectPromptGate";
 
 /** Thème clair et luxueux : structure plein-écran avec TopNavbar fixée,
@@ -13,6 +14,7 @@ import { BankConnectPromptGate } from "@/components/bank/BankConnectPromptGate";
 export function AppLayout() {
   const { pathname } = useLocation();
   const [showContact, setShowContact] = React.useState(false);
+  const [goalGateSettled, setGoalGateSettled] = React.useState(false);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-luxury-bg">
@@ -26,9 +28,15 @@ export function AppLayout() {
        * sur laquelle il atterrit (cf. PremiumWelcomeGate). */}
       <PremiumWelcomeGate />
 
+      {/* Capture l'objectif de l'utilisateur avant de lui demander l'accès
+       * bancaire (cf. GoalGate) ; BankConnectPromptGate n'est monté qu'une
+       * fois ce gate réglé, pour ne jamais superposer les deux pop-ups
+       * non-bloquantes à la première connexion. */}
+      <GoalGate onSettled={() => setGoalGateSettled(true)} />
+
       {/* Invite à connecter sa banque dès la première connexion, une fois
-       * la charte acceptée (cf. BankConnectPromptGate). */}
-      <BankConnectPromptGate />
+       * la charte acceptée et l'objectif traité (cf. BankConnectPromptGate). */}
+      {goalGateSettled && <BankConnectPromptGate />}
 
       <TopNavbar />
 

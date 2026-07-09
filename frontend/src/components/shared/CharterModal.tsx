@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { OnboardingSteps } from "@/components/shared/OnboardingSteps";
 import { useAuth } from "@/contexts/AuthContext";
 
 type View = "summary" | "fullText";
@@ -37,6 +38,7 @@ export function CharterModal() {
       >
         {view === "summary" ? (
           <>
+            <OnboardingSteps current={1} />
             <DialogHeader>
               <DialogTitle>Charte informatique</DialogTitle>
               <DialogDescription>

@@ -3,9 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Sparkles,
-  LineChart,
-  Users,
-  FileText,
   ShieldCheck,
   Building2,
   Receipt,
@@ -23,27 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useExportSubscriptionsCsv, useSubscriptions } from "@/hooks/useSubscriptions";
 import { STRIPE_BILLING_URL, STRIPE_CUSTOMER_PORTAL_URL } from "@/api/config";
 import { cn } from "@/lib/utils";
-
-const PARTICULIER_TOOLS = [
-  {
-    icon: LineChart,
-    title: "Comparateur d'offres",
-    description: "Compare tes abonnements aux meilleures offres du marché.",
-    path: "/lab/comparator",
-  },
-  {
-    icon: Users,
-    title: "Abonnement partagé",
-    description: "Partage tes abonnements et répartis les coûts entre membres.",
-    path: "/lab/shared",
-  },
-  {
-    icon: FileText,
-    title: "Lettre de résiliation",
-    description: "Génère une lettre de résiliation prête à envoyer.",
-    path: "/lab/cancellation",
-  },
-];
+import { PARTICULIER_TOOLS } from "@/lib/premiumTools";
 
 const PRO_TOOLS = [
   {
@@ -223,30 +200,17 @@ export function PremiumPage() {
             </p>
           </BentoTile>
 
-          {/* Extraction comptable / TVA / Frais bancaires : roadmap, pas encore
-           * connectées à un backend. Le cadenas indique qu'elles seront réservées
-           * aux membres Premium une fois lancées ; non cliquables pour l'instant,
-           * y compris pour les membres Premium. */}
+          {/* Extraction comptable / TVA / Frais bancaires : en développement,
+           * pas encore connectées à un backend -- indisponibles pour tout le
+           * monde, y compris les membres Premium. Pas de cadenas : ce badge
+           * viendrait laisser croire que Premium suffirait à les débloquer. */}
           {PRO_TOOLS.map((tool) => {
             const Icon = tool.icon;
             return (
               <BentoTile key={tool.title} className="relative opacity-70">
-                <div className="absolute right-6 top-6 flex items-center gap-1.5">
-                  <AnimatePresence>
-                    {!isPremium && (
-                      <motion.span
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.4 }}
-                        transition={{ duration: 0.35, ease: "easeOut" }}
-                        className="flex h-6 w-6 items-center justify-center rounded-full bg-luxury-night text-luxury-gold"
-                      >
-                        <Lock className="h-3 w-3" />
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+                <div className="absolute right-6 top-6">
                   <span className="rounded-full border border-slate-900/10 bg-white shadow-sm px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-luxury-text-light">
-                    Bientôt disponible
+                    En développement
                   </span>
                 </div>
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">

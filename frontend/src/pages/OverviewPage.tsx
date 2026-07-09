@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Wallet, Trophy, AlertTriangle } from "lucide-react";
+import { Wallet, Trophy, AlertTriangle, Crown, Users, LineChart } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { RevealText } from "@/components/shared/RevealText";
@@ -113,15 +113,34 @@ export function OverviewPage() {
               )}
             </div>
           </BentoTile>
+
+          <BentoTile className="flex flex-col justify-between">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-night text-luxury-gold">
+              <Crown className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-luxury-text-light">Statut</p>
+              <p className="mt-2 text-3xl font-black text-luxury-text">
+                {user?.is_premium ? "Premium" : "Gratuit"}
+              </p>
+            </div>
+          </BentoTile>
         </div>
         )}
 
+        {/* Accès direct aux outils Premium plutôt qu'un renvoi vers un second
+         * tableau de bord (l'ancienne page /dashboard, purement redondante
+         * avec celle-ci, a été retirée) : Comparateur et Abonnement partagé
+         * restent gérés par PremiumOnlyRoute (redirection Stripe si non-Premium). */}
         <div className="mt-10 flex flex-wrap gap-6">
           <CTALink to="/subscriptions" variant="ghost">
             Voir tous mes abonnements
           </CTALink>
-          <CTALink to="/dashboard" variant="ghost">
-            Explorer le tableau de bord
+          <CTALink to="/lab/comparator" variant="ghost">
+            <LineChart className="h-4 w-4" /> Comparer mes offres
+          </CTALink>
+          <CTALink to="/lab/shared" variant="ghost">
+            <Users className="h-4 w-4" /> Partager un abonnement
           </CTALink>
         </div>
       </div>

@@ -11,7 +11,7 @@ export function NotFoundPage() {
       </div>
       <h1 className="font-display text-2xl font-bold text-text-main">Page introuvable</h1>
       <p className="max-w-sm text-sm text-text-muted">Cette page n'existe pas ou a été déplacée.</p>
-      <Button onClick={() => navigate("/dashboard")}>Retour au tableau de bord</Button>
+      <Button onClick={() => navigate("/")}>Retour à l'accueil</Button>
     </div>
   );
 }
