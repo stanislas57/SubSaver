@@ -84,20 +84,33 @@ export function SubscriptionsPage() {
     handleOpenConsent();
   }
 
+  /** Tunnel de détection en 2 appels réseau enchaînés (sync des transactions
+   * PUIS analyse), chacun avec sa propre gestion d'erreur : un échec de
+   * l'étape 1 (banque indisponible) n'enchaîne jamais sur l'étape 2, et
+   * chaque branche referme la modale + affiche un message clair, l'état de
+   * chargement des boutons étant remis à zéro automatiquement par react-query.
+   * Les console.log tracent chaque étape clé pour repérer où la donnée se
+   * perd le cas échéant (préfixe [detect] partagé avec les logs backend). */
   function handleConsent() {
+    console.log("[detect] Étape 2 : synchronisation des transactions bancaires…");
     syncTransactions.mutate(undefined, {
       onError: (error) => {
+        console.error("[detect] échec de la synchronisation des transactions :", error);
         toast.error(getErrorMessage(error));
         setConsentOpen(false);
       },
-      onSuccess: () => {
+      onSuccess: (syncResult) => {
+        console.log("[detect] transactions synchronisées :", syncResult);
+        console.log("[detect] Étape 3 : lancement de l'analyse de détection…");
         detectSubscriptions.mutate(undefined, {
           onSuccess: (data) => {
+            console.log(`[detect] Étape 4 : ${data.length} candidat(s) reçu(s) du backend`, data);
             setCandidates(data);
             setConsentOpen(false);
             setReportOpen(true);
           },
           onError: (error) => {
+            console.error("[detect] échec de l'analyse de détection :", error);
             toast.error(getErrorMessage(error));
             setConsentOpen(false);
           },

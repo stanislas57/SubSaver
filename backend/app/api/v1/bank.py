@@ -238,13 +238,28 @@ def detect_subscriptions(current_user: User = Depends(get_current_user), db: Ses
     rows = db.execute(
         select(BankTransaction).where(BankTransaction.user_id == current_user.id)
     ).scalars().all()
+    logger.info("[detect] user=%s : %d transaction(s) brute(s) à analyser", current_user.id, len(rows))
 
     raw = [RawTransaction(id=row.id, wording=row.wording, value=row.value, date=row.date) for row in rows]
-    analyzed = analyze_transactions(raw)
-    # Règle métier n°2 : un membre Premium retrouve son propre abonnement
-    # SubSaver dans la liste détectée, même si aucune transaction bancaire ne
-    # peut jamais le représenter (cf. subscription_enrichment.py).
-    analyzed = enrich_detected_subscriptions(analyzed, current_user.is_premium, current_user.premium_since)
+    # Le moteur d'analyse et l'enrichissement sont des fonctions pures, mais
+    # une donnée bancaire malformée (date illisible, montant absent) pourrait
+    # les faire lever : on convertit alors en 500 propre + trace serveur,
+    # plutôt que de laisser fuiter une stack trace brute vers le frontend.
+    try:
+        analyzed = analyze_transactions(raw)
+        logger.info("[detect] user=%s : %d abonnement(s) détecté(s) par l'algorithme", current_user.id, len(analyzed))
+        # Règle métier n°2 : un membre Premium retrouve son propre abonnement
+        # SubSaver dans la liste détectée, même si aucune transaction bancaire ne
+        # peut jamais le représenter (cf. subscription_enrichment.py).
+        analyzed = enrich_detected_subscriptions(analyzed, current_user.is_premium, current_user.premium_since)
+        if current_user.is_premium:
+            logger.info("[detect] user=%s : abonnement SubSaver Premium auto-injecté", current_user.id)
+    except Exception as exc:  # noqa: BLE001 -- on trace puis on renvoie une erreur claire
+        logger.exception("[detect] user=%s : échec de l'analyse des transactions", current_user.id)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Impossible d'analyser vos transactions pour l'instant. Réessaie dans un moment.",
+        ) from exc
 
     # Regroupe les abonnements existants par nom normalisé (même moteur Clé
     # Marchand que la détection elle-même) pour signaler, pour chaque
@@ -281,4 +296,5 @@ def detect_subscriptions(current_user: User = Depends(get_current_user), db: Ses
                 duplicate_subscription_ids=duplicate_ids,
             )
         )
+    logger.info("[detect] user=%s : %d candidat(s) renvoyé(s) au frontend", current_user.id, len(results))
     return results
