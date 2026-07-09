@@ -6,16 +6,22 @@ d'exclusion / Heuristique de récurrence stricte pour marchands inconnus
 Ordre d'évaluation pour chaque transaction (débits des 6 derniers mois) :
 
 1. Liste blanche + empreintes bancaires (`SUBSCRIPTION_WHITELIST` +
-   `BANK_LABEL_ALIASES`) : si le libellé nettoyé correspond à un marchand
-   connu -- soit sous son nom humain ("Netflix"), soit sous son empreinte
-   bancaire réelle ("APPLE.COM/BILL", "COMUTITRES", "MTCH*TINDER") -- la
-   transaction est un abonnement certain (confiance 1.0). Le match est
-   normalisé sous sa Clé Marchand canonique (ex: "APPLE.COM/BILL 0,99" et
-   "ITUNES.COM" deviennent tous les deux "Apple (App Store / iCloud)"),
-   c'est cette clé qui sert de critère de regroupement.
+   `BANK_LABEL_ALIASES` + `BANK_FEE_ALIASES`) : si le libellé nettoyé
+   correspond à un marchand connu -- soit sous son nom humain ("Netflix"),
+   soit sous son empreinte bancaire réelle ("APPLE.COM/BILL", "COMUTITRES",
+   "MTCH*TINDER"), soit sous un libellé de frais bancaire ("COTISATION
+   CARTE", "FRAIS TENUE DE COMPTE") -- la transaction est un abonnement
+   certain (confiance 1.0). Le match est normalisé sous sa Clé Marchand
+   canonique (ex: "APPLE.COM/BILL 0,99" et "ITUNES.COM" deviennent tous les
+   deux "Apple (App Store / iCloud)"), c'est cette clé qui sert de critère de
+   regroupement.
    TESTÉE EN PREMIER : c'est ce qui permet à "Auchan Télécom" (whitelist) de
    survivre au blocage de "AUCHAN" (blacklist grande distribution), ou à
    "Crédit Agricole" (banque) de survivre aux mots-clés de crédit conso.
+   Les frais bancaires (`BANK_FEE_ALIASES`) suivent la même logique : ce sont
+   des prélèvements récurrents légitimes (contrairement à un loyer ou un
+   remboursement de prêt), donc catégorisés et remontés comme n'importe quel
+   abonnement plutôt que jetés par la liste noire.
 2. Liste noire (`EXCLUSION_BLACKLIST`) : dépenses récurrentes qui ne sont PAS
    des abonnements au sens de l'app -- grande distribution, loyers,
    remboursements de prêts, impôts, virements d'épargne, retraits. Bloquées
@@ -302,6 +308,36 @@ BANK_LABEL_ALIASES: dict[str, tuple[str, str]] = {
     "ORANGE SA": ("Orange", "Téléphonie Mobile"),
 }
 
+# ---------------------------------------------------------------------------
+# Règle métier n°1 : frais bancaires. Une banque ne "vend" pas un service au
+# sens des catégories ci-dessus -- elle prélève des frais récurrents sur son
+# propre compte (cotisation carte, tenue de compte, assurance moyens de
+# paiement...). Même moteur de matching que BANK_LABEL_ALIASES (libellé
+# bancaire brut -> nom canonique lisible + catégorie), mais isolé dans son
+# propre dict pour ne pas mélanger deux concepts différents : une empreinte
+# BANK_LABEL_ALIASES route un service tiers facturé via un intermédiaire
+# (Apple, Google...), alors qu'un frais bancaire est facturé PAR la banque
+# elle-même, quel que soit l'établissement. Catégorie "Banque & Invest" pour
+# rester aligné avec la catégorie déjà utilisée côté frontend (CATEGORIES).
+# ---------------------------------------------------------------------------
+
+BANK_FEE_ALIASES: dict[str, tuple[str, str]] = {
+    "COTISATION CARTE": ("Cotisation carte bancaire", "Banque & Invest"),
+    "COTISATION CARTE BANCAIRE": ("Cotisation carte bancaire", "Banque & Invest"),
+    "COTIS CARTE": ("Cotisation carte bancaire", "Banque & Invest"),
+    "COTISATION CB": ("Cotisation carte bancaire", "Banque & Invest"),
+    "FRAIS DE TENUE DE COMPTE": ("Frais de tenue de compte", "Banque & Invest"),
+    "FRAIS TENUE DE COMPTE": ("Frais de tenue de compte", "Banque & Invest"),
+    "FRAIS TENUE COMPTE": ("Frais de tenue de compte", "Banque & Invest"),
+    "TENUE DE COMPTE": ("Frais de tenue de compte", "Banque & Invest"),
+    "FRAIS DE GESTION DE COMPTE": ("Frais de gestion de compte", "Banque & Invest"),
+    "FRAIS DE GESTION": ("Frais de gestion de compte", "Banque & Invest"),
+    "COTISATION ASSURANCE MOYENS DE PAIEMENT": ("Assurance moyens de paiement", "Banque & Invest"),
+    "ASSURANCE MOYENS DE PAIEMENT": ("Assurance moyens de paiement", "Banque & Invest"),
+    "COTISATION PACK": ("Cotisation forfait bancaire", "Banque & Invest"),
+    "COTISATION FORMULE": ("Cotisation forfait bancaire", "Banque & Invest"),
+}
+
 # Marchands-parapluie de facturation centralisée : un même libellé bancaire y
 # agrège plusieurs services (abonnements ET achats one-shot). Traitement
 # spécial dans analyze_transactions : sous-groupage par montant + récurrence
@@ -410,6 +446,8 @@ def _build_whitelist_index() -> list[tuple[re.Pattern[str] | None, str, str, str
         for merchant in merchants:
             _add(merchant, merchant, category)
     for bank_label, (canonical, category) in BANK_LABEL_ALIASES.items():
+        _add(bank_label, canonical, category)
+    for bank_label, (canonical, category) in BANK_FEE_ALIASES.items():
         _add(bank_label, canonical, category)
 
     entries.sort(key=lambda entry: len(entry[1]), reverse=True)
@@ -811,6 +849,11 @@ if __name__ == "__main__":
         RawTransaction(id="32", wording="PRLV SEPA AUCHAN TELECOM MOBILE", value=-9.99, date=_iso(3)),
         # Transaction hors fenêtre de 6 mois -> ignorée.
         RawTransaction(id="33", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(210)),
+        # Frais bancaires : cotisation carte récurrente -> détectée comme un
+        # abonnement classique (catégorie "Banque & Invest"), jamais jetée.
+        RawTransaction(id="34", wording="PRLV SEPA COTISATION CARTE VISA PREMIER", value=-3.00, date=_iso(63)),
+        RawTransaction(id="35", wording="PRLV SEPA COTISATION CARTE VISA PREMIER", value=-3.00, date=_iso(33)),
+        RawTransaction(id="36", wording="PRLV SEPA COTISATION CARTE VISA PREMIER", value=-3.00, date=_iso(3)),
     ]
 
     for result in analyze_transactions(sample):

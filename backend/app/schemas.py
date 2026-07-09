@@ -20,6 +20,7 @@ class UserOut(BaseModel):
     currency: Currency
     notification_pref: NotificationPref
     is_premium: bool
+    premium_since: Optional[str] = None
     bank_connected: bool
     is_admin: bool
     charter_accepted_at: Optional[str] = None

@@ -41,6 +41,10 @@ def upgrade_premium(current_user: User = Depends(get_current_user), db: Session 
     retirer cette route (ou la réserver à un usage interne/service-to-service).
     """
     current_user.is_premium = True
+    # Posée une seule fois : un second appel (ex: retour répété sur /success)
+    # ne doit jamais écraser la vraie date de première souscription.
+    if not current_user.premium_since:
+        current_user.premium_since = datetime.now(timezone.utc).isoformat()
     db.commit()
     db.refresh(current_user)
     return current_user

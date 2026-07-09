@@ -22,6 +22,9 @@ export interface User {
   currency: Currency;
   notification_pref: NotificationPref;
   is_premium: boolean;
+  /** Date ISO de la souscription Premium (posée une seule fois côté serveur),
+   * null si jamais upgradé ou upgradé avant l'ajout de ce champ. */
+  premium_since: string | null;
   bank_connected: boolean;
   is_admin: boolean;
   /** null tant que l'utilisateur n'a jamais accepté la charte informatique --

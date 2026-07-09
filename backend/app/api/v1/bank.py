@@ -14,6 +14,7 @@ from app.core.security import create_powens_state, decode_powens_state
 from app.core.token_encryption import decrypt_token, encrypt_token
 from app.core.subscription_detector import RawTransaction
 from app.core.transaction_analyzer import analyze_transactions, display_merchant_name
+from app.core.subscription_enrichment import enrich_detected_subscriptions
 from app.db.session import get_db
 from app.models.bank_transaction import BankTransaction
 from app.models.subscription import Subscription
@@ -240,6 +241,10 @@ def detect_subscriptions(current_user: User = Depends(get_current_user), db: Ses
 
     raw = [RawTransaction(id=row.id, wording=row.wording, value=row.value, date=row.date) for row in rows]
     analyzed = analyze_transactions(raw)
+    # Règle métier n°2 : un membre Premium retrouve son propre abonnement
+    # SubSaver dans la liste détectée, même si aucune transaction bancaire ne
+    # peut jamais le représenter (cf. subscription_enrichment.py).
+    analyzed = enrich_detected_subscriptions(analyzed, current_user.is_premium, current_user.premium_since)
 
     # Regroupe les abonnements existants par nom normalisé (même moteur Clé
     # Marchand que la détection elle-même) pour signaler, pour chaque

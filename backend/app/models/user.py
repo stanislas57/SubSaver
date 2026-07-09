@@ -24,6 +24,11 @@ class User(Base):
     currency: Mapped[str] = mapped_column(String, nullable=False, default="EUR")
     notification_pref: Mapped[str] = mapped_column(String, nullable=False, default="all")
     is_premium: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # Date ISO de la souscription Premium, posée une seule fois par
+    # POST /users/me/upgrade-premium (jamais réécrite ensuite). Null pour les
+    # comptes passés Premium avant l'ajout de cette colonne, ou jamais
+    # upgradés -- cf. enrich_detected_subscriptions qui doit s'en accommoder.
+    premium_since: Mapped[str | None] = mapped_column(String, nullable=True)
     bank_connected: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     # Le compte est actif dès la création (pas de vérification email/SMS) --
