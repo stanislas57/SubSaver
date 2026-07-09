@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://subsaver-frontend.onrender.com/sitemap.xml
