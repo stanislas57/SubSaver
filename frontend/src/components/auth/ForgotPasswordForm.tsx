@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export function ForgotPasswordForm() {
   const navigate = useNavigate();
   const { forgotPassword, isSendingResetCode, forgotPasswordError, resetPassword, isResettingPassword, resetPasswordError } = useAuth();
   const [email, setEmail] = React.useState<string | null>(null);
+  const [showNewPassword, setShowNewPassword] = React.useState(false);
 
   const emailForm = useForm<EmailValues>({ resolver: zodResolver(emailSchema) });
   const resetForm = useForm<ResetValues>({ resolver: zodResolver(resetSchema) });
@@ -65,7 +67,23 @@ export function ForgotPasswordForm() {
 
         <div>
           <Label htmlFor="newPassword" className="text-luxury-text">Nouveau mot de passe</Label>
-          <Input id="newPassword" type="password" autoComplete="new-password" className={inputClassName} {...resetForm.register("newPassword")} />
+          <div className="relative">
+            <Input
+              id="newPassword"
+              type={showNewPassword ? "text" : "password"}
+              autoComplete="new-password"
+              className={`${inputClassName} pr-10`}
+              {...resetForm.register("newPassword")}
+            />
+            <button
+              type="button"
+              onClick={() => setShowNewPassword(!showNewPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-luxury-text-light hover:text-luxury-text transition-colors"
+              aria-label={showNewPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+            >
+              {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          </div>
           {resetForm.formState.errors.newPassword && (
             <p className="mt-1 text-xs text-red-500">{resetForm.formState.errors.newPassword.message}</p>
           )}

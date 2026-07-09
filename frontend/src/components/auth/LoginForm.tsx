@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ function useLoadingStageLabel(active: boolean): string | null {
 
 export function LoginForm() {
   const { login, isLoggingIn, loginError } = useAuth();
+  const [showPassword, setShowPassword] = React.useState(false);
   const {
     register,
     handleSubmit,
@@ -85,7 +87,24 @@ export function LoginForm() {
             Mot de passe oublié ?
           </Link>
         </div>
-        <Input id="password" type="password" autoComplete="current-password" error={!!errors.password} className={inputClassName} {...register("password")} />
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            error={!!errors.password}
+            className={`${inputClassName} pr-10`}
+            {...register("password")}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-50 transition-colors"
+            aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+          >
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
+        </div>
         {errors.password && <p className="mt-1 text-xs text-red-300">{errors.password.message}</p>}
       </div>
 
