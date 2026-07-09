@@ -3,7 +3,7 @@
 ## Sidebar (Menu latéral gauche)
 
 ```
-SubServer [Logo]
+SubSaver [Logo]
 ├── Tableau de bord (active)
 ├── Abonnements
 ├── Analytique

@@ -51,7 +51,7 @@ export function BankConnectPage() {
       <RevealText className="mt-4 max-w-md text-base text-luxury-text-light">
         {user?.bank_connected
           ? "Tes transactions sont synchronisées automatiquement. Tu peux relancer une détection à tout moment."
-          : "Un seul geste pour connecter ta banque et laisser SubServer isoler tes abonnements récurrents."}
+          : "Un seul geste pour connecter ta banque et laisser SubSaver isoler tes abonnements récurrents."}
       </RevealText>
 
       {/* Indicateurs de réassurance : établissement, dernière synchro, volume

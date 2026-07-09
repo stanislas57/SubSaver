@@ -40,7 +40,7 @@ export function CharterModal() {
             <DialogHeader>
               <DialogTitle>Charte informatique</DialogTitle>
               <DialogDescription>
-                Avant de continuer, merci de prendre connaissance de la charte informatique de SubServer et de
+                Avant de continuer, merci de prendre connaissance de la charte informatique de SubSaver et de
                 l'accepter. Cette étape est obligatoire et ne s'affichera qu'une seule fois.
               </DialogDescription>
             </DialogHeader>
@@ -78,7 +78,7 @@ export function CharterModal() {
                 <h3 className="font-semibold text-luxury-text">Article 1 — Objet et champ d'application</h3>
                 <p>
                   La présente Charte Informatique a pour objet de définir les règles d'utilisation du service
-                  SubServer (ci-après « le Service ») ainsi que les droits et obligations de tout Utilisateur créant
+                  SubSaver (ci-après « le Service ») ainsi que les droits et obligations de tout Utilisateur créant
                   un compte. Elle s'applique dès la création du compte et pour toute la durée d'utilisation du
                   Service, en complément de la Charte de Confidentialité (voir /privacy) qui régit spécifiquement le
                   traitement des données personnelles.
@@ -100,7 +100,7 @@ export function CharterModal() {
                   L'Utilisateur est seul responsable de la confidentialité de son mot de passe et de son adresse
                   e-mail associée. Toute action réalisée depuis un compte authentifié est présumée effectuée par son
                   titulaire. En cas de suspicion de compromission (accès non autorisé, perte du mot de passe),
-                  l'Utilisateur s'engage à en informer SubServer sans délai à l'adresse contact.subserver@proton.me et
+                  l'Utilisateur s'engage à en informer SubSaver sans délai à l'adresse contact.subsaver@proton.me et
                   à modifier immédiatement son mot de passe.
                 </p>
               </section>
@@ -116,7 +116,7 @@ export function CharterModal() {
                   </li>
                   <li>
                     Toute tentative de contournement des mesures de sécurité, d'authentification ou de limitation
-                    technique (rate limiting, quotas) mises en place par SubServer ;
+                    technique (rate limiting, quotas) mises en place par SubSaver ;
                   </li>
                   <li>
                     L'utilisation du Service à des fins frauduleuses, illicites, ou contraires à l'ordre public ;
@@ -129,7 +129,7 @@ export function CharterModal() {
                 <h3 className="font-semibold text-luxury-text">Article 5 — Propriété intellectuelle</h3>
                 <p>
                   Le code source, la marque, les interfaces graphiques et l'ensemble des éléments constitutifs du
-                  Service demeurent la propriété exclusive de SubServer. Aucune disposition de la présente Charte ne
+                  Service demeurent la propriété exclusive de SubSaver. Aucune disposition de la présente Charte ne
                   saurait être interprétée comme une cession de droits de propriété intellectuelle. Les données
                   saisies ou détectées par l'Utilisateur (abonnements, préférences) lui restent propres et lui sont
                   restituables conformément à son droit à la portabilité (cf. Charte de Confidentialité).
@@ -139,9 +139,9 @@ export function CharterModal() {
               <section className="space-y-2">
                 <h3 className="font-semibold text-luxury-text">Article 6 — Disponibilité et maintenance</h3>
                 <p>
-                  SubServer s'efforce d'assurer une disponibilité continue du Service mais ne garantit pas une
+                  SubSaver s'efforce d'assurer une disponibilité continue du Service mais ne garantit pas une
                   disponibilité ininterrompue. Des interruptions programmées (maintenance) ou exceptionnelles
-                  (incident technique, force majeure) peuvent survenir, sans que la responsabilité de SubServer ne
+                  (incident technique, force majeure) peuvent survenir, sans que la responsabilité de SubSaver ne
                   puisse être engagée à ce titre.
                 </p>
               </section>
@@ -149,7 +149,7 @@ export function CharterModal() {
               <section className="space-y-2">
                 <h3 className="font-semibold text-luxury-text">Article 7 — Responsabilités et limites</h3>
                 <p>
-                  SubServer agrège et présente des informations financières à titre purement informatif à partir des
+                  SubSaver agrège et présente des informations financières à titre purement informatif à partir des
                   données bancaires de l'Utilisateur. Ces informations ne constituent en aucun cas un conseil
                   financier, juridique ou fiscal. L'Utilisateur demeure seul responsable des décisions qu'il prend sur
                   la base des informations affichées par le Service.

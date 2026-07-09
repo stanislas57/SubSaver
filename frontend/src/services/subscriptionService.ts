@@ -37,7 +37,7 @@ export const subscriptionService = {
     const response = await axiosClient.get("/subscriptions/export", { responseType: "blob" });
     const filename = filenameFromContentDisposition(
       response.headers["content-disposition"],
-      "subserver-abonnements.csv"
+      "subsaver-abonnements.csv"
     );
     return { blob: response.data as Blob, filename };
   },

@@ -12,7 +12,7 @@ export function AdminDashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-slate-100">Dashboard</h1>
-        <p className="text-sm text-slate-500">Pilotage interne SubServer -- accès restreint aux administrateurs.</p>
+        <p className="text-sm text-slate-500">Pilotage interne SubSaver -- accès restreint aux administrateurs.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

@@ -12,7 +12,7 @@ export interface BankConnectPromptModalProps {
 
 /** Pop-up affiché à la toute première connexion (avant toute connexion
  * bancaire) pour inviter l'utilisateur à connecter sa banque et laisser
- * SubServer isoler ses abonnements récurrents. Non-bloquant : "Plus tard"
+ * SubSaver isoler ses abonnements récurrents. Non-bloquant : "Plus tard"
  * (et la croix) ferment simplement la modale sans empêcher l'accès au
  * site, contrairement à CharterModal. Cf. BankConnectPromptGate pour la
  * logique de "une seule fois par compte" (LocalStorage) et l'appel réel
@@ -27,7 +27,7 @@ export function BankConnectPromptModal({ open, onOpenChange, onConnect, onSkip, 
           </div>
           <DialogTitle className="text-xl">Trouvons vos abonnements cachés</DialogTitle>
           <DialogDescription>
-            Connectez votre banque pour que SubServer repère automatiquement vos prélèvements récurrents — et vous
+            Connectez votre banque pour que SubSaver repère automatiquement vos prélèvements récurrents — et vous
             propose des économies concrètes en quelques secondes.
           </DialogDescription>
         </DialogHeader>
@@ -43,7 +43,7 @@ export function BankConnectPromptModal({ open, onOpenChange, onConnect, onSkip, 
           </li>
           <li className="flex items-start gap-2.5">
             <Ban className="mt-0.5 h-4 w-4 shrink-0 text-luxury-gold-deep" />
-            Aucun virement, aucun paiement possible depuis SubServer.
+            Aucun virement, aucun paiement possible depuis SubSaver.
           </li>
         </ul>
 

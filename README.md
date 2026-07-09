@@ -1,11 +1,11 @@
-# SubServer
+# SubSaver
 
 Gestionnaire d'abonnements : abonnement partagé, comparateur d'offres (base curatée), connexion bancaire réelle (Powens sandbox) avec détection automatique des abonnements.
 
 - **Frontend** : React 19 + Vite + TypeScript + Tailwind + React Query + Framer Motion — `frontend/`
 - **Backend** : FastAPI + SQLAlchemy + Alembic + PostgreSQL — `backend/`
 
-**Déployé** : https://subserver-frontend.onrender.com (API : https://subserver-urna.onrender.com)
+**Déployé** : https://subsaver-frontend.onrender.com (API : https://subsaver-urna.onrender.com)
 
 ---
 
@@ -20,12 +20,12 @@ Gestionnaire d'abonnements : abonnement partagé, comparateur d'offres (base cur
 ## 1. Base de données
 
 ```bash
-docker run --name subserver-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=subserver -p 5432:5432 -d postgres:16
+docker run --name subsaver-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=subsaver -p 5432:5432 -d postgres:16
 
 # Ou install locale (Ubuntu/Debian) :
 sudo service postgresql start
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
-sudo -u postgres psql -c "CREATE DATABASE subserver;"
+sudo -u postgres psql -c "CREATE DATABASE subsaver;"
 ```
 
 ---
@@ -160,5 +160,5 @@ backend/
 - `bank/providers` reste un catalogue de démonstration ; la vraie connexion passe par `bank/connect-url` + `bank/callback` (Powens).
 - `market/offers` est une base curatée manuellement (pas de scraping/API tierce) — mise à jour via nouvelle migration Alembic en cas de changement tarifaire.
 - Toute évolution de modèle : `alembic revision --autogenerate -m "message"` puis `alembic upgrade head`.
-- JWT stocké côté frontend dans `localStorage` (clé `subserver_token`).
+- JWT stocké côté frontend dans `localStorage` (clé `subsaver_token`).
 - Base Postgres Render (plan free) : vérifier la date d'expiration et upgrader si besoin.

@@ -15,7 +15,7 @@ interface ContactModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/** Modale de contact : envoie réellement un e-mail vers contact.subserver@proton.me
+/** Modale de contact : envoie réellement un e-mail vers contact.subsaver@proton.me
  * via POST /contact (backend FastAPI + SMTP, cf. app/core/email_service.py). */
 export function ContactModal({ open, onOpenChange }: ContactModalProps) {
   const { user } = useAuth();

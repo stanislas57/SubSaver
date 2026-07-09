@@ -21,7 +21,7 @@ export function BankConsentModal({ open, onOpenChange, onConsent, loading }: Ban
           </div>
           <DialogTitle>Autoriser la détection des abonnements ?</DialogTitle>
           <DialogDescription>
-            SubServer va analyser les transactions synchronisées depuis ta banque pour isoler les paiements
+            SubSaver va analyser les transactions synchronisées depuis ta banque pour isoler les paiements
             récurrents et te proposer de les ajouter à ton tableau de bord. Aucune donnée n'est partagée avec un
             tiers.
           </DialogDescription>

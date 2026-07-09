@@ -1,5 +1,5 @@
 // ============================================================================
-// SubServer — Types partagés Frontend
+// SubSaver — Types partagés Frontend
 // Miroir strict des schémas Pydantic exposés par l'API FastAPI (/api/v1).
 // ============================================================================
 

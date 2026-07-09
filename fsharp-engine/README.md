@@ -8,7 +8,7 @@ immuabilité, Discriminated Unions), avec une vue de validation humaine en
 ## ⚠️ Positionnement dans le dépôt
 
 Ce module est une **implémentation de référence autonome**. Le moteur en
-production de SubServer est en Python
+production de SubSaver est en Python
 ([`backend/app/core/transaction_analyzer.py`](../backend/app/core/transaction_analyzer.py)),
 et le frontend en TypeScript/React. Rien ici n'est branché sur l'app — ce
 code compile et se teste indépendamment, et sert de spécification exécutable

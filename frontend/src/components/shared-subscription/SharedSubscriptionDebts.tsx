@@ -251,7 +251,7 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
                 <div className="rounded-lg border border-border p-3 text-sm text-text-main">
                   <p>Bonjour {debtToRemind.from_member_name},</p>
                   <p className="mt-2">
-                    {user?.first_name ?? "Le gestionnaire"} te rappelle ta part sur les abonnements partagés SubServer.
+                    {user?.first_name ?? "Le gestionnaire"} te rappelle ta part sur les abonnements partagés SubSaver.
                   </p>
                   <p className="mt-2">
                     Montant dû : <strong>{formatPrice(debtToRemind.amount, currency)}</strong>

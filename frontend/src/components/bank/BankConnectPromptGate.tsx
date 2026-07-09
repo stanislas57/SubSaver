@@ -7,7 +7,7 @@ import { getErrorMessage } from "@/api/axiosClient";
 import { BankConnectPromptModal } from "@/components/bank/BankConnectPromptModal";
 
 function storageKey(userId: string) {
-  return `subserver_bank_prompt_seen_${userId}`;
+  return `subsaver_bank_prompt_seen_${userId}`;
 }
 
 /** Affiche BankConnectPromptModal une seule fois par compte, à la première

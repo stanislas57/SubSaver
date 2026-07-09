@@ -36,7 +36,7 @@ export function PrivacyPage() {
             <h2 className="text-2xl font-bold text-luxury-text">Préambule et Identité du Responsable de Traitement</h2>
             <p className="text-sm text-luxury-text-light">
               La présente Politique de Confidentialité a pour objectif de définir de manière transparente, claire et
-              exhaustive la manière dont <strong>SubServer</strong>, agissant en qualité de{" "}
+              exhaustive la manière dont <strong>SubSaver</strong>, agissant en qualité de{" "}
               <strong>Responsable de Traitement</strong>, collecte, utilise, protège et partage les données à
               caractère personnel de ses utilisateurs.
             </p>
@@ -47,7 +47,7 @@ export function PrivacyPage() {
               paiement dans le marché intérieur (DSP2).
             </p>
             <p className="text-xs italic text-luxury-text-light">
-              En créant un compte et en utilisant les services de SubServer, vous reconnaissez avoir pris
+              En créant un compte et en utilisant les services de SubSaver, vous reconnaissez avoir pris
               connaissance de la présente Politique.
             </p>
           </section>
@@ -58,7 +58,7 @@ export function PrivacyPage() {
               Article 1 : Finalités, Données Collectées et Bases Légales
             </h2>
             <p className="text-sm text-luxury-text-light">
-              SubServer s'engage au respect du principe de minimisation des données (Article 5.1.c du RGPD). Nous ne
+              SubSaver s'engage au respect du principe de minimisation des données (Article 5.1.c du RGPD). Nous ne
               collectons que les données strictement nécessaires aux finalités poursuivies.
             </p>
 
@@ -142,7 +142,7 @@ export function PrivacyPage() {
                   techniques (débogage), statistiques d'utilisation (sans traçage individuel croisé).
                 </p>
                 <p className="mt-1 text-sm text-luxury-text-light">
-                  <strong>Base légale :</strong> Intérêt légitime de SubServer pour l'amélioration continue de son
+                  <strong>Base légale :</strong> Intérêt légitime de SubSaver pour l'amélioration continue de son
                   Service et le maintien de la sécurité informatique (Article 6.1.f du RGPD).
                 </p>
               </div>
@@ -155,7 +155,7 @@ export function PrivacyPage() {
               Article 2 : Destinataires des Données et Sous-Traitance (Article 28 RGPD)
             </h2>
             <p className="text-sm text-luxury-text-light">
-              SubServer ne commercialise, ne loue, ni ne cède <strong>aucune</strong> de vos données personnelles à
+              SubSaver ne commercialise, ne loue, ni ne cède <strong>aucune</strong> de vos données personnelles à
               des tiers à des fins de prospection commerciale ou de profilage publicitaire.
             </p>
             <p className="text-sm text-luxury-text-light">
@@ -171,7 +171,7 @@ export function PrivacyPage() {
               </li>
               <li>
                 <strong>Stripe Payments Europe, Ltd. :</strong> Prestataire de services de paiement (PSP) certifié
-                PCI-DSS de niveau 1. Les données de carte bancaire sont collectées directement par Stripe ; SubServer
+                PCI-DSS de niveau 1. Les données de carte bancaire sont collectées directement par Stripe ; SubSaver
                 n'a accès qu'à des jetons de paiement (tokens) et à des informations de facturation limitées.
               </li>
             </ul>
@@ -181,11 +181,11 @@ export function PrivacyPage() {
           <section className="space-y-4">
             <h2 className="text-2xl font-bold text-luxury-text">Article 3 : Transferts de Données hors de l'EEE</h2>
             <p className="text-sm text-luxury-text-light">
-              En principe, SubServer stocke et traite vos données au sein de l'Espace Économique Européen (EEE).
+              En principe, SubSaver stocke et traite vos données au sein de l'Espace Économique Européen (EEE).
             </p>
             <p className="text-sm text-luxury-text-light">
               Toutefois, dans le cadre de l'utilisation de prestataires internationaux (notamment Stripe), certaines
-              données techniques peuvent être transférées vers les États-Unis. Dans de tels cas, SubServer s'assure
+              données techniques peuvent être transférées vers les États-Unis. Dans de tels cas, SubSaver s'assure
               que ces transferts sont encadrés par des garanties appropriées au titre de l'Article 46 du RGPD,
               notamment par la signature de <strong>Clauses Contractuelles Types (CCT)</strong> de la Commission
               Européenne ou en s'assurant que le prestataire adhère au cadre d'adéquation en vigueur (Data Privacy
@@ -199,7 +199,7 @@ export function PrivacyPage() {
               Article 4 : Mesures Techniques et Organisationnelles (Sécurité)
             </h2>
             <p className="text-sm text-luxury-text-light">
-              Conformément à l'Article 32 du RGPD, SubServer met en œuvre des mesures de sécurité physiques, logiques
+              Conformément à l'Article 32 du RGPD, SubSaver met en œuvre des mesures de sécurité physiques, logiques
               et organisationnelles de pointe pour prévenir toute violation de données (accès non autorisé,
               altération, divulgation, destruction) :
             </p>
@@ -215,7 +215,7 @@ export function PrivacyPage() {
               </li>
               <li>
                 <strong>Gestion des Mots de Passe :</strong> Hachage via l'algorithme <code>bcrypt</code> avec facteur
-                de coût élevé. SubServer ignore techniquement votre mot de passe en clair.
+                de coût élevé. SubSaver ignore techniquement votre mot de passe en clair.
               </li>
               <li>
                 <strong>Architecture Zéro Trust et Isolation :</strong> Les transactions brutes issues de l'Open
@@ -234,7 +234,7 @@ export function PrivacyPage() {
           <section className="space-y-4">
             <h2 className="text-2xl font-bold text-luxury-text">Article 5 : Durées de Conservation des Données</h2>
             <p className="text-sm text-luxury-text-light">
-              SubServer conserve vos données uniquement pour la durée strictement nécessaire aux finalités
+              SubSaver conserve vos données uniquement pour la durée strictement nécessaire aux finalités
               déclarées :
             </p>
             <ul className="list-inside list-disc space-y-2 text-sm text-luxury-text-light">
@@ -280,7 +280,7 @@ export function PrivacyPage() {
               <li>
                 <strong>Droit à l'effacement / Droit à l'oubli (Art. 17) :</strong> Demander la suppression de votre
                 compte et de vos données personnelles (réalisable en un clic depuis les paramètres de votre compte
-                SubServer).
+                SubSaver).
               </li>
               <li>
                 <strong>Droit à la limitation du traitement (Art. 18) :</strong> Geler temporairement l'utilisation de
@@ -306,7 +306,7 @@ export function PrivacyPage() {
               doute raisonnable) à notre Délégué à la Protection des Données (DPO) ou service conformité :
             </p>
             <div className="rounded-lg border border-slate-900/10 bg-slate-50 p-4">
-              <p className="text-sm font-mono text-luxury-text">📧 contact.subserver@proton.me</p>
+              <p className="text-sm font-mono text-luxury-text">📧 contact.subsaver@proton.me</p>
             </div>
             <p className="text-xs italic text-luxury-text-light">
               Une réponse vous sera apportée dans un délai maximum de 30 jours calendaires.
@@ -333,7 +333,7 @@ export function PrivacyPage() {
           <section className="space-y-4">
             <h2 className="text-2xl font-bold text-luxury-text">Article 7 : Violation de Données (Data Breach)</h2>
             <p className="text-sm text-luxury-text-light">
-              En cas de faille de sécurité entraînant un risque pour vos droits et libertés, SubServer s'engage à :
+              En cas de faille de sécurité entraînant un risque pour vos droits et libertés, SubSaver s'engage à :
             </p>
             <ol className="list-inside list-decimal space-y-2 text-sm text-luxury-text-light">
               <li>Notifier la violation à la CNIL dans les 72 heures suivant sa découverte (Article 33 du RGPD).</li>
@@ -350,7 +350,7 @@ export function PrivacyPage() {
               Article 8 : Évolution de la Politique de Confidentialité
             </h2>
             <p className="text-sm text-luxury-text-light">
-              SubServer se réserve le droit de modifier la présente Politique à tout moment pour refléter les
+              SubSaver se réserve le droit de modifier la présente Politique à tout moment pour refléter les
               évolutions légales, jurisprudentielles ou techniques.
             </p>
             <p className="text-sm text-luxury-text-light">
@@ -365,11 +365,11 @@ export function PrivacyPage() {
           <section className="space-y-4">
             <h2 className="text-2xl font-bold text-luxury-text">Article 9 : Contact Légal</h2>
             <p className="text-sm text-luxury-text-light">
-              Pour toute question relative à cette Charte, à l'Open Banking ou à la conformité RGPD de SubServer,
+              Pour toute question relative à cette Charte, à l'Open Banking ou à la conformité RGPD de SubSaver,
               veuillez contacter notre équipe dédiée :
             </p>
             <div className="rounded-lg border border-slate-900/10 bg-slate-50 p-4">
-              <p className="text-sm font-mono text-luxury-text">📧 contact.subserver@proton.me</p>
+              <p className="text-sm font-mono text-luxury-text">📧 contact.subsaver@proton.me</p>
             </div>
             <p className="text-xs italic text-luxury-text-light">
               (Les messages transitant par cette adresse font l'objet d'un chiffrement garantissant la confidentialité
@@ -379,7 +379,7 @@ export function PrivacyPage() {
 
           {/* Séparateur et signature */}
           <div className="border-t border-slate-900/10 pt-8">
-            <p className="text-xs text-luxury-text-light">SubServer. Confidentiel. Sécurisé. RGPD-conforme.</p>
+            <p className="text-xs text-luxury-text-light">SubSaver. Confidentiel. Sécurisé. RGPD-conforme.</p>
           </div>
         </article>
       </div>

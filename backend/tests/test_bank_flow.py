@@ -38,7 +38,7 @@ class TestConnectUrl:
         assert response.status_code == 200, response.text
         url = response.json()["webview_url"]
         assert url.startswith("https://webview.powens.com/connect?")
-        assert "domain=subserver-sandbox.biapi.pro" in url
+        assert "domain=subsaver-sandbox.biapi.pro" in url
         assert "client_id=" in url
         assert "code=" in url
         assert "state=" in url

@@ -24,7 +24,7 @@ export function Footer({ onContactClick }: FooterProps) {
               Charte de confidentialité
             </Link>
             <a
-              href="https://github.com/stanislas57/SubServer"
+              href="https://github.com/stanislas57/SubSaver"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-luxury-text transition-colors"
@@ -36,7 +36,7 @@ export function Footer({ onContactClick }: FooterProps) {
 
         {/* Mention légale */}
         <p className="text-xs text-luxury-text-light/70">
-          © {new Date().getFullYear()} SubServer. Tous droits réservés.
+          © {new Date().getFullYear()} SubSaver. Tous droits réservés.
         </p>
       </div>
     </footer>

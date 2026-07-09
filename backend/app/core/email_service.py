@@ -51,7 +51,7 @@ def _code_email_body(title: str, intro: str, code: str, footer: str = "") -> str
 def send_password_reset_email(to: str, code: str) -> None:
     send_email(
         to,
-        subject="Réinitialise ton mot de passe SubServer",
+        subject="Réinitialise ton mot de passe SubSaver",
         html_body=_code_email_body(
             "Réinitialisation de mot de passe",
             "Voici ton code de réinitialisation :",
@@ -92,12 +92,12 @@ def send_debt_reminder_email(
     html_body = f"""
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; background: #f8fafc;">
       <div style="background: #0A1128; padding: 24px 32px; border-radius: 12px 12px 0 0;">
-        <span style="color: #D4AF37; font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">SubServer</span>
+        <span style="color: #D4AF37; font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">SubSaver</span>
       </div>
       <div style="background: #ffffff; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
         <p style="margin: 0 0 16px; color: #0f172a; font-size: 15px;">Bonjour {safe_first_name},</p>
         <p style="margin: 0 0 24px; color: #475569; font-size: 15px; line-height: 1.6;">
-          {safe_owner_name} te rappelle ta part sur les abonnements partagés SubServer.
+          {safe_owner_name} te rappelle ta part sur les abonnements partagés SubSaver.
         </p>
 
         <div style="background: #FAF6EA; border: 1px solid #D4AF37; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
@@ -117,8 +117,8 @@ def send_debt_reminder_email(
         </table>
 
         <p style="margin: 24px 0 0; color: #94a3b8; font-size: 12px; line-height: 1.5;">
-          Ce message a été envoyé automatiquement depuis SubServer à la demande de {safe_owner_name}.
-          Réglez directement avec cette personne (virement, espèces...) -- SubServer ne gère aucun paiement.
+          Ce message a été envoyé automatiquement depuis SubSaver à la demande de {safe_owner_name}.
+          Réglez directement avec cette personne (virement, espèces...) -- SubSaver ne gère aucun paiement.
         </p>
       </div>
     </div>
@@ -152,7 +152,7 @@ def send_contact_email(name: str, from_email: str, subject: str, message: str) -
     """
     send_email(
         settings.CONTACT_EMAIL,
-        subject=f"[Contact SubServer] {subject}",
+        subject=f"[Contact SubSaver] {subject}",
         html_body=html_body,
         reply_to=from_email,
     )

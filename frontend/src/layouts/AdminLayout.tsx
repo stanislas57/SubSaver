@@ -25,7 +25,7 @@ export function AdminLayout() {
           <ShieldAlert className="h-5 w-5 text-amber-500" />
           <div>
             <p className="text-sm font-bold uppercase tracking-wider text-slate-100">Super Admin</p>
-            <p className="text-[11px] text-slate-500">SubServer Back-Office</p>
+            <p className="text-[11px] text-slate-500">SubSaver Back-Office</p>
           </div>
         </div>
 

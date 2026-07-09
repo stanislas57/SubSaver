@@ -14,7 +14,7 @@ interface DialogContentProps extends React.ComponentProps<typeof DialogPrimitive
 }
 
 /** Modale thème Luxe : carte blanche, fine bordure bleu nuit, filet doré en tête,
- * logo SubServer visible dans chaque pop-up. */
+ * logo SubSaver visible dans chaque pop-up. */
 export function DialogContent({ className, children, hideCloseButton, ...props }: DialogContentProps) {
   return (
     <DialogPrimitive.Portal>
@@ -26,7 +26,7 @@ export function DialogContent({ className, children, hideCloseButton, ...props }
         )}
         {...props}
       >
-        <img src="/logo.svg" alt="SubServer" className="mb-5 h-8 w-auto" />
+        <img src="/logo.svg" alt="SubSaver" className="mb-5 h-8 w-auto" />
         {children}
         {!hideCloseButton && (
           <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm text-luxury-text-light transition-colors hover:text-luxury-text">

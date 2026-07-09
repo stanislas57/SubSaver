@@ -10,8 +10,8 @@ export function AuthLayout() {
 
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center justify-center gap-2.5">
-          <img src="/logo.svg" alt="SubServer" className="h-10 w-auto" />
-          <span className="font-display text-xl font-bold text-luxury-sapphire">SubServer</span>
+          <img src="/logo.svg" alt="SubSaver" className="h-10 w-auto" />
+          <span className="font-display text-xl font-bold text-luxury-sapphire">SubSaver</span>
         </div>
         <div className="rounded-3xl border border-luxury-text/10 bg-white/80 p-6 shadow-luxury-lg backdrop-blur-2xl">
           <Outlet />

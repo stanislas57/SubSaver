@@ -8,5 +8,5 @@ export const STRIPE_BILLING_URL =
  * ferait payer un second abonnement. */
 export const STRIPE_CUSTOMER_PORTAL_URL =
   import.meta.env.VITE_STRIPE_CUSTOMER_PORTAL_URL || "https://billing.stripe.com/p/session/test_fictif";
-export const TOKEN_STORAGE_KEY = "subserver_token";
-export const TRACKED_MERCHANT_KEYS_STORAGE_KEY = "subserver_bank_tracked_merchants";
+export const TOKEN_STORAGE_KEY = "subsaver_token";
+export const TRACKED_MERCHANT_KEYS_STORAGE_KEY = "subsaver_bank_tracked_merchants";

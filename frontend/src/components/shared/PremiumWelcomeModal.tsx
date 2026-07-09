@@ -20,7 +20,7 @@ export function PremiumWelcomeModal({ open, onClose, confirming }: PremiumWelcom
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-luxury-night text-luxury-gold">
             <PartyPopper className="h-6 w-6" />
           </div>
-          <DialogTitle className="text-xl">Merci de votre confiance et bienvenue chez SubServer Premium</DialogTitle>
+          <DialogTitle className="text-xl">Merci de votre confiance et bienvenue chez SubSaver Premium</DialogTitle>
           <DialogDescription>
             Toutes les fonctionnalités Premium et BtoB sont désormais débloquées sur ton compte.
           </DialogDescription>

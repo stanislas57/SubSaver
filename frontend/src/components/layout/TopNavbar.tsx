@@ -39,8 +39,8 @@ export function TopNavbar() {
     <header className="fixed top-0 z-50 w-full border-b border-luxury-gold/20 bg-luxury-night/95 backdrop-blur-2xl">
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <button onClick={() => goTo("/overview")} className="flex items-center gap-3">
-          <img src="/logo-dark-bg.svg" alt="SubServer" className="h-8 w-auto" />
-          <span className="text-sm font-bold tracking-tight text-slate-50 hidden sm:inline">SubServer</span>
+          <img src="/logo-dark-bg.svg" alt="SubSaver" className="h-8 w-auto" />
+          <span className="text-sm font-bold tracking-tight text-slate-50 hidden sm:inline">SubSaver</span>
         </button>
 
         <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">

@@ -101,5 +101,5 @@ def export_subscriptions(current_user: User = Depends(get_current_user), db: Ses
     return StreamingResponse(
         iter([buffer.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=subserver-abonnements.csv"},
+        headers={"Content-Disposition": "attachment; filename=subsaver-abonnements.csv"},
     )

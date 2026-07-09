@@ -1,9 +1,9 @@
-# SubServer
+# SubSaver
 
 Application de gestion d'abonnements (mode famille, comparateur d'offres, connexion bancaire simulée).
 
-- **Frontend** : React 19 + Vite + TypeScript + Tailwind + React Query — `subserver/`
-- **Backend** : FastAPI + SQLAlchemy + Alembic + PostgreSQL — `subserver-backend/`
+- **Frontend** : React 19 + Vite + TypeScript + Tailwind + React Query — `subsaver/`
+- **Backend** : FastAPI + SQLAlchemy + Alembic + PostgreSQL — `subsaver-backend/`
 
 ---
 
@@ -19,12 +19,12 @@ Application de gestion d'abonnements (mode famille, comparateur d'offres, connex
 
 ```bash
 # Installer PostgreSQL localement (Ubuntu/Debian), ou lancer un conteneur :
-docker run --name subserver-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=subserver -p 5432:5432 -d postgres:16
+docker run --name subsaver-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=subsaver -p 5432:5432 -d postgres:16
 
 # Si install locale (sans Docker) :
 sudo service postgresql start
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
-sudo -u postgres psql -c "CREATE DATABASE subserver;"
+sudo -u postgres psql -c "CREATE DATABASE subsaver;"
 ```
 
 ---
@@ -32,7 +32,7 @@ sudo -u postgres psql -c "CREATE DATABASE subserver;"
 ## 2. Backend (FastAPI)
 
 ```bash
-cd subserver-backend
+cd subsaver-backend
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
@@ -45,11 +45,11 @@ uvicorn app.main:app --reload --port 8000
 
 L'API est disponible sur `http://localhost:8000`, documentation interactive sur `http://localhost:8000/docs`.
 
-**Variables d'environnement** (`subserver-backend/.env.example`) :
+**Variables d'environnement** (`subsaver-backend/.env.example`) :
 
 | Variable | Description | Défaut |
 |---|---|---|
-| `DATABASE_URL` | URL de connexion PostgreSQL | `postgresql+psycopg2://postgres:postgres@localhost:5432/subserver` |
+| `DATABASE_URL` | URL de connexion PostgreSQL | `postgresql+psycopg2://postgres:postgres@localhost:5432/subsaver` |
 | `SECRET_KEY` | Clé de signature JWT — **à changer en production** | `change-me-in-production` |
 | `ALGORITHM` | Algorithme JWT | `HS256` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Durée de validité du token | `10080` (7 jours) |
@@ -60,7 +60,7 @@ L'API est disponible sur `http://localhost:8000`, documentation interactive sur 
 ## 3. Frontend (Vite + React)
 
 ```bash
-cd subserver
+cd subsaver
 npm install
 cp .env.example .env
 # Édite .env si l'API tourne ailleurs qu'en localhost:8000
@@ -70,7 +70,7 @@ npm run build    # build de production -> dist/
 npm run preview  # sert le build de production localement
 ```
 
-**Variables d'environnement** (`subserver/.env.example`) :
+**Variables d'environnement** (`subsaver/.env.example`) :
 
 | Variable | Description | Défaut |
 |---|---|---|
@@ -88,10 +88,10 @@ Trois terminaux :
 sudo service postgresql start
 
 # Terminal 2 — backend
-cd subserver-backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000
+cd subsaver-backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000
 
 # Terminal 3 — frontend
-cd subserver && npm run dev
+cd subsaver && npm run dev
 ```
 
 Ouvre `http://localhost:5173`, crée un compte via `/register`, puis utilise l'application normalement.
@@ -101,7 +101,7 @@ Ouvre `http://localhost:5173`, crée un compte via `/register`, puis utilise l'a
 ## Structure du projet
 
 ```
-subserver/                          # Frontend
+subsaver/                          # Frontend
 ├── .env.example
 ├── index.html
 ├── package.json
@@ -135,7 +135,7 @@ subserver/                          # Frontend
         ├── profile/     ProfileForm
         └── layout/      Sidebar, Topbar, NavLink
 
-subserver-backend/                  # Backend
+subsaver-backend/                  # Backend
 ├── .env.example
 ├── requirements.txt
 ├── alembic.ini
@@ -160,4 +160,4 @@ subserver-backend/                  # Backend
 
 - Les endpoints `bank/providers` et `market/offers` renvoient actuellement un catalogue statique de démonstration (pas d'intégration bancaire/partenaire réelle branchée).
 - Migrations : toute évolution de modèle passe par `alembic revision --autogenerate -m "message"` puis `alembic upgrade head`.
-- Le token JWT est stocké côté frontend dans `localStorage` (clé `subserver_token`).
+- Le token JWT est stocké côté frontend dans `localStorage` (clé `subsaver_token`).

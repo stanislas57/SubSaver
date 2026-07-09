@@ -39,7 +39,7 @@ export function OverviewPage() {
           Vue d'ensemble
         </RevealText>
         <RevealText className="mt-4 max-w-xl text-lg text-luxury-text-light">
-          SubServer détecte automatiquement tous vos abonnements. En 2 clics. Sans paperasse.
+          SubSaver détecte automatiquement tous vos abonnements. En 2 clics. Sans paperasse.
         </RevealText>
 
         <HowItWorks variant="light" className="mt-12 max-w-4xl" />

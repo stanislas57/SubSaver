@@ -41,7 +41,7 @@ class User(Base):
     locked_until: Mapped[str | None] = mapped_column(String, nullable=True)
     reset_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
-    # Powens (Open Banking) — 1 utilisateur SubServer = 1 utilisateur Powens
+    # Powens (Open Banking) — 1 utilisateur SubSaver = 1 utilisateur Powens
     powens_user_token: Mapped[str | None] = mapped_column(String, nullable=True)
     powens_connection_id: Mapped[str | None] = mapped_column(String, nullable=True)
     # Nom de l'établissement bancaire (ex: "BNP Paribas"), récupéré au mieux

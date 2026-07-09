@@ -1,7 +1,7 @@
 """Client Powens (Open Banking, Bank API) — flux Webview (mode redirect).
 
 Ce module implémente uniquement les 2 premiers appels du protocole Powens :
-1. /auth/init      : crée un token utilisateur permanent (1 utilisateur SubServer = 1 utilisateur Powens)
+1. /auth/init      : crée un token utilisateur permanent (1 utilisateur SubSaver = 1 utilisateur Powens)
 2. /auth/token/code: échange le token permanent contre un code temporaire à usage unique,
    nécessaire pour ouvrir la Webview en toute sécurité.
 
@@ -28,7 +28,7 @@ def _base_url() -> str:
 async def init_user_token() -> str:
     """Crée un nouvel utilisateur Powens et retourne son token d'accès permanent.
 
-    À appeler une seule fois par utilisateur SubServer (au premier lien bancaire),
+    À appeler une seule fois par utilisateur SubSaver (au premier lien bancaire),
     puis le token doit être stocké (User.powens_user_token) et réutilisé.
     """
     async with httpx.AsyncClient(timeout=15) as client:

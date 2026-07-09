@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
 
     # Base de données
-    DATABASE_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/subserver"
+    DATABASE_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/subsaver"
 
     # Sécurité / JWT
     SECRET_KEY: str = DEFAULT_SECRET_KEY
@@ -35,14 +35,14 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[str] = ["http://localhost:5173"]
 
     # App
-    PROJECT_NAME: str = "SubServer API"
+    PROJECT_NAME: str = "SubSaver API"
     API_V1_PREFIX: str = "/api/v1"
 
     # Powens (Open Banking - Bank API)
-    POWENS_DOMAIN: str = "subserver-sandbox.biapi.pro"
+    POWENS_DOMAIN: str = "subsaver-sandbox.biapi.pro"
     POWENS_CLIENT_ID: str = ""
     POWENS_CLIENT_SECRET: str = ""
-    POWENS_REDIRECT_URI: str = "https://subserver-frontend.onrender.com/subscriptions"
+    POWENS_REDIRECT_URI: str = "https://subsaver-frontend.onrender.com/subscriptions"
     POWENS_WEBVIEW_BASE_URL: str = "https://webview.powens.com/connect"
     POWENS_STATE_TTL_MINUTES: int = 10
 
@@ -51,14 +51,14 @@ class Settings(BaseSettings):
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
-    EMAIL_FROM: str = "contact.subserver@proton.me"
+    EMAIL_FROM: str = "contact.subsaver@proton.me"
     VERIFICATION_CODE_TTL_MINUTES: int = 10
 
     # Boîte de réception du formulaire de contact -- volontairement distincte
     # de EMAIL_FROM (l'identité d'envoi SMTP) même si elles pointent
     # aujourd'hui vers la même adresse : permet de rediriger le contact vers
     # une autre boîte plus tard sans toucher à la configuration SMTP.
-    CONTACT_EMAIL: str = "contact.subserver@proton.me"
+    CONTACT_EMAIL: str = "contact.subsaver@proton.me"
 
     @model_validator(mode="after")
     def _validate_production_safety(self) -> "Settings":
