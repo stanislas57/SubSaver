@@ -46,6 +46,14 @@ const FAQ = [
     a: "Via Powens, établissement de paiement agréé par l'ACPR dans le respect de la directive européenne DSP2. Vos identifiants bancaires ne transitent jamais par nos serveurs, et nous n'avons aucun accès à votre IBAN ni à la possibilité d'effectuer une opération sur votre compte.",
   },
   {
+    q: "Quelle est la meilleure application pour suivre ses abonnements ?",
+    a: "Une bonne application de suivi d'abonnements doit détecter automatiquement vos prélèvements récurrents depuis votre historique bancaire, sans ressaisie manuelle. SubSaver scanne vos transactions passées, classe chaque abonnement par catégorie et vous alerte dès qu'un prix augmente.",
+  },
+  {
+    q: "Comment résilier un abonnement facilement ?",
+    a: "Une fois vos abonnements détectés, SubSaver centralise les liens et informations de résiliation de chaque service dans votre tableau de bord, pour éviter de chercher la procédure sur chaque site.",
+  },
+  {
     q: "Puis-je déconnecter ma banque à tout moment ?",
     a: "Oui, depuis votre Profil. La déconnexion révoque immédiatement l'accès de Powens à vos données, sans démarche supplémentaire.",
   },
@@ -54,6 +62,24 @@ const FAQ = [
     a: "Vous conservez l'accès à la détection d'abonnements et au tableau de bord ; seules les fonctionnalités Premium (comparateur, partage, exports) redeviennent verrouillées.",
   },
 ];
+
+const DEPENSES_MOYENNES = [
+  { categorie: "Streaming vidéo (Netflix, Disney+, Prime...)", moyenne: "18 € / mois", risque: "Hausses de prix fréquentes" },
+  { categorie: "Streaming musical (Spotify, Deezer...)", moyenne: "10 € / mois", risque: "Changement d'offre silencieux" },
+  { categorie: "Salle de sport & bien-être", moyenne: "35 € / mois", risque: "Reconduction tacite" },
+  { categorie: "Stockage cloud & logiciels", moyenne: "12 € / mois", risque: "Essais gratuits oubliés" },
+  { categorie: "Presse & actualités en ligne", moyenne: "9 € / mois", risque: "Abonnements fantômes" },
+];
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+};
 
 /** Landing page publique — n'existait pas jusqu'ici, la racine "/" redirigeait
  * directement vers /overview (post-connexion). Reprend le thème Luxe (Bleu Nuit
@@ -68,8 +94,10 @@ export function LandingPage() {
 
   return (
     <div className="bg-luxury-bg">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+
       {/* ---------- Hero ---------- */}
-      <section className="relative overflow-hidden bg-luxury-night px-6 pb-28 pt-10">
+      <section className="relative flex h-[100svh] flex-col items-center justify-center overflow-hidden bg-luxury-night px-6 py-0">
         <GoldParticles />
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute -left-40 top-1/4 h-[420px] w-[420px] rounded-full bg-luxury-gold/10 blur-[140px]" />
@@ -83,11 +111,12 @@ export function LandingPage() {
           </div>
 
           <RevealText as="h1" className="text-4xl font-black leading-tight tracking-tight text-slate-50 sm:text-6xl">
-            Vos abonnements, <span className="text-luxury-gold">sous contrôle.</span>
+            Le suivi de vos abonnements, <span className="text-luxury-gold">enfin sous contrôle.</span>
           </RevealText>
           <RevealText className="mt-5 max-w-xl text-lg text-slate-300">
-            SubSaver connecte votre banque, détecte tous vos abonnements récurrents et repère les hausses de prix
-            silencieuses — automatiquement, sans paperasse.
+            SubSaver est l'application qui connecte votre banque, détecte automatiquement tous vos abonnements
+            récurrents et repère les hausses de prix silencieuses — pour que vous puissiez comparer, partager ou
+            résilier en un clic, sans paperasse.
           </RevealText>
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
@@ -121,10 +150,11 @@ export function LandingPage() {
       <section id="apercu" className="px-6 py-24">
         <div className="mx-auto max-w-5xl text-center">
           <RevealText as="h2" className="text-3xl font-black tracking-tight text-luxury-text sm:text-4xl">
-            Un tableau de bord qui parle clair
+            Un tableau de bord clair pour gérer tous vos abonnements
           </RevealText>
           <RevealText className="mx-auto mt-4 max-w-xl text-luxury-text-light">
-            Aperçu illustratif de l'interface — vos propres montants apparaissent dès la première synchronisation.
+            Aperçu illustratif de l'interface — vos propres montants et abonnements récurrents apparaissent dès la
+            première synchronisation bancaire.
           </RevealText>
         </div>
 
@@ -159,7 +189,7 @@ export function LandingPage() {
       <section className="bg-white px-6 py-24">
         <div className="mx-auto max-w-5xl">
           <RevealText as="h2" className="text-center text-3xl font-black tracking-tight text-luxury-text sm:text-4xl">
-            Comment ça marche
+            Comment fonctionne le suivi automatique d'abonnements
           </RevealText>
           <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-3">
             {STEPS.map((step, i) => {
@@ -172,7 +202,7 @@ export function LandingPage() {
                   <p className="mt-4 text-xs font-bold uppercase tracking-wide text-luxury-gold-deep">
                     Étape {i + 1}
                   </p>
-                  <p className="mt-1 text-base font-bold text-luxury-text">{step.title}</p>
+                  <h3 className="mt-1 text-base font-bold text-luxury-text">{step.title}</h3>
                   <p className="mt-2 text-sm text-luxury-text-light">{step.detail}</p>
                 </div>
               );
@@ -185,10 +215,10 @@ export function LandingPage() {
       <section className="px-6 py-24">
         <div className="mx-auto max-w-5xl">
           <RevealText as="h2" className="text-center text-3xl font-black tracking-tight text-luxury-text sm:text-4xl">
-            Où se cachent vos économies
+            Où se cachent vos économies sur les abonnements
           </RevealText>
           <RevealText className="mx-auto mt-4 max-w-xl text-center text-luxury-text-light">
-            Trois fuites récurrentes que SubSaver isole automatiquement dans votre historique bancaire.
+            Trois fuites récurrentes que le suivi automatique de SubSaver isole dans votre historique bancaire.
           </RevealText>
 
           <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-3">
@@ -223,11 +253,48 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* ---------- Budget moyen par catégorie ---------- */}
+      <section className="px-6 py-24">
+        <div className="mx-auto max-w-3xl">
+          <RevealText as="h2" className="text-center text-3xl font-black tracking-tight text-luxury-text sm:text-4xl">
+            Combien vous coûtent réellement vos abonnements ?
+          </RevealText>
+          <RevealText className="mx-auto mt-4 max-w-xl text-center text-luxury-text-light">
+            Budget mensuel moyen constaté par catégorie d'abonnement, et le principal risque de dérapage à
+            surveiller.
+          </RevealText>
+
+          <div className="mt-10 overflow-x-auto rounded-2xl border border-slate-900/10">
+            <table className="w-full min-w-[520px] border-collapse text-left text-sm">
+              <thead>
+                <tr className="bg-luxury-bg text-xs font-bold uppercase tracking-wide text-luxury-text-light">
+                  <th className="px-5 py-3">Catégorie d'abonnement</th>
+                  <th className="px-5 py-3">Budget moyen</th>
+                  <th className="px-5 py-3">Risque fréquent</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-900/10">
+                {DEPENSES_MOYENNES.map((row) => (
+                  <tr key={row.categorie}>
+                    <td className="px-5 py-3 font-semibold text-luxury-text">{row.categorie}</td>
+                    <td className="px-5 py-3 text-luxury-text">{row.moyenne}</td>
+                    <td className="px-5 py-3 text-luxury-text-light">{row.risque}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-4 text-center text-xs text-luxury-text-light">
+            Estimations à titre indicatif — SubSaver calcule vos montants réels dès la connexion de votre banque.
+          </p>
+        </div>
+      </section>
+
       {/* ---------- FAQ ---------- */}
       <section className="bg-white px-6 py-24">
         <div className="mx-auto max-w-2xl">
           <RevealText as="h2" className="text-center text-3xl font-black tracking-tight text-luxury-text sm:text-4xl">
-            Questions fréquentes
+            Questions fréquentes sur le suivi d'abonnements
           </RevealText>
           <div className="mt-10 divide-y divide-slate-900/10 rounded-2xl border border-slate-900/10">
             {FAQ.map((item) => (
@@ -246,11 +313,14 @@ export function LandingPage() {
       {/* ---------- CTA final ---------- */}
       <section className="bg-luxury-night px-6 py-20 text-center">
         <RevealText as="h2" className="text-3xl font-black tracking-tight text-slate-50 sm:text-4xl">
-          Prêt à reprendre le contrôle ?
+          Prêt à reprendre le contrôle de vos abonnements ?
+        </RevealText>
+        <RevealText className="mx-auto mt-4 max-w-md text-slate-300">
+          Rejoignez SubSaver gratuitement et découvrez en 30 secondes combien vos abonnements vous coûtent vraiment.
         </RevealText>
         <div className="mt-8 flex justify-center">
           <CTALink variant="solid" onClick={() => navigate("/register")} className="px-10 py-4 text-base">
-            Essayer gratuitement
+            Essayer gratuitement, sans carte bancaire
           </CTALink>
         </div>
       </section>
