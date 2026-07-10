@@ -3,7 +3,7 @@ import * as React from "react";
 /** Délai minimum entre la fermeture d'un pop-up d'activation et l'ouverture
  * du suivant -- laisse le temps à l'utilisateur d'assimiler ce qui vient de
  * se passer plutôt que d'enchaîner les modales d'un coup. */
-const MIN_GAP_MS = 600;
+const MIN_GAP_MS = 300;
 
 /** Fait défiler une liste de "gates" (pop-ups d'activation : charte, bienvenue
  * Premium, objectif, connexion bancaire...) un par un, jamais plusieurs en

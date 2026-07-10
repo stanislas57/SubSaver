@@ -64,7 +64,7 @@ const inputClassName =
 
 export function RegisterForm() {
   const navigate = useNavigate();
-  const { register: registerUser, logout, isRegistering, registerError } = useAuth();
+  const { register: registerUser, isRegistering, registerError } = useAuth();
   const [showPassword, setShowPassword] = React.useState(false);
   const {
     register,
@@ -75,15 +75,11 @@ export function RegisterForm() {
   async function onSubmit(values: FormValues) {
     try {
       await registerUser(values.email, values.password, values.firstName);
-      // Si une session d'un autre compte traînait encore dans ce navigateur
-      // (token jamais nettoyé), GuestOnlyRoute la verrait comme valide et
-      // renverrait directement vers /overview -- avec CE compte-là, pas le
-      // nouveau. On force donc une session propre avant de renvoyer vers
-      // /login, pour que la connexion avec les identifiants tout juste
-      // créés soit bien nécessaire.
-      logout();
-      toast.success("Compte créé ! Connecte-toi pour continuer.");
-      navigate("/login");
+      // Le backend renvoie un token dès l'inscription (comme pour le login) :
+      // registerUser() applique déjà la session via applyAuthResponse, donc
+      // l'utilisateur est connecté ici sans étape de reconnexion intermédiaire.
+      toast.success("Compte créé ! Bienvenue sur SubSaver.");
+      navigate("/overview");
     } catch {
       // erreur déjà exposée via registerError
     }

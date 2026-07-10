@@ -72,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const registerMutation = useMutation({
     mutationFn: ({ email, password, firstName }: { email: string; password: string; firstName: string }) =>
       authService.register(email, password, firstName),
+    onSuccess: applyAuthResponse,
   });
 
   const forgotPasswordMutation = useMutation({

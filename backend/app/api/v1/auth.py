@@ -52,12 +52,13 @@ def _is_locked(locked_until: str | None) -> bool:
     return datetime.now(timezone.utc) < datetime.fromisoformat(locked_until)
 
 
-@router.post("/register", response_model=MessageResult, status_code=201)
+@router.post("/register", response_model=AuthResponse, status_code=201)
 @limiter.limit("5/hour")
 def register(request: Request, body: RegisterBody, db: Session = Depends(get_db)):
     """Inscription : le compte est actif immédiatement, aucune vérification
-    (email ou SMS) n'est requise -- l'utilisateur peut se connecter dès que
-    /auth/login répond."""
+    (email ou SMS) n'est requise -- on renvoie directement un token comme
+    /auth/login pour que le frontend connecte l'utilisateur dans la foulée,
+    sans lui redemander ses identifiants."""
     if db.query(User).filter(User.email == body.email).first():
         raise HTTPException(status_code=400, detail="Un compte existe déjà avec cet email.")
 
@@ -70,7 +71,8 @@ def register(request: Request, body: RegisterBody, db: Session = Depends(get_db)
     db.add(user)
     db.commit()
 
-    return MessageResult(message="Compte créé. Tu peux maintenant te connecter.")
+    access_token = create_access_token(user.id)
+    return AuthResponse(access_token=access_token, token_type="bearer", user=user)
 
 
 @router.post("/login", response_model=AuthResponse)

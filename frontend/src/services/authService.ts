@@ -1,6 +1,11 @@
 import { axiosClient } from "@/api/axiosClient";
 import type { AuthResponse, MessageResult } from "@/types";
 
+/** Timeout dédié à l'inscription, aligné sur celui du login : la création de
+ * compte peut être la toute première requête envoyée à un hébergeur en cold
+ * start, tout comme un login. */
+const REGISTER_TIMEOUT_MS = 45_000;
+
 /** Timeout dédié au login, plus généreux que le timeout global (20s) : un
  * hébergeur en cold start (ex: instance gratuite endormie après inactivité)
  * peut mettre jusqu'à 40-50s à répondre à la toute première requête sans que
@@ -11,13 +16,15 @@ import type { AuthResponse, MessageResult } from "@/types";
 const LOGIN_TIMEOUT_MS = 45_000;
 
 export const authService = {
-  /** POST /auth/register — le compte est actif immédiatement, aucune vérification requise. */
-  async register(email: string, password: string, firstName: string): Promise<MessageResult> {
-    const { data } = await axiosClient.post<MessageResult>("/auth/register", {
-      email,
-      password,
-      first_name: firstName,
-    });
+  /** POST /auth/register — le compte est actif immédiatement, aucune vérification
+   * requise, et le backend renvoie directement un token (comme /auth/login) pour
+   * permettre une connexion automatique juste après l'inscription. */
+  async register(email: string, password: string, firstName: string): Promise<AuthResponse> {
+    const { data } = await axiosClient.post<AuthResponse>(
+      "/auth/register",
+      { email, password, first_name: firstName },
+      { timeout: REGISTER_TIMEOUT_MS }
+    );
     return data;
   },
 
