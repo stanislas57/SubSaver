@@ -1,15 +1,30 @@
 import express from 'express';
+import compression from 'compression';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { dirname, join, sep } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Servir les fichiers statiques depuis dist/
+// Render exécute cette app Node telle quelle (pas de CDN/proxy qui
+// compresserait à notre place) : sans ce middleware, tout était servi non
+// compressé -- gzip/brotli réduit le JS/CSS transféré d'environ 3x.
+app.use(compression());
+
+// Servir les fichiers statiques depuis dist/. Les fichiers construits par
+// Vite dans assets/ ont un hash dans leur nom (immuables entre deux builds :
+// cache long terme sûr) ; tout le reste (index.html, sitemap, logos...) est
+// revalidé à chaque requête pour ne jamais servir une version périmée après
+// déploiement.
 app.use(express.static(join(__dirname, 'frontend', 'dist'), {
-  // Les fichiers statiques (sitemap, robots.txt) sont servis en premier
-  // sans fallback vers index.html
+  setHeaders(res, filePath) {
+    if (filePath.includes(`${sep}assets${sep}`)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+    }
+  },
 }));
 
 // Servir les fichiers spécifiques sans fallback SPA
