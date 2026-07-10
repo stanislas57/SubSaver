@@ -111,7 +111,7 @@ export function LandingPage() {
           </div>
 
           <RevealText as="h1" className="text-4xl font-black leading-tight tracking-tight text-slate-50 sm:text-6xl">
-            Le suivi de vos abonnements, <span className="text-luxury-gold">enfin sous contrôle.</span>
+            Le suivi de vos abonnements, <span className="text-luxury-gold whitespace-nowrap">enfin sous&nbsp;contrôle.</span>
           </RevealText>
           <RevealText className="mt-5 max-w-xl text-lg text-slate-300">
             SubSaver est l'application qui connecte votre banque, détecte automatiquement tous vos abonnements

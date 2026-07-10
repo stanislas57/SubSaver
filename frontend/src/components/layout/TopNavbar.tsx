@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { NotificationCenter } from "@/components/shared/NotificationCenter";
 
 const NAV_LINKS = [
-  { to: "/overview", label: "Vue d'ensemble" },
+  { to: "/overview", label: "Vue d'ensemble" },
   { to: "/subscriptions", label: "Abonnements" },
   { to: "/lab/comparator", label: "Comparateur" },
   { to: "/analytics", label: "Analytique" },
@@ -55,7 +55,7 @@ export function TopNavbar() {
               key={link.to}
               to={link.to}
               className={({ isActive }) =>
-                `border-b-2 pb-1 text-sm font-medium transition-colors duration-200 ${
+                `whitespace-nowrap border-b-2 pb-1 text-sm font-medium transition-colors duration-200 ${
                   isActive
                     ? "border-luxury-gold font-semibold text-luxury-gold"
                     : "border-transparent text-slate-300 hover:text-slate-50"
