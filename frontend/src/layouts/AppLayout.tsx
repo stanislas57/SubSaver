@@ -8,13 +8,20 @@ import { pageTransition } from "@/lib/motion";
 import { PremiumWelcomeGate } from "@/components/shared/PremiumWelcomeGate";
 import { GoalGate } from "@/components/shared/GoalGate";
 import { BankConnectPromptGate } from "@/components/bank/BankConnectPromptGate";
+import { useGateSequencer } from "@/hooks/useGateSequencer";
+
+/** Ordre des pop-ups d'activation, un seul affiché à la fois (cf.
+ * useGateSequencer) avec un court délai entre la fermeture de l'un et
+ * l'ouverture du suivant -- avant, les trois pouvaient se déclencher
+ * quasi simultanément et se superposer à la première connexion. */
+const GATE_STEPS = ["premiumWelcome", "goal", "bankConnect"] as const;
 
 /** Thème clair et luxueux : structure plein-écran avec TopNavbar fixée,
  * contenu aéré et lumineux avec halos discrets en arrière-plan. */
 export function AppLayout() {
   const { pathname } = useLocation();
   const [showContact, setShowContact] = React.useState(false);
-  const [goalGateSettled, setGoalGateSettled] = React.useState(false);
+  const { current: activeGate, advance } = useGateSequencer(GATE_STEPS);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-luxury-bg">
@@ -24,19 +31,12 @@ export function AppLayout() {
         <div className="absolute bottom-0 left-1/3 h-[400px] w-[400px] rounded-full bg-amber-100/10 blur-[120px]" />
       </div>
 
-      {/* Capte le retour de paiement Stripe quelle que soit la page authentifiée
-       * sur laquelle il atterrit (cf. PremiumWelcomeGate). */}
-      <PremiumWelcomeGate />
-
-      {/* Capture l'objectif de l'utilisateur avant de lui demander l'accès
-       * bancaire (cf. GoalGate) ; BankConnectPromptGate n'est monté qu'une
-       * fois ce gate réglé, pour ne jamais superposer les deux pop-ups
-       * non-bloquantes à la première connexion. */}
-      <GoalGate onSettled={() => setGoalGateSettled(true)} />
-
-      {/* Invite à connecter sa banque dès la première connexion, une fois
-       * la charte acceptée et l'objectif traité (cf. BankConnectPromptGate). */}
-      {goalGateSettled && <BankConnectPromptGate />}
+      {/* File d'attente des pop-ups d'activation (cf. useGateSequencer) :
+       * bienvenue Premium (retour Stripe) -> objectif -> connexion bancaire.
+       * Un seul actif à la fois, jamais deux superposés. */}
+      <PremiumWelcomeGate active={activeGate === "premiumWelcome"} onSettled={advance} />
+      <GoalGate active={activeGate === "goal"} onSettled={advance} />
+      <BankConnectPromptGate active={activeGate === "bankConnect"} onSettled={advance} />
 
       <TopNavbar />
 

@@ -11,12 +11,12 @@ function goalKey(userId: string) {
 }
 
 export interface GoalGateProps {
-  /** Appelé dès que ce gate n'a plus rien à afficher -- soit immédiatement
-   * (déjà vu, banque déjà connectée, charte pas encore acceptée), soit après
-   * un choix ou une fermeture. AppLayout n'affiche BankConnectPromptGate
-   * qu'une fois ce signal reçu, pour ne jamais superposer les deux pop-ups
-   * non-bloquantes à la première connexion. */
-  onSettled: () => void;
+  /** Ce gate ne décide s'il doit s'afficher que lorsqu'il est actif -- cf.
+   * useGateSequencer (orchestré depuis AppLayout), qui garantit qu'un seul
+   * gate d'activation est à l'écran à la fois, avec un délai minimum entre
+   * deux pop-ups successifs. */
+  active: boolean;
+  onSettled: (didShow: boolean) => void;
 }
 
 /** Affiche GoalModal une seule fois par compte, entre l'acceptation de la
@@ -24,35 +24,46 @@ export interface GoalGateProps {
  * LocalStorage, comme BankConnectPromptGate : aucun champ backend dédié
  * n'existe pour l'objectif, donc pas de personnalisation serveur pour
  * l'instant -- seulement une trace locale. */
-export function GoalGate({ onSettled }: GoalGateProps) {
+export function GoalGate({ active, onSettled }: GoalGateProps) {
   const { user } = useAuth();
   const { pathname } = useLocation();
   const [open, setOpen] = React.useState(false);
+  // decidedRef : empêche l'effet de re-décider une fois le pop-up ouvert.
+  // settledRef : empêche onSettled d'être appelé deux fois.
+  const decidedRef = React.useRef(false);
   const settledRef = React.useRef(false);
 
-  function settle() {
+  function settle(didShow: boolean) {
     if (settledRef.current) return;
     settledRef.current = true;
-    onSettled();
+    onSettled(didShow);
   }
 
   React.useEffect(() => {
-    if (!user) return;
-    if (!user.charter_accepted_at || user.bank_connected || pathname === "/bank-connect") {
-      settle();
+    if (!active || !user || decidedRef.current) return;
+    // Charte pas encore acceptée : pas encore prêt à décider, on ne
+    // "consomme" pas le tour -- l'effet se redéclenchera une fois
+    // charter_accepted_at renseigné (cf. le même piège corrigé sur
+    // BankConnectPromptGate).
+    if (!user.charter_accepted_at) return;
+    if (user.bank_connected || pathname === "/bank-connect") {
+      decidedRef.current = true;
+      settle(false);
       return;
     }
     if (localStorage.getItem(seenKey(user.id))) {
-      settle();
+      decidedRef.current = true;
+      settle(false);
       return;
     }
+    decidedRef.current = true;
     setOpen(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, pathname]);
+  }, [active, user, pathname]);
 
   function markSeen() {
     if (user) localStorage.setItem(seenKey(user.id), "1");
-    settle();
+    settle(true);
   }
 
   function handleSelect(goal: Goal) {
