@@ -22,7 +22,7 @@ export function RegisterPage() {
       <div className="relative w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-3">
-          <img src="/logo-dark-bg.svg" alt="SubSaver" className="h-12 w-auto" />
+          <img src="/logo-dark-bg.svg" alt="SubSaver" width={48} height={48} className="h-12 w-auto" />
           <span className="font-display text-xl font-bold tracking-tight text-slate-50">SubSaver</span>
         </div>
 

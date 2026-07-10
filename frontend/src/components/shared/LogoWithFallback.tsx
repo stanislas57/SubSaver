@@ -28,6 +28,8 @@ export function LogoWithFallback({ domain, name, className }: LogoWithFallbackPr
     <img
       src={`https://logo.clearbit.com/${domain}?size=80`}
       alt={name}
+      width={40}
+      height={40}
       className={cn("h-10 w-10 shrink-0 rounded-md border border-border object-contain bg-white p-1", className)}
       onError={() => setFailed(true)}
     />

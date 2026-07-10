@@ -5,31 +5,82 @@ import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ProtectedRoute, GuestOnlyRoute, PremiumOnlyRoute } from "@/routes/ProtectedRoute";
 import { AdminRouteGuard } from "@/routes/AdminRouteGuard";
-import { AuthLayout } from "@/layouts/AuthLayout";
-import { AppLayout } from "@/layouts/AppLayout";
-import { AdminLayout } from "@/layouts/AdminLayout";
 import { PageSpinner } from "@/components/ui/spinner";
 
+// Les layouts authentifiés (AppLayout embarque framer-motion, AdminLayout
+// est réservé au back-office) ne servent jamais un visiteur anonyme sur "/" :
+// les charger à la demande les sort du bundle initial.
+const AuthLayout = lazy(() =>
+  import("@/layouts/AuthLayout").then((m) => ({ default: m.AuthLayout }))
+);
+const AppLayout = lazy(() => import("@/layouts/AppLayout").then((m) => ({ default: m.AppLayout })));
+const AdminLayout = lazy(() =>
+  import("@/layouts/AdminLayout").then((m) => ({ default: m.AdminLayout }))
+);
+
+// La landing page reste en import statique : c'est la route "/" servie aux
+// visiteurs non connectés (SEO, LCP) — elle doit être prête dans le bundle
+// initial sans aller-retour réseau supplémentaire.
 import { LandingPage } from "@/pages/LandingPage";
-import { LoginPage } from "@/pages/LoginPage";
-import { RegisterPage } from "@/pages/RegisterPage";
-import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
-import { OverviewPage } from "@/pages/OverviewPage";
-import { BankConnectPage } from "@/pages/BankConnectPage";
-import { SubscriptionsPage } from "@/pages/SubscriptionsPage";
-import { SubscriptionAddPage } from "@/pages/SubscriptionAddPage";
-import { CalendarPage } from "@/pages/CalendarPage";
-import { PremiumPage } from "@/pages/PremiumPage";
-import { LabComparatorPage } from "@/pages/LabComparatorPage";
-import { LabCancellationPage } from "@/pages/LabCancellationPage";
-import { ProfilePage } from "@/pages/ProfilePage";
-import { SuccessPage } from "@/pages/SuccessPage";
-import { SharedSubscriptionPage } from "@/pages/SharedSubscriptionPage";
-import { NotFoundPage } from "@/pages/NotFoundPage";
-import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
-import { AdminUsersPage } from "@/pages/admin/AdminUsersPage";
-import { AdminAnalyticsPage } from "@/pages/admin/AdminAnalyticsPage";
-import { PrivacyPage } from "@/pages/PrivacyPage";
+
+// Toutes les autres pages sont chargées à la demande : chacune ne pèse sur
+// le téléchargement qu'au moment où l'utilisateur navigue réellement vers sa
+// route, ce qui réduit fortement le JS inutilisé au premier chargement.
+const LoginPage = lazy(() => import("@/pages/LoginPage").then((m) => ({ default: m.LoginPage })));
+const RegisterPage = lazy(() =>
+  import("@/pages/RegisterPage").then((m) => ({ default: m.RegisterPage }))
+);
+const ForgotPasswordPage = lazy(() =>
+  import("@/pages/ForgotPasswordPage").then((m) => ({ default: m.ForgotPasswordPage }))
+);
+const OverviewPage = lazy(() =>
+  import("@/pages/OverviewPage").then((m) => ({ default: m.OverviewPage }))
+);
+const BankConnectPage = lazy(() =>
+  import("@/pages/BankConnectPage").then((m) => ({ default: m.BankConnectPage }))
+);
+const SubscriptionsPage = lazy(() =>
+  import("@/pages/SubscriptionsPage").then((m) => ({ default: m.SubscriptionsPage }))
+);
+const SubscriptionAddPage = lazy(() =>
+  import("@/pages/SubscriptionAddPage").then((m) => ({ default: m.SubscriptionAddPage }))
+);
+const CalendarPage = lazy(() =>
+  import("@/pages/CalendarPage").then((m) => ({ default: m.CalendarPage }))
+);
+const PremiumPage = lazy(() =>
+  import("@/pages/PremiumPage").then((m) => ({ default: m.PremiumPage }))
+);
+const LabComparatorPage = lazy(() =>
+  import("@/pages/LabComparatorPage").then((m) => ({ default: m.LabComparatorPage }))
+);
+const LabCancellationPage = lazy(() =>
+  import("@/pages/LabCancellationPage").then((m) => ({ default: m.LabCancellationPage }))
+);
+const ProfilePage = lazy(() =>
+  import("@/pages/ProfilePage").then((m) => ({ default: m.ProfilePage }))
+);
+const SuccessPage = lazy(() =>
+  import("@/pages/SuccessPage").then((m) => ({ default: m.SuccessPage }))
+);
+const SharedSubscriptionPage = lazy(() =>
+  import("@/pages/SharedSubscriptionPage").then((m) => ({ default: m.SharedSubscriptionPage }))
+);
+const NotFoundPage = lazy(() =>
+  import("@/pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage }))
+);
+const AdminDashboardPage = lazy(() =>
+  import("@/pages/admin/AdminDashboardPage").then((m) => ({ default: m.AdminDashboardPage }))
+);
+const AdminUsersPage = lazy(() =>
+  import("@/pages/admin/AdminUsersPage").then((m) => ({ default: m.AdminUsersPage }))
+);
+const AdminAnalyticsPage = lazy(() =>
+  import("@/pages/admin/AdminAnalyticsPage").then((m) => ({ default: m.AdminAnalyticsPage }))
+);
+const PrivacyPage = lazy(() =>
+  import("@/pages/PrivacyPage").then((m) => ({ default: m.PrivacyPage }))
+);
 
 // Chargée à la demande : recharts pèse lourd, le code-splitting évite de
 // l'embarquer dans le bundle initial (gain net sur le premier chargement).
@@ -68,6 +119,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
+          <Suspense fallback={<PageSpinner label="Chargement…" />}>
           <Routes>
             <Route element={<GuestOnlyRoute />}>
               {/* /login et /register ont chacun leur propre écran plein-page
@@ -95,14 +147,7 @@ export default function App() {
                 <Route path="/bank-connect" element={<BankConnectPage />} />
                 <Route path="/subscriptions" element={<SubscriptionsPage />} />
                 <Route path="/subscriptions/add" element={<SubscriptionAddPage />} />
-                <Route
-                  path="/analytics"
-                  element={
-                    <Suspense fallback={<PageSpinner label="Chargement de l'analytique…" />}>
-                      <AnalyticsPage />
-                    </Suspense>
-                  }
-                />
+                <Route path="/analytics" element={<AnalyticsPage />} />
                 <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/premium" element={<PremiumPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
@@ -130,6 +175,7 @@ export default function App() {
             <Route path="/" element={<RootPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          </Suspense>
         </AuthProvider>
       </BrowserRouter>
       <Toaster position="top-right" richColors />

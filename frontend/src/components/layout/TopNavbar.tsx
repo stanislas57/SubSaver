@@ -32,16 +32,20 @@ export function TopNavbar() {
     navigate(to);
   }
 
+  /** Déconnexion -> retour à la landing page publique ("/"), pas à /login :
+   * quitter délibérément l'app doit ramener vers l'accueil, pas vers un
+   * formulaire de connexion vide. */
   function handleLogout() {
     setMobileOpen(false);
     logout();
+    navigate("/", { replace: true });
   }
 
   return (
     <header className="fixed top-0 z-50 w-full border-b border-luxury-gold/20 bg-luxury-night/95 backdrop-blur-2xl">
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <button onClick={() => goTo("/overview")} className="flex items-center gap-3">
-          <img src="/logo-dark-bg.svg" alt="SubSaver" className="h-8 w-auto" />
+          <img src="/logo-dark-bg.svg" alt="SubSaver" width={32} height={32} className="h-8 w-auto" />
           <span className="text-sm font-bold tracking-tight text-slate-50 hidden sm:inline">SubSaver</span>
         </button>
 
@@ -74,7 +78,8 @@ export function TopNavbar() {
             {user?.first_name?.charAt(0).toUpperCase() ?? "?"}
           </button>
           <button
-            onClick={logout}
+            onClick={handleLogout}
+            aria-label="Déconnexion"
             className="hidden rounded-lg border border-white/15 bg-white/5 p-2 text-slate-300 transition-colors duration-200 hover:bg-white/10 hover:text-slate-50 md:flex"
           >
             <LogOut className="h-4 w-4" />

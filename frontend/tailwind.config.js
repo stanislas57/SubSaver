@@ -28,7 +28,7 @@ export default {
         "luxury-text": "#0F172A",           // Texte principal (bleu nuit lisible)
         "luxury-text-light": "#64748b",     // Texte secondaire
         "luxury-gold": "#D4AF37",           // Or élégant (accents vifs)
-        "luxury-gold-deep": "#B08D3F",      // Or profond (texte doré lisible sur blanc)
+        "luxury-gold-deep": "#8A6D1F",      // Or profond (texte doré lisible sur blanc, contraste AA >= 4.5:1)
         "luxury-gold-soft": "#FAF6EA",      // Fond doré très pâle (chips, badges)
         "luxury-sapphire": "#0c3c6e",       // Bleu saphir (accent secondaire, données)
       },

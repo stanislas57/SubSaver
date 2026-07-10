@@ -106,7 +106,7 @@ export function LandingPage() {
 
         <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
           <div className="mb-8 flex items-center gap-3">
-            <img src="/logo-dark-bg.svg" alt="SubSaver" className="h-10 w-auto" />
+            <img src="/logo-dark-bg.svg" alt="SubSaver" width={40} height={40} className="h-10 w-auto" />
             <span className="font-display text-xl font-bold tracking-tight text-slate-50">SubSaver</span>
           </div>
 
@@ -329,7 +329,7 @@ export function LandingPage() {
       <footer className="border-t border-slate-900/5 bg-white px-6 py-10 text-center text-xs text-luxury-text-light">
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 sm:flex-row sm:justify-between">
           <div className="flex items-center gap-2">
-            <img src="/logo.svg" alt="SubSaver" className="h-5 w-auto" />
+            <img src="/logo.svg" alt="SubSaver" width={20} height={20} className="h-5 w-auto" />
             <span className="font-semibold text-luxury-text">SubSaver</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
