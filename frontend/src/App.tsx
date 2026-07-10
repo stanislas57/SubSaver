@@ -81,6 +81,11 @@ const AdminAnalyticsPage = lazy(() =>
 const PrivacyPage = lazy(() =>
   import("@/pages/PrivacyPage").then((m) => ({ default: m.PrivacyPage }))
 );
+// Article de contenu public (SEO) : chargé à la demande comme le reste, mais
+// route top-level hors ProtectedRoute -- cf. son commentaire de tête.
+const GuideAbonnementsPage = lazy(() =>
+  import("@/pages/GuideAbonnementsPage").then((m) => ({ default: m.GuideAbonnementsPage }))
+);
 
 // Chargée à la demande : recharts pèse lourd, le code-splitting évite de
 // l'embarquer dans le bundle initial (gain net sur le premier chargement).
@@ -173,6 +178,7 @@ export default function App() {
             </Route>
 
             <Route path="/" element={<RootPage />} />
+            <Route path="/guide-abonnements" element={<GuideAbonnementsPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
           </Suspense>
