@@ -1,12 +1,19 @@
 import { LoginForm } from "@/components/auth/LoginForm";
 import { GoldParticles } from "@/components/auth/GoldParticles";
 import { HowItWorks } from "@/components/shared/HowItWorks";
+import { useSeo } from "@/hooks/useSeo";
 
 /** Page de connexion immersive : contrairement au reste de l'app (thème clair),
  * elle plonge dans un fond Bleu Nuit avec un réseau de particules dorées animé.
  * Deux colonnes sur desktop : argumentaire marketing à gauche, carte de
  * connexion glassmorphism à droite. Empilé sur mobile. */
 export function LoginPage() {
+  useSeo({
+    title: "Connexion — SubSaver",
+    description: "Connectez-vous à votre compte SubSaver pour suivre et gérer vos abonnements.",
+    path: "/login",
+  });
+
   return (
     <div className="relative flex min-h-screen items-center overflow-hidden bg-luxury-night px-6 py-12">
       <GoldParticles />

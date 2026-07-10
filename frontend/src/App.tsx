@@ -156,7 +156,6 @@ export default function App() {
                 <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/premium" element={<PremiumPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
 
                 {/* Routes Premium-only (Espace Particulier Premium + BtoB) */}
                 <Route element={<PremiumOnlyRoute />}>
@@ -179,6 +178,9 @@ export default function App() {
 
             <Route path="/" element={<RootPage />} />
             <Route path="/guide-abonnements" element={<GuideAbonnementsPage />} />
+            {/* Publique (hors ProtectedRoute) : une politique de confidentialité doit
+             * rester consultable sans compte, pour Google comme pour un visiteur. */}
+            <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
           </Suspense>

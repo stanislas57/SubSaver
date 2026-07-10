@@ -70,6 +70,7 @@ export function GuideAbonnementsPage() {
     title: "Résilier ses abonnements en 2026 : le guide complet",
     description:
       "Presse, mutuelle, sport, streaming, banque, mobile... le guide complet 2026 pour gérer, réduire et résilier tous vos abonnements. Astuces et modèles inclus.",
+    path: "/guide-abonnements",
     jsonLd,
   });
 

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { GoldParticles } from "@/components/auth/GoldParticles";
+import { useSeo } from "@/hooks/useSeo";
 
 /** Page d'inscription : même immersion Bleu Nuit + réseau de particules
  * dorées animé que LoginPage (cohérence des deux écrans d'authentification),
@@ -9,6 +10,12 @@ import { GoldParticles } from "@/components/auth/GoldParticles";
  * étape : le compte est actif immédiatement, l'utilisateur est redirigé vers
  * /login pour se connecter. */
 export function RegisterPage() {
+  useSeo({
+    title: "Créer un compte gratuit — SubSaver",
+    description: "Créez votre compte SubSaver gratuitement et détectez tous vos abonnements en 30 secondes, sans carte bancaire.",
+    path: "/register",
+  });
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-luxury-night px-6 py-12">
       <GoldParticles />

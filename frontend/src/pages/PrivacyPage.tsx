@@ -2,21 +2,34 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { RevealText } from "@/components/shared/RevealText";
+import { useSeo } from "@/hooks/useSeo";
 
 /** Page de Charte de Confidentialité : texte juridique complet (RGPD, DSP2,
  * Loi Informatique et Libertés) fourni tel quel par la direction juridique --
- * ne pas reformuler le contenu sans validation légale préalable. */
+ * ne pas reformuler le contenu sans validation légale préalable.
+ *
+ * Route publique (hors ProtectedRoute) : une politique de confidentialité
+ * doit être consultable sans compte, à la fois pour Google (une page qui
+ * exige une connexion n'est pas indexable) et pour un visiteur qui veut la
+ * lire avant de s'inscrire -- cf. App.tsx. */
 export function PrivacyPage() {
+  useSeo({
+    title: "Politique de confidentialité — SubSaver",
+    description:
+      "Comment SubSaver collecte, protège et utilise vos données personnelles et bancaires : RGPD, DSP2, durées de conservation et vos droits.",
+    path: "/privacy",
+  });
+
   return (
     <div className="w-full bg-white px-6 py-12">
       <div className="mx-auto max-w-3xl space-y-8">
         {/* Retour */}
         <Link
-          to="/overview"
+          to="/"
           className="inline-flex items-center gap-2 text-sm text-luxury-sapphire hover:underline"
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour
+          Retour à l'accueil
         </Link>
 
         {/* En-tête */}
