@@ -605,8 +605,10 @@ HEURISTIC_CONFIDENCE = 0.8
 _HEURISTIC_MIN_OCCURRENCES = 3        # 2 intervalles mesurés minimum
 _HEURISTIC_MONTHLY_NOMINAL = 30       # cible "exactement 30/31 jours"...
 _HEURISTIC_MONTHLY_TOLERANCE = 3      # ...soit 27-33 j (mois de 28-31 j + décalage week-end)
+_HEURISTIC_MAJORITY_MIN_INTERVALS = 3  # >= 4 occurrences avant de tolérer un écart isolé
+_HEURISTIC_MAX_OUTLIERS = 1            # un seul intervalle hors tolérance toléré, jamais plus
 _HEURISTIC_MAX_PRICE = 50.0           # au-delà, trop risqué sans whitelist
-_AMOUNT_CLUSTER_TOLERANCE = 0.50      # "montant fixe" : ± 0,50 €
+_AMOUNT_CLUSTER_TOLERANCE = 0.50      # "montant fixe" : ± 0,50 € entre deux prélèvements consécutifs
 _HEURISTIC_CATEGORY = "Autre"
 
 
@@ -614,11 +616,19 @@ def _cluster_by_amount(txs: list[RawTransaction]) -> list[list[RawTransaction]]:
     """Sous-groupe des transactions par montant quasi identique (± 0,50 €),
     chaque cluster trié par date. Utilisé pour les marchands-parapluie
     (plusieurs services sous un même libellé Apple/Google) et pour
-    l'heuristique marchand inconnu (exigence de montant fixe)."""
+    l'heuristique marchand inconnu (exigence de montant fixe).
+
+    Comparaison au voisin le plus proche (dernière transaction déjà ajoutée
+    au cluster), pas à la toute première : un prix qui dérive
+    progressivement dans le même sens (taxe, conversion de devise) reste
+    dans le même cluster tant que deux prélèvements CONSÉCUTIFS restent
+    proches, même si l'écart cumulé entre le tout premier et le dernier
+    dépasse la tolérance -- sinon un abonnement réel se fragmente en
+    plusieurs clusters sous le seuil minimum d'occurrences au fil du temps."""
     clusters: list[list[RawTransaction]] = []
     for tx in sorted(txs, key=lambda t: t.date):
         for cluster in clusters:
-            if abs(abs(cluster[0].value) - abs(tx.value)) <= _AMOUNT_CLUSTER_TOLERANCE:
+            if abs(abs(cluster[-1].value) - abs(tx.value)) <= _AMOUNT_CLUSTER_TOLERANCE:
                 cluster.append(tx)
                 break
         else:
@@ -668,12 +678,25 @@ def _intervals_of(txs: list[RawTransaction]) -> list[int]:
 
 
 def _is_strict_monthly(intervals: list[int]) -> bool:
-    """True si TOUS les intervalles collent au rythme ~30/31 jours (tolérance
-    serrée) -- le critère "récurrence parfaite" de l'heuristique marchand
-    inconnu, volontairement plus strict que `_match_frequency` (whitelist)."""
-    return bool(intervals) and all(
-        abs(i - _HEURISTIC_MONTHLY_NOMINAL) <= _HEURISTIC_MONTHLY_TOLERANCE for i in intervals
-    )
+    """True si le rythme colle à ~30/31 jours (tolérance serrée) -- le
+    critère "récurrence quasi parfaite" de l'heuristique marchand inconnu,
+    volontairement plus strict que `_match_frequency` (whitelist).
+
+    Avec moins de 4 occurrences (< _HEURISTIC_MAJORITY_MIN_INTERVALS
+    intervalles), TOUS les intervalles doivent coller à la tolérance : trop
+    peu de mesures pour distinguer un vrai écart isolé d'un rythme
+    simplement irrégulier. À partir de 4 occurrences, un unique intervalle
+    hors tolérance (prélèvement en retard, jour férié, week-end) ne fait
+    plus disparaître tout le candidat -- au maximum
+    _HEURISTIC_MAX_OUTLIERS intervalle(s) peuvent sortir de la tolérance,
+    jamais plus."""
+    if not intervals:
+        return False
+    deviations = [abs(i - _HEURISTIC_MONTHLY_NOMINAL) for i in intervals]
+    if len(intervals) < _HEURISTIC_MAJORITY_MIN_INTERVALS:
+        return all(d <= _HEURISTIC_MONTHLY_TOLERANCE for d in deviations)
+    outliers = sum(1 for d in deviations if d > _HEURISTIC_MONTHLY_TOLERANCE)
+    return outliers <= _HEURISTIC_MAX_OUTLIERS
 
 
 def analyze_transactions(transactions: list[RawTransaction]) -> list[CategorizedSubscription]:
@@ -702,7 +725,13 @@ def analyze_transactions(transactions: list[RawTransaction]) -> list[Categorized
     # intentionnel : "AUCHAN TELECOM" doit matcher la whitelist Téléphonie
     # avant que "AUCHAN" (blacklist grande distribution) ne puisse le bloquer.
     whitelisted: list[tuple[RawTransaction, str, str]] = []
-    unknown_by_label: dict[str, list[RawTransaction]] = {}
+    # Clé = libellé NORMALISÉ (accents/ponctuation/casse, cf. _normalize_spaced)
+    # -- même moteur que whitelist/blacklist -- pour que deux variantes du même
+    # marchand inconnu ("Kiné Dupont" / "KINE-DUPONT") tombent dans le même
+    # groupe au lieu de rester chacune sous le seuil minimum d'occurrences.
+    # On garde le libellé brut nettoyé (non normalisé) par transaction pour
+    # l'affichage final (cf. .title() plus bas).
+    unknown_by_label: dict[str, list[tuple[RawTransaction, str]]] = {}
     for tx in debits:
         label = clean_label(tx.wording)
         if not label:
@@ -714,7 +743,10 @@ def analyze_transactions(transactions: list[RawTransaction]) -> list[Categorized
             continue
         if is_excluded(label):
             continue
-        unknown_by_label.setdefault(label, []).append(tx)
+        normalized_key = _normalize_spaced(label)
+        if not normalized_key:
+            continue
+        unknown_by_label.setdefault(normalized_key, []).append((tx, label))
 
     results: list[CategorizedSubscription] = []
 
@@ -769,7 +801,9 @@ def analyze_transactions(transactions: list[RawTransaction]) -> list[Categorized
 
     # --- Étage 3 : marchands inconnus (confiance 0.8, à valider) -----------
     # (l'étage 2, la blacklist, a déjà éliminé ses transactions plus haut)
-    for label, txs in unknown_by_label.items():
+    for normalized_key, entries in unknown_by_label.items():
+        txs = [tx for tx, _ in entries]
+        raw_label_by_tx_id = {tx.id: raw_label for tx, raw_label in entries}
         for cluster in _cluster_by_amount(txs):
             if len(cluster) < _HEURISTIC_MIN_OCCURRENCES:
                 continue
@@ -777,10 +811,12 @@ def analyze_transactions(transactions: list[RawTransaction]) -> list[Categorized
                 continue
             if not _is_strict_monthly(_intervals_of(cluster)):
                 continue
+            # .title() sur le libellé brut (non normalisé) de la transaction
+            # la plus récente du cluster : lisible ("SELARL KINE DUPONT" ->
+            # "Selarl Kine Dupont") et renommable dans la modale.
+            display_label = raw_label_by_tx_id[cluster[-1].id]
             candidate = _build_candidate(
-                # .title() : libellé bancaire brut rendu lisible ("SELARL KINE
-                # DUPONT" -> "Selarl Kine Dupont") -- renommable dans la modale.
-                label.title(), cluster, "monthly", HEURISTIC_CONFIDENCE, _HEURISTIC_CATEGORY, today
+                display_label.title(), cluster, "monthly", HEURISTIC_CONFIDENCE, _HEURISTIC_CATEGORY, today
             )
             if candidate:
                 results.append(candidate)

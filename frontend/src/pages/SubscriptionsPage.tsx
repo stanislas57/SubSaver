@@ -23,9 +23,10 @@ import {
   useSubscriptions,
   useUpdateSubscription,
 } from "@/hooks/useSubscriptions";
-import { useBankCallback, useBankConnectUrl, useDetectSubscriptions, useSyncTransactions } from "@/hooks/useBank";
+import { useBankConnectUrl } from "@/hooks/useBank";
+import { useSubscriptionDetection } from "@/contexts/SubscriptionDetectionContext";
 import { getErrorMessage } from "@/api/axiosClient";
-import type { DetectedSubscription, Subscription, SubscriptionInput } from "@/types";
+import type { Subscription, SubscriptionInput } from "@/types";
 
 export function SubscriptionsPage() {
   const navigate = useNavigate();
@@ -37,17 +38,29 @@ export function SubscriptionsPage() {
   const deleteSubscription = useDeleteSubscription();
 
   const bankConnectUrl = useBankConnectUrl();
-  const bankCallback = useBankCallback();
-  const syncTransactions = useSyncTransactions();
-  const detectSubscriptions = useDetectSubscriptions();
   const createSubscription = useCreateSubscription();
+
+  // Tunnel de détection (consentement -> sync -> algorithme -> rapport) isolé
+  // dans son propre contexte, monté au-dessus des remounts de page -- cf.
+  // contexts/SubscriptionDetectionContext.tsx pour le pourquoi.
+  const {
+    consentOpen,
+    scanPromptOpen,
+    reportOpen,
+    candidates,
+    isScanning,
+    openConsent,
+    setConsentOpen,
+    setScanPromptOpen,
+    handleScanPromptCta,
+    runDetection,
+    excludeCandidate,
+    setReportOpen,
+    clearCandidates,
+  } = useSubscriptionDetection();
 
   const [editing, setEditing] = React.useState<Subscription | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | undefined>();
-  const [consentOpen, setConsentOpen] = React.useState(false);
-  const [scanPromptOpen, setScanPromptOpen] = React.useState(false);
-  const [reportOpen, setReportOpen] = React.useState(false);
-  const [candidates, setCandidates] = React.useState<DetectedSubscription[]>([]);
   const [validating, setValidating] = React.useState(false);
 
   function handleDelete(subscription: Subscription) {
@@ -69,58 +82,6 @@ export function SubscriptionsPage() {
       },
       onError: (error) => toast.error(getErrorMessage(error)),
     });
-  }
-
-  /** Tunnel de détection : consentement (1) -> sync + algo (2) -> rapport + validation (3). */
-  function handleOpenConsent() {
-    setConsentOpen(true);
-  }
-
-  /** CTA de la pop-up post-connexion bancaire : enchaîne sur le tunnel de
-   * détection existant (le consentement explicite reste requis avant de
-   * lancer l'algorithme sur les transactions). */
-  function handleScanPromptCta() {
-    setScanPromptOpen(false);
-    handleOpenConsent();
-  }
-
-  /** Tunnel de détection en 2 appels réseau enchaînés (sync des transactions
-   * PUIS analyse), chacun avec sa propre gestion d'erreur : un échec de
-   * l'étape 1 (banque indisponible) n'enchaîne jamais sur l'étape 2, et
-   * chaque branche referme la modale + affiche un message clair, l'état de
-   * chargement des boutons étant remis à zéro automatiquement par react-query.
-   * Les console.log tracent chaque étape clé pour repérer où la donnée se
-   * perd le cas échéant (préfixe [detect] partagé avec les logs backend). */
-  function handleConsent() {
-    console.log("[detect] Étape 2 : synchronisation des transactions bancaires…");
-    syncTransactions.mutate(undefined, {
-      onError: (error) => {
-        console.error("[detect] échec de la synchronisation des transactions :", error);
-        toast.error(getErrorMessage(error));
-        setConsentOpen(false);
-      },
-      onSuccess: (syncResult) => {
-        console.log("[detect] transactions synchronisées :", syncResult);
-        console.log("[detect] Étape 3 : lancement de l'analyse de détection…");
-        detectSubscriptions.mutate(undefined, {
-          onSuccess: (data) => {
-            console.log(`[detect] Étape 4 : ${data.length} candidat(s) reçu(s) du backend`, data);
-            setCandidates(data);
-            setConsentOpen(false);
-            setReportOpen(true);
-          },
-          onError: (error) => {
-            console.error("[detect] échec de l'analyse de détection :", error);
-            toast.error(getErrorMessage(error));
-            setConsentOpen(false);
-          },
-        });
-      },
-    });
-  }
-
-  function handleExcludeCandidate(candidate: DetectedSubscription) {
-    setCandidates((prev) => prev.filter((c) => c.merchant !== candidate.merchant));
   }
 
   /** Étape 3 : intègre les candidats revus dans la modale "Transactions importées".
@@ -231,7 +192,7 @@ export function SubscriptionsPage() {
 
     setValidating(false);
     setReportOpen(false);
-    setCandidates([]);
+    clearCandidates();
 
     const summary = [
       createdCount > 0 && `${createdCount} ajouté(s)`,
@@ -245,38 +206,9 @@ export function SubscriptionsPage() {
     }
   }
 
-  /** Étape 2 : au retour de la Webview Powens, l'URL contient state/connection_id/error en query params. */
-  React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const state = params.get("state");
-    if (!state) return;
-
-    // Laisse 2s après la confirmation de connexion avant de proposer le scan
-    // (cf. BankScanPromptModal) : le temps que le toast de succès s'affiche
-    // et que l'utilisateur assimile que sa banque est bien connectée, plutôt
-    // qu'un enchaînement immédiat qui donnerait l'impression d'être bousculé.
-    let scanPromptTimer: ReturnType<typeof setTimeout> | undefined;
-
-    bankCallback.mutate(
-      {
-        state,
-        connection_id: params.get("connection_id") ?? undefined,
-        error: params.get("error") ?? undefined,
-        error_description: params.get("error_description") ?? undefined,
-      },
-      {
-        onSuccess: () => {
-          toast.success("Banque connectée avec succès.");
-          scanPromptTimer = setTimeout(() => setScanPromptOpen(true), 2000);
-        },
-        onError: (error) => toast.error(getErrorMessage(error)),
-        onSettled: () => navigate("/subscriptions", { replace: true }),
-      },
-    );
-
-    return () => clearTimeout(scanPromptTimer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Le retour de la Webview Powens (state/connection_id/error en query
+  // params) est géré par SubscriptionDetectionProvider, monté au-dessus de
+  // cette page -- cf. contexts/SubscriptionDetectionContext.tsx.
 
   return (
     <div className="w-full px-6 py-8">
@@ -295,12 +227,7 @@ export function SubscriptionsPage() {
             <BookOpen className="h-4 w-4" /> Guide résiliation
           </Button>
           {user?.bank_connected && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleOpenConsent}
-              loading={syncTransactions.isPending || detectSubscriptions.isPending}
-            >
+            <Button variant="outline" size="sm" onClick={openConsent} loading={isScanning}>
               <Sparkles className="h-4 w-4" /> Détecter mes abonnements
             </Button>
           )}
@@ -343,12 +270,7 @@ export function SubscriptionsPage() {
 
       <BankScanPromptModal open={scanPromptOpen} onOpenChange={setScanPromptOpen} onScan={handleScanPromptCta} />
 
-      <BankConsentModal
-        open={consentOpen}
-        onOpenChange={setConsentOpen}
-        onConsent={handleConsent}
-        loading={syncTransactions.isPending || detectSubscriptions.isPending}
-      />
+      <BankConsentModal open={consentOpen} onOpenChange={setConsentOpen} onConsent={runDetection} loading={isScanning} />
 
       <BankReportModal
         open={reportOpen}
@@ -356,7 +278,7 @@ export function SubscriptionsPage() {
         candidates={candidates}
         existingSubscriptions={subscriptionsQuery.data ?? []}
         currency={currency}
-        onExclude={handleExcludeCandidate}
+        onExclude={excludeCandidate}
         onValidate={handleValidateReport}
         validating={validating}
       />

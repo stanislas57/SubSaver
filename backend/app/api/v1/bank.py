@@ -36,8 +36,14 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bank", tags=["bank"])
 
-# Nombre maximum de pages parcourues par synchronisation, en sécurité contre une pagination infinie.
-MAX_SYNC_PAGES = 20
+# Nombre maximum de pages parcourues par synchronisation, en sécurité contre
+# une pagination infinie -- volontairement très large (20 000 transactions)
+# pour ne jamais tronquer silencieusement l'historique réel d'un utilisateur
+# actif : un plafond trop bas fait "sauter" des abonnements dont toutes les
+# occurrences tombent au-delà de la page coupée, sans qu'aucune erreur ne
+# remonte au frontend. cf. le log d'avertissement en fin de boucle si ce
+# plafond est un jour vraiment atteint.
+MAX_SYNC_PAGES = 200
 TRANSACTIONS_PAGE_SIZE = 100
 
 # Catalogue statique de démonstration, conservé pour compatibilité avec l'existant.
@@ -184,6 +190,15 @@ async def sync_transactions(current_user: User = Depends(get_current_user), db: 
         cursor = _extract_cursor(page.get("_links", {}).get("next"))
         if not cursor or not transactions:
             break
+    else:
+        # La boucle a épuisé MAX_SYNC_PAGES sans que Powens ne signale la fin
+        # (cursor toujours présent) : l'historique est tronqué, on le
+        # journalise fort plutôt que de laisser le détecteur "sauter" des
+        # abonnements en silence faute de transactions stockées.
+        logger.warning(
+            "[bank sync] user=%s : plafond de %d pages atteint, historique potentiellement tronqué (cursor=%s)",
+            current_user.id, MAX_SYNC_PAGES, cursor,
+        )
 
     total_stored_count = len(
         db.execute(select(BankTransaction.id).where(BankTransaction.user_id == current_user.id)).all()

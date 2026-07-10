@@ -177,6 +177,52 @@ check("'APPLE.COM/BILL' -> nom canonique Apple",
 check("Nom hors whitelist inchangé (repli brut)",
       display_merchant_name("Mon abonnement perso") == "Mon abonnement perso")
 
+# ---------------------------------------------------------------------------
+print("\n[6] Robustesse : écart isolé toléré, dérive de prix, variantes de libellé")
+# ---------------------------------------------------------------------------
+robustness_sample = [
+    # Marchand inconnu, 4 occurrences (3 intervalles), UN prélèvement en
+    # retard (48 j au lieu de ~30) -- doit rester détecté grâce à la
+    # tolérance "1 écart isolé sur >=4 occurrences".
+    RawTransaction(id="w1", wording="PRLV SEPA COACH SPORTIF LEA", value=-39.00, date=_iso(108)),
+    RawTransaction(id="w2", wording="PRLV SEPA COACH SPORTIF LEA", value=-39.00, date=_iso(78)),
+    RawTransaction(id="w3", wording="PRLV SEPA COACH SPORTIF LEA", value=-39.00, date=_iso(30)),  # 48 j après w2
+    RawTransaction(id="w4", wording="PRLV SEPA COACH SPORTIF LEA", value=-39.00, date=_iso(2)),
+    # Marchand inconnu whitelisté-like avec dérive de prix progressive :
+    # chaque paire consécutive reste à <= 0,50 € d'écart, mais le premier et
+    # le dernier montant s'écartent de 1,20 € -- doit rester UN SEUL cluster
+    # grâce à la comparaison au voisin le plus proche (pas au premier élément).
+    RawTransaction(id="d1", wording="PRLV SEPA CLUB YOGA ZEN", value=-20.00, date=_iso(93)),
+    RawTransaction(id="d2", wording="PRLV SEPA CLUB YOGA ZEN", value=-20.40, date=_iso(63)),
+    RawTransaction(id="d3", wording="PRLV SEPA CLUB YOGA ZEN", value=-20.80, date=_iso(33)),
+    RawTransaction(id="d4", wording="PRLV SEPA CLUB YOGA ZEN", value=-21.20, date=_iso(3)),
+    # Marchand inconnu dont le libellé bancaire varie légèrement (accent,
+    # tiret) d'un prélèvement à l'autre -- doit fusionner dans le MÊME
+    # groupe grâce à la clé normalisée, et non se fragmenter sous le seuil.
+    RawTransaction(id="k1", wording="PRLV SEPA KINE-DUPONT CABINET", value=-32.00, date=_iso(63)),
+    RawTransaction(id="k2", wording="PRLV SEPA KINÉ DUPONT CABINET", value=-32.00, date=_iso(33)),
+    RawTransaction(id="k3", wording="PRLV SEPA KINE  DUPONT  CABINET", value=-32.00, date=_iso(3)),
+]
+robustness_detected = analyze_transactions(robustness_sample)
+robustness_by_merchant: dict[str, list] = {}
+for d in robustness_detected:
+    robustness_by_merchant.setdefault(d.merchant, []).append(d)
+
+coach = robustness_by_merchant.get("Coach Sportif Lea", [])
+check("Marchand avec 1 paiement en retard sur 4 reste détecté (tolérance à l'écart isolé)",
+      len(coach) == 1 and coach[0].occurrences == 4 and coach[0].confidence == 0.8,
+      coach)
+
+yoga = robustness_by_merchant.get("Club Yoga Zen", [])
+check("Dérive de prix progressive : un seul cluster (voisin le plus proche, pas le 1er élément)",
+      len(yoga) == 1 and yoga[0].occurrences == 4,
+      yoga)
+
+kine_matches = [d for d in robustness_detected if "DUPONT" in d.merchant.upper()]
+check("Variantes de libellé (accent/tirets/espaces) fusionnées dans un seul groupe",
+      len(kine_matches) == 1 and kine_matches[0].occurrences == 3,
+      kine_matches)
+
 print("\n" + "=" * 70)
 total, passed = len(results_log), sum(results_log)
 print(f"RÉSULTAT : {passed}/{total} assertions passées")
