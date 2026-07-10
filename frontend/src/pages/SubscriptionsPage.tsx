@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Sparkles } from "lucide-react";
+import { Plus, Sparkles, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { SubscriptionList } from "@/components/subscriptions/SubscriptionList";
@@ -286,6 +286,14 @@ export function SubscriptionsPage() {
           {subscriptionsQuery.data ? `${subscriptionsQuery.data.length} abonnement(s)` : "Gère tes abonnements"}
         </p>
         <div className="flex flex-wrap gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/guide-abonnements")}
+            title="Astuces et démarches pour gérer, réduire ou résilier vos abonnements"
+          >
+            <BookOpen className="h-4 w-4" /> Guide résiliation
+          </Button>
           {user?.bank_connected && (
             <Button
               variant="outline"
