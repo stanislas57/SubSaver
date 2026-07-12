@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import type { OfferBadge } from "@/lib/marketBadges";
 import type { MarketOffer, Currency } from "@/types";
 
 export interface ComparatorOfferTableProps {
@@ -10,6 +11,8 @@ export interface ComparatorOfferTableProps {
   currency: Currency;
   cheapestId: string | null;
   bestMatchId: string | null;
+  /** Badges génériques calculés par computeOfferBadges, indexés par offer.id. */
+  badgesByOfferId?: Map<string, OfferBadge[]>;
 }
 
 /** Vue tableau comparatif horizontal : même liste d'offres que les cartes,
@@ -17,7 +20,7 @@ export interface ComparatorOfferTableProps {
  * grid de cartes long à parcourir. Les 2 premiers `attributes` de chaque
  * offre suffisent à occuper les colonnes propres à la famille (VOD, forfait
  * mobile...) sans devoir connaître la catégorie à l'avance. */
-export function ComparatorOfferTable({ offers, currency, cheapestId, bestMatchId }: ComparatorOfferTableProps) {
+export function ComparatorOfferTable({ offers, currency, cheapestId, bestMatchId, badgesByOfferId }: ComparatorOfferTableProps) {
   // Tolère un backend pas encore redéployé/migré sur le nouveau schéma (champ
   // absent du JSON plutôt que simplement vide) : évite un crash de rendu qui
   // blanchirait toute la page en l'absence d'ErrorBoundary.
@@ -59,6 +62,9 @@ export function ComparatorOfferTable({ offers, currency, cheapestId, bestMatchId
                       <Trophy className="h-3 w-3" /> Meilleur compromis
                     </Badge>
                   )}
+                  {badgesByOfferId?.get(offer.id)?.map((badge) => (
+                    <Badge key={badge.key} variant="neutral">{badge.label}</Badge>
+                  ))}
                 </div>
               </td>
               <td className="p-3">

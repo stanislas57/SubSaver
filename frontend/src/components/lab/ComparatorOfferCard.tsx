@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import type { OfferBadge } from "@/lib/marketBadges";
 import type { MarketOffer, Currency } from "@/types";
 
 export interface ComparatorOfferCardProps {
@@ -14,13 +15,16 @@ export interface ComparatorOfferCardProps {
   /** "Meilleur compromis" -- score de pertinence le plus élevé (pas forcément la moins chère). */
   isBestMatch?: boolean;
   currentPrice?: number;
+  /** Badges génériques calculés par computeOfferBadges (économie max, zéro
+   * engagement, fitness à domicile...) -- optionnels, toute famille peut en produire. */
+  badges?: OfferBadge[];
 }
 
 /** Carte d'offre générique : les 3 premiers `attributes` de l'offre s'affichent
  * toujours, quelle que soit la famille (VOD, forfaits mobiles, musique...) --
  * c'est la donnée elle-même qui porte les libellés propres à chaque catégorie,
  * pas le composant. */
-export function ComparatorOfferCard({ offer, currency, isCheapest, isBestMatch, currentPrice }: ComparatorOfferCardProps) {
+export function ComparatorOfferCard({ offer, currency, isCheapest, isBestMatch, currentPrice, badges }: ComparatorOfferCardProps) {
   const savings = currentPrice ? currentPrice - offer.price : null;
   // Tolère un backend pas encore redéployé/migré sur le nouveau schéma (champ
   // absent du JSON plutôt que simplement vide) : évite un crash de rendu qui
@@ -32,7 +36,7 @@ export function ComparatorOfferCard({ offer, currency, isCheapest, isBestMatch, 
   return (
     <Card className={cn((isCheapest || isBestMatch) && "border-accent ring-1 ring-accent")}>
       <CardContent className="p-5">
-        {(isCheapest || isBestMatch) && (
+        {(isCheapest || isBestMatch || (badges && badges.length > 0)) && (
           <div className="mb-3 flex flex-wrap gap-1.5">
             {isCheapest && (
               <Badge variant="success" className="inline-flex items-center gap-1">
@@ -44,6 +48,9 @@ export function ComparatorOfferCard({ offer, currency, isCheapest, isBestMatch, 
                 <Trophy className="h-3 w-3" /> Meilleur compromis
               </Badge>
             )}
+            {badges?.map((badge) => (
+              <Badge key={badge.key} variant="neutral">{badge.label}</Badge>
+            ))}
           </div>
         )}
         <div className="flex items-start justify-between gap-3">

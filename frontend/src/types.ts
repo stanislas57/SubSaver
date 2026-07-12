@@ -270,6 +270,38 @@ export const CATEGORIES = [
 
 export type Category = (typeof CATEGORIES)[number];
 
+/** Libellé d'affichage par catégorie -- ne remplace jamais la valeur stockée
+ * (Category), seulement le texte présenté à l'utilisateur (ex: "Sport" reste
+ * la valeur en base/formulaires, mais s'affiche "Sport & Fitness" dans le
+ * comparateur). Catégories absentes de ce record : libellé = valeur brute. */
+export const CATEGORY_DISPLAY_LABELS: Partial<Record<Category, string>> = {
+  Sport: "Sport & Fitness",
+};
+
+/** Sous-catégories de la famille Sport (attribute JSONB `subcategory` d'une
+ * MarketOffer) -- pas de colonne dédiée : `MarketOffer.attributes` reste un
+ * JSONB générique {key,label,value}[] partagé par toutes les catégories, cf.
+ * commentaire de `MarketOffer` dans ce fichier. Ces constantes ne servent
+ * qu'à typer/lire cet attribute côté front, sans contrainte au niveau DB. */
+export const SPORT_SUBCATEGORIES = [
+  "Salle de sport physique",
+  "Application de coaching / Fitness à domicile",
+  "Agrégateur multi-activités",
+  "Streaming sportif",
+] as const;
+
+export type SportSubcategory = (typeof SPORT_SUBCATEGORIES)[number];
+
+/** Clés des `MarketOfferAttribute` propres à la famille Sport (cf. migration
+ * `b2c94a71e8d3_add_sport_fitness_market_offers`, fonction `sport_attrs`). */
+export const SPORT_ATTRIBUTE_KEYS = {
+  subcategory: "subcategory",
+  multiClubAccess: "multi_club_access",
+  groupClasses: "group_classes",
+  mobileApp: "mobile_app",
+  guestInvite: "guest_invite",
+} as const;
+
 export const IMPORTANCE_LABELS: Record<Importance, string> = {
   1: "Essentiel",
   2: "Utile",
