@@ -1,8 +1,8 @@
-import { SPORT_ATTRIBUTE_KEYS } from "@/types";
+import { SPORT_ATTRIBUTE_KEYS, TRANSPORT_ATTRIBUTE_KEYS } from "@/types";
 import type { MarketOffer } from "@/types";
 
 export interface OfferBadge {
-  key: "max_savings" | "zero_commitment" | "home_fitness";
+  key: "max_savings" | "zero_commitment" | "home_fitness" | "free_transport" | "remote_work_friendly";
   label: string;
 }
 
@@ -46,6 +46,12 @@ export function computeOfferBadges(offers: MarketOffer[], currentPrice?: number 
     }
     if (getAttribute(offer, SPORT_ATTRIBUTE_KEYS.subcategory) === "Application de coaching / Fitness à domicile") {
       push(offer.id, { key: "home_fitness", label: "🏠 Idéal pour le sport à domicile" });
+    }
+    if ((getAttribute(offer, TRANSPORT_ATTRIBUTE_KEYS.freeTransport) ?? "").startsWith("Oui")) {
+      push(offer.id, { key: "free_transport", label: "🎉 Gratuit pour les résidents" });
+    }
+    if ((getAttribute(offer, TRANSPORT_ATTRIBUTE_KEYS.flexibleUsage) ?? "").startsWith("Oui")) {
+      push(offer.id, { key: "remote_work_friendly", label: "🏡 Idéal télétravail hybride" });
     }
   }
 

@@ -11,13 +11,14 @@ import { ComparatorOfferTable } from "@/components/lab/ComparatorOfferTable";
 import { useMarketOffers } from "@/hooks/useMarket";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { useAuth } from "@/contexts/AuthContext";
-import { CATEGORIES, CATEGORY_DISPLAY_LABELS, SPORT_ATTRIBUTE_KEYS } from "@/types";
+import { CATEGORIES, CATEGORY_DISPLAY_LABELS, SPORT_ATTRIBUTE_KEYS, TRANSPORT_ATTRIBUTE_KEYS, FRENCH_REGIONS } from "@/types";
 import { getErrorMessage } from "@/api/axiosClient";
 import { cn } from "@/lib/utils";
 import { computeOfferBadges } from "@/lib/marketBadges";
 import { MARKET_OFFERS_FALLBACK } from "@/data/marketOffersFallback";
+import { matchesUserLocation, withEmployerReimbursement, isFreeTransportCity } from "@/lib/transportGeo";
 
-const COMING_SOON_CATEGORIES = new Set(["Logement", "Banque & Invest", "Transport"]);
+const COMING_SOON_CATEGORIES = new Set(["Logement", "Banque & Invest"]);
 
 type SortMode = "relevance" | "price";
 type ViewMode = "cards" | "table";
@@ -36,6 +37,9 @@ export function LabComparatorPage() {
   const [budgetMax, setBudgetMax] = React.useState("");
   const [engagementFilter, setEngagementFilter] = React.useState<EngagementFilter>("all");
   const [activityType, setActivityType] = React.useState("all");
+  const [geoRegion, setGeoRegion] = React.useState("");
+  const [geoCity, setGeoCity] = React.useState("");
+  const [employerReimbursement, setEmployerReimbursement] = React.useState(false);
 
   const offersQuery = useMarketOffers(category);
   const subscriptionsQuery = useSubscriptions();
@@ -60,7 +64,18 @@ export function LabComparatorPage() {
     return Array.from(new Set(values));
   }, [baseOffers]);
 
-  // Filtres appliqués avant tri : budget max, engagement, type d'activité.
+  // Le sélecteur géo (région/ville) et le toggle remboursement employeur ne
+  // s'affichent que pour les catégories qui posent ces attributes (Transport
+  // aujourd'hui) -- générique, comme activityTypes pour Sport plus haut.
+  const hasGeoScope = baseOffers.some((offer) => offer.attributes?.some((attr) => attr.key === TRANSPORT_ATTRIBUTE_KEYS.scope));
+  const hasEmployerReimbursement = baseOffers.some((offer) =>
+    offer.attributes?.some((attr) => attr.key === TRANSPORT_ATTRIBUTE_KEYS.employerReimbursement)
+  );
+  const freeTransportAlert = hasGeoScope && geoCity.trim() !== "" && isFreeTransportCity(geoCity);
+
+  // Filtres appliqués avant tri : budget max, engagement, type d'activité,
+  // localisation (région/ville -- offres "Urbain local"/"Régional (TER)" hors
+  // de la zone de l'utilisateur exclues, "National" toujours pertinentes).
   const filteredOffers = React.useMemo(() => {
     const offers = baseOffers;
     const maxPrice = budgetMax === "" ? null : Number(budgetMax);
@@ -73,27 +88,35 @@ export function LabComparatorPage() {
         const offerType = offer.attributes?.find((attr) => attr.key === SPORT_ATTRIBUTE_KEYS.subcategory)?.value;
         if (offerType !== activityType) return false;
       }
+      if (!matchesUserLocation(offer, geoRegion, geoCity)) return false;
       return true;
     });
-  }, [baseOffers, budgetMax, engagementFilter, activityType]);
+  }, [baseOffers, budgetMax, engagementFilter, activityType, geoRegion, geoCity]);
+
+  // Réduction légale de 50% employeur (Code du travail Art. L3261-2) sur les
+  // abonnements domicile-travail éligibles -- appliquée après le filtrage,
+  // avant tri/badges/classement pour que tout reste cohérent avec le prix net.
+  const displayOffers = React.useMemo(() => {
+    return employerReimbursement ? filteredOffers.map(withEmployerReimbursement) : filteredOffers;
+  }, [filteredOffers, employerReimbursement]);
 
   // Calculés sur la liste filtrée mais pas triée : "le moins cher" et
   // "meilleur compromis" doivent rester stables quel que soit le tri actif à
   // l'écran, mais scopés aux offres réellement visibles après filtrage.
-  const cheapestId = filteredOffers.length > 0
-    ? [...filteredOffers].sort((a, b) => a.price - b.price)[0].id
+  const cheapestId = displayOffers.length > 0
+    ? [...displayOffers].sort((a, b) => a.price - b.price)[0].id
     : null;
-  const bestMatchId = filteredOffers.length > 0
-    ? [...filteredOffers].sort((a, b) => b.score - a.score)[0].id
+  const bestMatchId = displayOffers.length > 0
+    ? [...displayOffers].sort((a, b) => b.score - a.score)[0].id
     : null;
 
   const sortedOffers = React.useMemo(() => {
-    return [...filteredOffers].sort((a, b) => (sortMode === "price" ? a.price - b.price : b.score - a.score));
-  }, [filteredOffers, sortMode]);
+    return [...displayOffers].sort((a, b) => (sortMode === "price" ? a.price - b.price : b.score - a.score));
+  }, [displayOffers, sortMode]);
 
   const badgesByOfferId = React.useMemo(
-    () => computeOfferBadges(filteredOffers, currentPrice ?? null),
-    [filteredOffers, currentPrice]
+    () => computeOfferBadges(displayOffers, currentPrice ?? null),
+    [displayOffers, currentPrice]
   );
 
   return (
@@ -174,7 +197,47 @@ export function LabComparatorPage() {
                 </Select>
               </div>
             )}
+            {hasGeoScope && (
+              <>
+                <div className="w-52">
+                  <label className="mb-1.5 block text-xs font-medium text-luxury-text-light">Ma région</label>
+                  <Select value={geoRegion} onChange={(e) => setGeoRegion(e.target.value)}>
+                    <option value="">Peu importe</option>
+                    {FRENCH_REGIONS.map((region) => (
+                      <option key={region} value={region}>{region}</option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="w-48">
+                  <label className="mb-1.5 block text-xs font-medium text-luxury-text-light">Ma ville</label>
+                  <Input
+                    type="text"
+                    placeholder="ex: Toulouse"
+                    value={geoCity}
+                    onChange={(e) => setGeoCity(e.target.value)}
+                  />
+                </div>
+              </>
+            )}
+            {hasEmployerReimbursement && (
+              <label className="flex items-center gap-2 pb-2.5 text-sm text-luxury-text">
+                <input
+                  type="checkbox"
+                  checked={employerReimbursement}
+                  onChange={(e) => setEmployerReimbursement(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300"
+                />
+                Remboursement employeur -50%
+              </label>
+            )}
           </div>
+        )}
+
+        {freeTransportAlert && (
+          <p className="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+            🎉 {geoCity} fait partie des villes où les transports en commun sont gratuits pour les résidents.
+            Arrête de payer un abonnement si tu y habites déjà !
+          </p>
         )}
 
         {baseOffers.length > 0 && (
@@ -255,15 +318,15 @@ export function LabComparatorPage() {
           </p>
         )}
 
-        {baseOffers.length > 0 && filteredOffers.length === 0 && (
+        {baseOffers.length > 0 && displayOffers.length === 0 && (
           <EmptyState
             icon={<SlidersHorizontal className="h-6 w-6" />}
             title="Aucune offre ne correspond à ces filtres"
-            description="Essaie d'élargir le budget max ou de repasser l'engagement sur 'Tous'."
+            description="Essaie d'élargir le budget max, ta zone géographique ou de repasser l'engagement sur 'Tous'."
           />
         )}
 
-        {filteredOffers.length > 0 && viewMode === "cards" && (
+        {displayOffers.length > 0 && viewMode === "cards" && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {sortedOffers.map((offer) => (
               <ComparatorOfferCard
@@ -279,7 +342,7 @@ export function LabComparatorPage() {
           </div>
         )}
 
-        {filteredOffers.length > 0 && viewMode === "table" && (
+        {displayOffers.length > 0 && viewMode === "table" && (
           <ComparatorOfferTable
             offers={sortedOffers}
             currency={currency}

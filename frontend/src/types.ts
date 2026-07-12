@@ -276,6 +276,7 @@ export type Category = (typeof CATEGORIES)[number];
  * comparateur). Catégories absentes de ce record : libellé = valeur brute. */
 export const CATEGORY_DISPLAY_LABELS: Partial<Record<Category, string>> = {
   Sport: "Sport & Fitness",
+  Transport: "Transport & Mobilité",
 };
 
 /** Sous-catégories de la famille Sport (attribute JSONB `subcategory` d'une
@@ -291,6 +292,48 @@ export const SPORT_SUBCATEGORIES = [
 ] as const;
 
 export type SportSubcategory = (typeof SPORT_SUBCATEGORIES)[number];
+
+/** Portée géographique d'une offre Transport (attribute JSONB `scope`) --
+ * même logique que SPORT_SUBCATEGORIES : ne contraint pas le schéma DB,
+ * seulement le typage/la lecture côté front des `MarketOffer.attributes`. */
+export const TRANSPORT_SCOPE_LABELS = {
+  URBAN_LOCAL: "Urbain local",
+  REGIONAL_TER: "Régional (TER)",
+  NATIONAL: "National",
+} as const;
+
+export type TransportScope = keyof typeof TRANSPORT_SCOPE_LABELS;
+
+/** Les 11 régions françaises (hors collectivités d'outre-mer), utilisées pour
+ * le sélecteur "Ma région" du comparateur Transport -- attribute `region`. */
+export const FRENCH_REGIONS = [
+  "Île-de-France",
+  "Auvergne-Rhône-Alpes",
+  "Occitanie",
+  "Nouvelle-Aquitaine",
+  "Hauts-de-France",
+  "Grand Est",
+  "Bretagne",
+  "Pays de la Loire",
+  "Normandie",
+  "Provence-Alpes-Côte d'Azur",
+  "Centre-Val de Loire",
+] as const;
+
+export type FrenchRegion = (typeof FRENCH_REGIONS)[number];
+
+/** Clés des `MarketOfferAttribute` propres à la famille Transport (cf.
+ * migration ajoutant les offres Transport, fonction `transport_attrs`). */
+export const TRANSPORT_ATTRIBUTE_KEYS = {
+  scope: "scope",
+  region: "region",
+  coveredCities: "covered_cities",
+  aomName: "aom_name",
+  mobilityType: "mobility_type",
+  freeTransport: "free_transport",
+  employerReimbursement: "employer_reimbursement",
+  flexibleUsage: "flexible_usage",
+} as const;
 
 /** Clés des `MarketOfferAttribute` propres à la famille Sport (cf. migration
  * `b2c94a71e8d3_add_sport_fitness_market_offers`, fonction `sport_attrs`). */
