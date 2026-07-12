@@ -9,12 +9,20 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.email_service import send_password_reset_email
 from app.core.rate_limit import limiter
-from app.core.security import create_access_token, generate_verification_code, hash_password, verify_password
+from app.core.security import (
+    OAuthTokenError,
+    create_access_token,
+    generate_verification_code,
+    hash_password,
+    verify_google_id_token,
+    verify_password,
+)
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas import (
     AuthResponse,
     EmailBody,
+    GoogleAuthBody,
     MessageResult,
     RegisterBody,
     ResetPasswordBody,
@@ -59,7 +67,18 @@ def register(request: Request, body: RegisterBody, db: Session = Depends(get_db)
     (email ou SMS) n'est requise -- on renvoie directement un token comme
     /auth/login pour que le frontend connecte l'utilisateur dans la foulée,
     sans lui redemander ses identifiants."""
-    if db.query(User).filter(User.email == body.email).first():
+    existing = db.query(User).filter(User.email == body.email).first()
+    if existing:
+        # Message distinct seulement pour un compte purement Google (pas de
+        # mot de passe) : /register ne prouve rien sur la propriété de cet
+        # email (contrairement à /auth/google, où Google l'a déjà vérifié),
+        # donc on refuse plutôt que d'attacher silencieusement un mot de
+        # passe à un compte qu'on ne peut pas confirmer appartenir à l'appelant.
+        if existing.google_sub and not existing.hashed_password:
+            raise HTTPException(
+                status_code=400,
+                detail="Ce compte utilise la connexion Google. Utilise le bouton « Continuer avec Google ».",
+            )
         raise HTTPException(status_code=400, detail="Un compte existe déjà avec cet email.")
 
     user = User(
@@ -91,6 +110,14 @@ def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Ses
     query_ms = (time.perf_counter() - query_start) * 1000
 
     if not user:
+        raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect.")
+
+    # Compte créé (ou lié) via Google : pas de mot de passe à vérifier. Même
+    # message générique que "compte introuvable" (anti-enumeration -- ne
+    # jamais révéler qu'un compte utilise Google) ; vérifié AVANT
+    # verify_password() pour ne jamais l'appeler avec hashed_password=None
+    # (passlib lève sinon).
+    if not user.hashed_password:
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect.")
 
     if _is_locked(user.locked_until):
@@ -136,6 +163,50 @@ def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Ses
             total_ms, query_ms, verify_ms, commit_ms, token_ms, form.username,
         )
 
+    return AuthResponse(access_token=access_token, token_type="bearer", user=user)
+
+
+@router.post("/google", response_model=AuthResponse)
+@limiter.limit("10/minute")
+def google_login(request: Request, body: GoogleAuthBody, db: Session = Depends(get_db)):
+    """Connexion/inscription unifiée via Google : la première connexion crée
+    le compte automatiquement, les suivantes reconnectent le même compte via
+    google_sub. Réconciliation : si l'email Google (déjà vérifié par Google)
+    correspond à un compte mot de passe existant sans google_sub, on lie ce
+    google_sub à ce compte plutôt que de créer un doublon."""
+    try:
+        identity = verify_google_id_token(body.id_token)
+    except OAuthTokenError:
+        logger.warning("[GOOGLE LOGIN] Échec de vérification du token Google")
+        raise HTTPException(status_code=401, detail="Authentification Google invalide.")
+
+    user = db.query(User).filter(User.google_sub == identity.sub).first()
+
+    if not user:
+        user = db.query(User).filter(User.email == identity.email).first()
+        if user:
+            user.google_sub = identity.sub
+        else:
+            user = User(
+                email=identity.email,
+                hashed_password=None,
+                first_name=identity.first_name,
+                google_sub=identity.sub,
+                auth_provider="google",
+                is_verified=True,
+            )
+            db.add(user)
+
+    if _is_locked(user.locked_until):
+        raise HTTPException(
+            status_code=429,
+            detail=f"Trop de tentatives échouées. Réessaie dans {LOGIN_LOCKOUT_MINUTES} minutes.",
+        )
+
+    user.last_login_at = datetime.now(timezone.utc).isoformat()
+    db.commit()
+
+    access_token = create_access_token(user.id)
     return AuthResponse(access_token=access_token, token_type="bearer", user=user)
 
 

@@ -13,6 +13,9 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   isLoggingIn: boolean;
   loginError: string | null;
+  loginWithGoogle: (idToken: string) => Promise<void>;
+  isLoggingInWithGoogle: boolean;
+  loginWithGoogleError: string | null;
   register: (email: string, password: string, firstName: string) => Promise<void>;
   isRegistering: boolean;
   registerError: string | null;
@@ -69,6 +72,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: applyAuthResponse,
   });
 
+  const loginWithGoogleMutation = useMutation({
+    mutationFn: (idToken: string) => authService.loginWithGoogle(idToken),
+    onSuccess: applyAuthResponse,
+  });
+
   const registerMutation = useMutation({
     mutationFn: ({ email, password, firstName }: { email: string; password: string; firstName: string }) =>
       authService.register(email, password, firstName),
@@ -96,6 +104,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function login(email: string, password: string) {
     await loginMutation.mutateAsync({ email, password });
+  }
+
+  async function loginWithGoogle(idToken: string) {
+    await loginWithGoogleMutation.mutateAsync(idToken);
   }
 
   async function register(email: string, password: string, firstName: string) {
@@ -133,6 +145,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     isLoggingIn: loginMutation.isPending,
     loginError: loginMutation.isError ? getErrorMessage(loginMutation.error, "Identifiants invalides.") : null,
+    loginWithGoogle,
+    isLoggingInWithGoogle: loginWithGoogleMutation.isPending,
+    loginWithGoogleError: loginWithGoogleMutation.isError
+      ? getErrorMessage(loginWithGoogleMutation.error, "Connexion Google impossible.")
+      : null,
     register,
     isRegistering: registerMutation.isPending,
     registerError: registerMutation.isError ? getErrorMessage(registerMutation.error, "Impossible de créer le compte.") : null,

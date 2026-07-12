@@ -10,25 +10,25 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
+import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 
 const SOCIAL_PROVIDERS = [
-  { id: "google", label: "Google", initial: "G" },
   { id: "apple", label: "Apple", initial: "A" },
   { id: "microsoft", label: "Microsoft", initial: "M" },
 ] as const;
 
-/** Boutons de connexion sociale -- désactivés : aucun fournisseur OAuth n'est
- * encore branché côté backend. Affichés pour matérialiser la cible produit et
- * recueillir de la demande, mais explicitement non-cliquables (curseur
- * "not-allowed" + badge "Bientôt") pour ne jamais laisser croire que l'option
- * fonctionne déjà. */
+/** Boutons de connexion sociale restant désactivés (Apple, Microsoft) --
+ * Google est branché côté backend (cf. GoogleLoginButton), les deux autres
+ * matérialisent seulement la cible produit et restent explicitement
+ * non-cliquables (curseur "not-allowed" + badge "Bientôt") pour ne jamais
+ * laisser croire que l'option fonctionne déjà. */
 function SocialLoginRow() {
   function handleClick(label: string) {
     toast.info(`Connexion avec ${label} — bientôt disponible.`);
   }
 
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       {SOCIAL_PROVIDERS.map((provider) => (
         <button
           key={provider.id}
@@ -93,6 +93,7 @@ export function RegisterForm() {
     <div className="space-y-5">
       <h2 className="font-display text-xl font-bold text-slate-50">Créer un compte</h2>
 
+      <GoogleLoginButton />
       <SocialLoginRow />
 
       <div className="flex items-center gap-3 text-xs text-slate-400">

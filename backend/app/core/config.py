@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "SubSaver API"
     API_V1_PREFIX: str = "/api/v1"
 
+    # Google Sign-In (flux "ID token" -- pas de redirect_uri ni de client
+    # secret nécessaires : le frontend obtient un credential JWT signé par
+    # Google, ce backend le revérifie lui-même avant de faire confiance à
+    # quoi que ce soit qu'il contient, cf. app/core/security.py).
+    GOOGLE_CLIENT_ID: str = ""
+
     # Powens (Open Banking - Bank API)
     POWENS_DOMAIN: str = "subsaver-sandbox.biapi.pro"
     POWENS_CLIENT_ID: str = ""
@@ -91,6 +97,13 @@ class Settings(BaseSettings):
             warnings.warn(
                 "TOKEN_ENCRYPTION_KEY n'est pas configuré en production : les tokens Powens seront "
                 "stockés en clair en base (cf. app/core/token_encryption.py).",
+                stacklevel=2,
+            )
+        if not self.GOOGLE_CLIENT_ID:
+            warnings.warn(
+                "GOOGLE_CLIENT_ID n'est pas configuré en production : la connexion Google sera "
+                "indisponible (POST /auth/google rejettera tous les tokens, sans risque de sécurité "
+                "puisque la vérification d'audience échoue par défaut sur une valeur vide).",
                 stacklevel=2,
             )
         return self

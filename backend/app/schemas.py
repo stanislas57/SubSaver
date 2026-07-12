@@ -32,6 +32,14 @@ class RegisterBody(BaseModel):
     first_name: str
 
 
+class GoogleAuthBody(BaseModel):
+    """Corps de POST /auth/google -- `id_token` est le credential JWT signé
+    par Google (Google Identity Services), revérifié côté serveur avant
+    toute confiance (cf. app/core/security.py::verify_google_id_token)."""
+
+    id_token: str
+
+
 class EmailBody(BaseModel):
     email: str
 

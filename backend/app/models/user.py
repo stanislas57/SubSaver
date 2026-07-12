@@ -16,7 +16,10 @@ class User(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
-    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+    # Nullable : un compte créé via Google (ou un futur fournisseur OAuth) n'a
+    # pas de mot de passe -- cf. app/api/v1/auth.py::login qui doit se garder
+    # d'appeler verify_password() sur None pour ces comptes.
+    hashed_password: Mapped[str | None] = mapped_column(String, nullable=True)
     first_name: Mapped[str] = mapped_column(String, nullable=False)
 
     language: Mapped[str] = mapped_column(String, nullable=False, default="fr")
@@ -70,6 +73,15 @@ class User(Base):
     # c'est ce champ qui déclenche la modale bloquante (CharterGate côté
     # frontend) à la première connexion, puis plus jamais une fois renseigné.
     charter_accepted_at: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    # Connexion Google (cf. app/core/security.py::verify_google_id_token) --
+    # `google_sub` est l'identifiant stable Google ("sub"), jamais l'email
+    # (qui peut changer), utilisé comme clé de correspondance principale.
+    # `auth_provider` reste "password" même après liaison d'un compte Google
+    # à un compte mot de passe existant (réconciliation) : il ne décrit que
+    # la façon dont le compte a été CRÉÉ, pas tous ses moyens de connexion.
+    google_sub: Mapped[str | None] = mapped_column(String, unique=True, nullable=True, index=True)
+    auth_provider: Mapped[str] = mapped_column(String, nullable=False, default="password")
 
     subscriptions: Mapped[list["Subscription"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"

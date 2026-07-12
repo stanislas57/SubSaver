@@ -40,6 +40,18 @@ export const authService = {
     return data;
   },
 
+  /** POST /auth/google — flux "ID token" : le credential vient de Google
+   * Identity Services (déjà signé par Google), ce backend le revérifie
+   * lui-même avant de faire confiance à quoi que ce soit qu'il contient. */
+  async loginWithGoogle(idToken: string): Promise<AuthResponse> {
+    const { data } = await axiosClient.post<AuthResponse>(
+      "/auth/google",
+      { id_token: idToken },
+      { timeout: LOGIN_TIMEOUT_MS }
+    );
+    return data;
+  },
+
   /** POST /auth/forgot-password */
   async forgotPassword(email: string): Promise<MessageResult> {
     const { data } = await axiosClient.post<MessageResult>("/auth/forgot-password", { email });

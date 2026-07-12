@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
+import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 
 const schema = z.object({
   email: z.string().email("Email invalide"),
@@ -72,6 +73,15 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
       <h2 className="font-display text-xl font-bold text-slate-50">Connexion</h2>
+
+      <GoogleLoginButton />
+
+      <div className="flex items-center gap-3 text-xs text-slate-400">
+        <span className="h-px flex-1 bg-white/10" />
+        ou
+        <span className="h-px flex-1 bg-white/10" />
+      </div>
+
       {loginError && <ErrorAlert message={loginError} compact />}
 
       <div>
