@@ -23,14 +23,6 @@ export function Footer({ onContactClick }: FooterProps) {
             <Link to="/privacy" className="hover:text-luxury-text transition-colors">
               Charte de confidentialité
             </Link>
-            <a
-              href="https://github.com/stanislas57/SubSaver"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-luxury-text transition-colors"
-            >
-              GitHub
-            </a>
           </div>
         </nav>
 
