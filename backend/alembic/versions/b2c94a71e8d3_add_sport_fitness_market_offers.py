@@ -1,7 +1,7 @@
 """add Sport & Fitness market offers (10 curated real offers)
 
 Revision ID: b2c94a71e8d3
-Revises: 81584e8b456a
+Revises: f4b8d1c6a930
 Create Date: 2026-07-12 09:00:00.000000
 
 Active la catégorie "Sport" du comparateur (jusqu'ici en COMING_SOON côté
@@ -20,8 +20,11 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 
 revision: str = 'b2c94a71e8d3'
-down_revision: Union[str, None] = 'f1e67edcbfb1'
-branch_labels: Union[str, Sequence[str], None] = Nonele = sa.table(
+down_revision: Union[str, None] = 'f4b8d1c6a930'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+market_offers_table = sa.table(
     "market_offers",
     sa.column("id", sa.String),
     sa.column("category", sa.String),
