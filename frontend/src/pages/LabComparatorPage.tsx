@@ -15,6 +15,7 @@ import { CATEGORIES, CATEGORY_DISPLAY_LABELS, SPORT_ATTRIBUTE_KEYS } from "@/typ
 import { getErrorMessage } from "@/api/axiosClient";
 import { cn } from "@/lib/utils";
 import { computeOfferBadges } from "@/lib/marketBadges";
+import { MARKET_OFFERS_FALLBACK } from "@/data/marketOffersFallback";
 
 const COMING_SOON_CATEGORIES = new Set(["Logement", "Banque & Invest", "Transport"]);
 
@@ -41,20 +42,27 @@ export function LabComparatorPage() {
 
   const currentPrice = (subscriptionsQuery.data ?? []).find((s) => s.category === category)?.price;
 
+  // Filet de sécurité : si l'API renvoie 0 offre pour une catégorie que le
+  // produit considère pourtant active (ex: DB pas encore migrée/seedée sur cet
+  // environnement), on retombe sur le catalogue de repli plutôt que d'afficher
+  // une page blanche -- une catégorie activée doit toujours lister ses offres.
+  const usingFallback = offersQuery.isSuccess && offersQuery.data.length === 0 && (MARKET_OFFERS_FALLBACK[category]?.length ?? 0) > 0;
+  const baseOffers = usingFallback ? MARKET_OFFERS_FALLBACK[category]! : (offersQuery.data ?? []);
+
   // Types d'activité disponibles pour la catégorie affichée, dérivés de
   // l'attribute optionnel `subcategory` (renseigné pour Sport, cf. migration
   // sport_attrs) -- générique : n'importe quelle catégorie qui pose cet
   // attribute voit son propre filtre "Type d'activité" apparaître.
   const activityTypes = React.useMemo(() => {
-    const values = (offersQuery.data ?? [])
+    const values = baseOffers
       .map((offer) => offer.attributes?.find((attr) => attr.key === SPORT_ATTRIBUTE_KEYS.subcategory)?.value)
       .filter((value): value is string => Boolean(value));
     return Array.from(new Set(values));
-  }, [offersQuery.data]);
+  }, [baseOffers]);
 
   // Filtres appliqués avant tri : budget max, engagement, type d'activité.
   const filteredOffers = React.useMemo(() => {
-    const offers = offersQuery.data ?? [];
+    const offers = baseOffers;
     const maxPrice = budgetMax === "" ? null : Number(budgetMax);
     return offers.filter((offer) => {
       if (maxPrice !== null && !Number.isNaN(maxPrice) && offer.price > maxPrice) return false;
@@ -67,7 +75,7 @@ export function LabComparatorPage() {
       }
       return true;
     });
-  }, [offersQuery.data, budgetMax, engagementFilter, activityType]);
+  }, [baseOffers, budgetMax, engagementFilter, activityType]);
 
   // Calculés sur la liste filtrée mais pas triée : "le moins cher" et
   // "meilleur compromis" doivent rester stables quel que soit le tri actif à
@@ -134,7 +142,7 @@ export function LabComparatorPage() {
           </div>
         </div>
 
-        {offersQuery.data && offersQuery.data.length > 0 && (
+        {baseOffers.length > 0 && (
           <div className="flex flex-wrap items-end gap-4 rounded-lg border border-slate-900/10 bg-white p-4">
             <div className="w-32">
               <label className="mb-1.5 block text-xs font-medium text-luxury-text-light">Budget max</label>
@@ -169,7 +177,7 @@ export function LabComparatorPage() {
           </div>
         )}
 
-        {offersQuery.data && offersQuery.data.length > 0 && (
+        {baseOffers.length > 0 && (
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-luxury-text">Trier par</span>
@@ -232,7 +240,7 @@ export function LabComparatorPage() {
           <ErrorAlert message={getErrorMessage(offersQuery.error, "Impossible de charger les offres.")} onRetry={() => offersQuery.refetch()} />
         )}
 
-        {offersQuery.data && offersQuery.data.length === 0 && (
+        {offersQuery.data && baseOffers.length === 0 && (
           <EmptyState
             icon={<SlidersHorizontal className="h-6 w-6" />}
             title="Aucune offre pour cette catégorie"
@@ -240,7 +248,14 @@ export function LabComparatorPage() {
           />
         )}
 
-        {offersQuery.data && offersQuery.data.length > 0 && filteredOffers.length === 0 && (
+        {baseOffers.length > 0 && !currentPrice && (
+          <p className="rounded-lg border border-luxury-gold/30 bg-luxury-gold-soft/40 px-4 py-3 text-sm text-luxury-text">
+            Aucun abonnement {(CATEGORY_DISPLAY_LABELS as Record<string, string>)[category] ?? category} détecté sur ton compte —
+            voici les meilleures offres du marché pour te lancer ou optimiser ton budget.
+          </p>
+        )}
+
+        {baseOffers.length > 0 && filteredOffers.length === 0 && (
           <EmptyState
             icon={<SlidersHorizontal className="h-6 w-6" />}
             title="Aucune offre ne correspond à ces filtres"
