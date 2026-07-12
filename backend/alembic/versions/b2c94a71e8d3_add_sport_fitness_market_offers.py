@@ -20,11 +20,8 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 
 revision: str = 'b2c94a71e8d3'
-down_revision: Union[str, None] = '81584e8b456a'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
-
-market_offers_table = sa.table(
+down_revision: Union[str, None] = 'f1e67edcbfb1'
+branch_labels: Union[str, Sequence[str], None] = Nonele = sa.table(
     "market_offers",
     sa.column("id", sa.String),
     sa.column("category", sa.String),
