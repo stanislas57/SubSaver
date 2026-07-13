@@ -1,4 +1,5 @@
 import * as React from "react";
+import { toast } from "sonner";
 import { ArrowRight, PartyPopper, History, Bell, Mail } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorAlert } from "@/components/ui/alert";
@@ -7,12 +8,47 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { useDebts, useSettleDebt, useSettlements, useSharedSubscriptionGroup } from "@/hooks/useSharedSubscription";
+import {
+  useDebts,
+  useSendDebtReminder,
+  useSettleDebt,
+  useSettlements,
+  useSharedSubscriptionGroup,
+} from "@/hooks/useSharedSubscription";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatPrice, formatDateTime } from "@/lib/format";
-import { generateMailtoLink } from "@/lib/mailto";
 import { getErrorMessage } from "@/api/axiosClient";
 import type { Currency, DebtEdge } from "@/types";
+
+const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+const REMINDER_COOLDOWN_STORAGE_KEY = "subsaver:debt-reminder-cooldowns";
+
+function reminderCooldownKey(debt: DebtEdge): string {
+  return `${debt.from_member_id}-${debt.to_member_id}`;
+}
+
+/** Anti-spam client (UX seulement -- la vraie protection est le rate
+ * limiting 10/heure côté serveur, cf. POST /family/debts/remind) : une fois
+ * une relance envoyée pour une paire débiteur/créditeur, le bouton reste
+ * désactivé 24h pour éviter les clics répétés sur la même échéance. */
+function readReminderCooldowns(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(REMINDER_COOLDOWN_STORAGE_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+function markReminderSent(debt: DebtEdge) {
+  const cooldowns = readReminderCooldowns();
+  cooldowns[reminderCooldownKey(debt)] = Date.now();
+  localStorage.setItem(REMINDER_COOLDOWN_STORAGE_KEY, JSON.stringify(cooldowns));
+}
+
+function isReminderOnCooldown(debt: DebtEdge, cooldowns: Record<string, number>): boolean {
+  const sentAt = cooldowns[reminderCooldownKey(debt)];
+  return !!sentAt && Date.now() - sentAt < REMINDER_COOLDOWN_MS;
+}
 
 const FRENCH_MONTHS = [
   "janvier", "février", "mars", "avril", "mai", "juin",
@@ -29,35 +65,23 @@ function todayLabel(): string {
   return `${now.getDate()} ${FRENCH_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
 }
 
-/** Corps du message de relance -- identique à l'aperçu affiché dans la
- * modale, pour que ce que l'utilisateur voit soit bien ce qui part une fois
- * envoyé depuis son propre client mail. */
-function buildReminderMessage(debt: DebtEdge, currency: Currency, senderFirstName?: string): string {
-  return `Bonjour ${debt.from_member_name},
-
-${senderFirstName ?? "Le gestionnaire"} te rappelle ta part sur les abonnements partagés SubSaver.
-
-Montant dû : ${formatPrice(debt.amount, currency)}
-Raison : Abonnements partagés — ${currentPeriodLabel()}
-Date de la demande : ${todayLabel()}`;
-}
-
 /** Onglet "Dettes" : qui doit combien à qui, déjà simplifié côté serveur
  * (nombre minimal de transactions), avec bouton "Marquer comme remboursé",
- * bouton "Envoyer la notification" (mailto: vers le débiteur, depuis la
- * propre adresse de l'utilisateur -- pas d'envoi serveur, cf. même logique
- * que la lettre de résiliation dans lib/mailto.ts) et historique des
- * règlements passés -- la brique centrale qui transforme le simple diviseur
- * de coût en vrai outil à la Tricount. */
+ * bouton "Envoyer la notification" (relance envoyée depuis le serveur SubSaver,
+ * cf. POST /family/debts/remind) et historique des règlements passés -- la
+ * brique centrale qui transforme le simple diviseur de coût en vrai outil à
+ * la Tricount. */
 export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
   const { user } = useAuth();
   const debtsQuery = useDebts();
   const settlementsQuery = useSettlements();
   const groupQuery = useSharedSubscriptionGroup();
   const settleDebt = useSettleDebt();
+  const sendReminder = useSendDebtReminder();
   const [debtToSettle, setDebtToSettle] = React.useState<DebtEdge | null>(null);
   const [amount, setAmount] = React.useState("");
   const [debtToRemind, setDebtToRemind] = React.useState<DebtEdge | null>(null);
+  const [cooldowns, setCooldowns] = React.useState(readReminderCooldowns);
 
   function openSettleDialog(debt: DebtEdge) {
     setDebtToSettle(debt);
@@ -78,15 +102,25 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
     setDebtToRemind(null);
   }
 
-  /** Ouvre le client mail par défaut de l'utilisateur, destinataire et
-   * message pré-remplis -- aucun appel serveur, le message part directement
-   * de l'adresse personnelle de l'utilisateur. */
+  /** Envoi serveur (POST /family/debts/remind, cf. app/api/v1/family.py) --
+   * l'e-mail part de SubSaver, pas de l'adresse personnelle de
+   * l'utilisateur. Rate limiting réel (10/heure) côté backend ; le cooldown
+   * client de 24h ci-dessous n'est qu'une protection UX complémentaire pour
+   * éviter les clics répétés sur la même échéance. */
   function confirmReminder() {
-    if (!debtToRemind || !debtorEmail) return;
-    const subject = `Règlement pour nos abonnements partagés — ${currentPeriodLabel()}`;
-    const body = buildReminderMessage(debtToRemind, currency, user?.first_name);
-    window.location.href = generateMailtoLink(debtorEmail, subject, body);
-    closeReminderDialog();
+    if (!debtToRemind) return;
+    sendReminder.mutate(
+      { member_id: debtToRemind.from_member_id, amount: debtToRemind.amount },
+      {
+        onSuccess: () => {
+          toast.success(`Relance envoyée à ${debtToRemind.from_member_name}.`);
+          markReminderSent(debtToRemind);
+          setCooldowns(readReminderCooldowns());
+          closeReminderDialog();
+        },
+        onError: (error) => toast.error(getErrorMessage(error, "Impossible d'envoyer la relance.")),
+      }
+    );
   }
 
   const debtorEmail = debtToRemind
@@ -116,6 +150,7 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
           <div className="space-y-2">
             {debtsQuery.data.map((debt) => {
               const hasEmail = !!groupQuery.data?.members.find((m) => m.id === debt.from_member_id)?.email;
+              const onCooldown = isReminderOnCooldown(debt, cooldowns);
               return (
                 <div
                   key={`${debt.from_member_id}-${debt.to_member_id}`}
@@ -134,8 +169,14 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      title={hasEmail ? `Envoyer la notification par e-mail à ${debt.from_member_name}` : "Aucune adresse e-mail enregistrée pour ce membre"}
-                      disabled={!hasEmail}
+                      title={
+                        !hasEmail
+                          ? "Aucune adresse e-mail enregistrée pour ce membre"
+                          : onCooldown
+                            ? "Relance déjà envoyée récemment -- réessaie dans moins de 24h"
+                            : `Envoyer la notification par e-mail à ${debt.from_member_name}`
+                      }
+                      disabled={!hasEmail || onCooldown}
                       onClick={() => setDebtToRemind(debt)}
                     >
                       <Bell className="h-4 w-4" />
@@ -228,7 +269,7 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
             <DialogTitle>Envoyer la notification</DialogTitle>
             <DialogDescription>
               {debtToRemind &&
-                `Ouvre ton client mail par défaut, message pré-rempli à destination de ${debtToRemind.from_member_name}${debtorEmail ? ` (${debtorEmail})` : ""}.`}
+                `Envoie un e-mail depuis SubSaver à destination de ${debtToRemind.from_member_name}${debtorEmail ? ` (${debtorEmail})` : ""}.`}
             </DialogDescription>
           </DialogHeader>
 
@@ -268,11 +309,15 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
             </div>
           )}
 
+          {sendReminder.isError && (
+            <ErrorAlert message={getErrorMessage(sendReminder.error, "Impossible d'envoyer la relance.")} compact />
+          )}
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={closeReminderDialog}>
               Annuler
             </Button>
-            <Button type="button" onClick={confirmReminder}>
+            <Button type="button" onClick={confirmReminder} loading={sendReminder.isPending}>
               <Mail className="h-4 w-4" /> Envoyer la notification
             </Button>
           </DialogFooter>
