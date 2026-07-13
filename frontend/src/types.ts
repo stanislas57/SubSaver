@@ -262,7 +262,7 @@ export const CATEGORIES = [
   "Telephonie",
   "Sport",
   "Streaming",
-  "Banque & Invest",
+  "Banque",
   "Musique",
   "Transport",
   "Autre",
@@ -343,6 +343,17 @@ export const SPORT_ATTRIBUTE_KEYS = {
   groupClasses: "group_classes",
   mobileApp: "mobile_app",
   guestInvite: "guest_invite",
+} as const;
+
+/** Clés des `MarketOfferAttribute` propres à la famille Banque (cf. migration
+ * `a4f7c9e2b6d1_add_banque_market_offers`, fonction `banking_attrs`). */
+export const BANKING_ATTRIBUTE_KEYS = {
+  bankType: "bank_type",
+  cardLevel: "card_level",
+  foreignFees: "foreign_fees",
+  eligibility: "eligibility",
+  checkCashDeposit: "check_cash_deposit",
+  insurance: "insurance",
 } as const;
 
 export const IMPORTANCE_LABELS: Record<Importance, string> = {

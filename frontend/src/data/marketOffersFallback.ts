@@ -1,6 +1,25 @@
 import type { MarketOffer } from "@/types";
 
 const CHECKED = "2026-07-12";
+const CHECKED_BANQUE = "2026-07-13";
+
+function bankingAttrs(
+  bankType: string,
+  cardLevel: string,
+  foreignFees: string,
+  eligibility: string,
+  checkCashDeposit: string,
+  insurance: string
+) {
+  return [
+    { key: "bank_type", label: "Type d'établissement", value: bankType },
+    { key: "card_level", label: "Niveau de carte", value: cardLevel },
+    { key: "foreign_fees", label: "Paiements à l'étranger", value: foreignFees },
+    { key: "eligibility", label: "Condition d'accès", value: eligibility },
+    { key: "check_cash_deposit", label: "Dépôt chèques / espèces", value: checkCashDeposit },
+    { key: "insurance", label: "Assurances incluses", value: insurance },
+  ];
+}
 
 function sportAttrs(
   subcategory: string,
@@ -420,13 +439,161 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     attributes: [{"key": "scope", "label": "Portée", "value": "National"}, {"key": "region", "label": "Région", "value": "France entière"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Zones périurbaines et rurales principalement"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Non applicable (service privé)"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Covoiturage domicile-travail subventionné"}, {"key": "free_transport", "label": "Gratuité", "value": "Variable selon bassin (souvent gratuit pour le passager)"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "Généralement pris en charge à 100% par l'employeur/la collectivité (Forfait Mobilités Durables)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (paiement à l'usage)"}],
   },
 ];
+const BANQUE_OFFERS: MarketOffer[] = [
+  // --- Banques en ligne ---
+  {
+    id: "mkt-banque-boursobank-welcom", category: "Banque", name: "BoursoBank -- Formule Welcom", price: 0.0,
+    promo: null, score: 9.2, engagement: "Sans engagement",
+    pros: ["Gratuite à vie, sans aucune condition de revenus", "Zéro frais sur les paiements et retraits dans le monde entier",
+      "Ouverture 100% en ligne en quelques minutes"],
+    cons: ["Pas d'agence physique ni de dépôt d'espèces", "Assurances moyens de paiement basiques"],
+    link: "https://www.boursobank.com/banque/compte-bancaire/formule-welcome", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Banque en ligne", "Standard (Visa Classic)", "Gratuit dans le monde entier",
+      "Aucune condition de revenus", "Chèques par courrier uniquement, pas d'espèces",
+      "Assurance moyens de paiement de base incluse"),
+  },
+  {
+    id: "mkt-banque-boursobank-ultim", category: "Banque", name: "BoursoBank -- Formule Ultim", price: 0.0,
+    promo: "Gratuite dès 2 000€/mois de revenus nets ou 5 000€ d'épargne détenue, sinon 9€/mois", score: 9.0,
+    engagement: "Sans engagement",
+    pros: ["Carte haut de gamme gratuite sous condition de revenus modérée", "Assurances voyage et médicales complètes",
+      "Paiements et retraits gratuits partout dans le monde"],
+    cons: ["9€/mois si la condition de revenus/épargne n'est pas remplie", "Pas d'agence physique"],
+    link: "https://www.boursobank.com/banque/compte-bancaire/formule-ultim", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Banque en ligne", "Premium (Visa Ultim, éq. Gold)", "Gratuit dans le monde entier",
+      "Gratuite dès 2 000€/mois de revenus nets (sinon 9€/mois)", "Chèques par courrier uniquement, pas d'espèces",
+      "Assurances voyage, médicale et annulation incluses"),
+  },
+  {
+    id: "mkt-banque-fortuneo-fosfo", category: "Banque", name: "Fortuneo -- Fosfo Mastercard", price: 0.0,
+    promo: null, score: 8.8, engagement: "Sans engagement",
+    pros: ["Gratuite à vie sans condition de revenus", "Zéro frais à l'étranger sur paiements et retraits",
+      "Application mobile complète pour la gestion du budget"],
+    cons: ["Pas d'agence physique", "Assurances limitées sur la formule de base"],
+    link: "https://www.fortuneo.fr/tarifs", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Banque en ligne", "Standard (Mastercard)", "Gratuit dans le monde entier",
+      "Aucune condition de revenus", "Chèques par courrier uniquement, pas d'espèces",
+      "Assurance moyens de paiement de base incluse"),
+  },
+  {
+    id: "mkt-banque-fortuneo-gold", category: "Banque", name: "Fortuneo -- Gold Mastercard", price: 0.0,
+    promo: "Gratuite dès 1 800€/mois de revenus nets ou 10 000€ d'épargne, sinon 6,90€/mois", score: 8.9,
+    engagement: "Sans engagement",
+    pros: ["Carte Gold gratuite sous condition de revenus accessible", "Assurances voyage et médicales complètes",
+      "Paiements et retraits gratuits partout dans le monde"],
+    cons: ["6,90€/mois si la condition de revenus/épargne n'est pas remplie", "Pas d'agence physique"],
+    link: "https://www.fortuneo.fr/tarifs", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Banque en ligne", "Premium (Mastercard Gold)", "Gratuit dans le monde entier",
+      "Gratuite dès 1 800€/mois de revenus nets (sinon 6,90€/mois)", "Chèques par courrier uniquement, pas d'espèces",
+      "Assurances voyage, médicale et annulation incluses"),
+  },
+  {
+    id: "mkt-banque-monabanq-pratiq-plus", category: "Banque", name: "Monabanq -- Formule Pratiq+", price: 2.90,
+    promo: null, score: 7.4, engagement: "Sans engagement",
+    pros: ["Dépôt de chèques et d'espèces via le réseau d'agences CIC", "Tarif accessible pour un compte avec service humain",
+      "Sans condition de revenus"],
+    cons: ["Pas gratuite contrairement aux pures banques en ligne", "2% + 2€ de commission sur les paiements hors zone euro"],
+    link: "https://www.monabanq.com/tarifs", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Banque en ligne (hybride, réseau CIC)", "Standard (Mastercard)",
+      "2% + 2€ par paiement hors zone euro", "Aucune condition de revenus", "Oui, via le réseau d'agences CIC",
+      "Assurance moyens de paiement incluse"),
+  },
+  // --- Néo-banques & FinTech mobiles ---
+  {
+    id: "mkt-banque-revolut-standard", category: "Banque", name: "Revolut -- Standard", price: 0.0,
+    promo: null, score: 8.3, engagement: "Sans engagement",
+    pros: ["Cartes virtuelles illimitées", "Change de devises au taux interbancaire en semaine",
+      "Idéal pour les paiements internationaux ponctuels"],
+    cons: ["Retraits à l'étranger limités à 200€/mois puis commission de 2%", "Pas de dépôt de chèques ni d'espèces"],
+    link: "https://www.revolut.com/fr-FR/plans/", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: 4.99, setup_fee_note: "Carte physique en option, livraison payante",
+    attributes: bankingAttrs("Néo-banque", "Standard", "Gratuit jusqu'à 200€/mois de retrait, puis 2%",
+      "Aucune condition de revenus", "Non disponible", "Protection fraude de base incluse"),
+  },
+  {
+    id: "mkt-banque-revolut-premium", category: "Banque", name: "Revolut -- Premium", price: 9.99,
+    promo: null, score: 8.6, engagement: "Sans engagement",
+    pros: ["Assurance voyage multi-trip incluse", "Retraits à l'étranger jusqu'à 400€/mois sans frais",
+      "Cashback sur une sélection de paiements"],
+    cons: ["9,99€/mois même hors utilisation à l'étranger", "Support client uniquement par chat"],
+    link: "https://www.revolut.com/fr-FR/plans/", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Néo-banque", "Premium", "Gratuit jusqu'à 400€/mois de retrait",
+      "Aucune condition de revenus", "Non disponible", "Assurance voyage multi-trip et retard bagages incluses"),
+  },
+  {
+    id: "mkt-banque-n26-standard", category: "Banque", name: "N26 -- Standard", price: 0.0,
+    promo: null, score: 8.4, engagement: "Sans engagement",
+    pros: ["Ouverture 100% mobile en moins de 10 minutes", "Paiements par carte à l'étranger sans frais",
+      "Interface et catégorisation des dépenses très lisibles"],
+    cons: ["3 retraits gratuits par mois en zone euro puis frais", "Pas de dépôt de chèques ni d'espèces"],
+    link: "https://n26.com/fr-fr/compte-bancaire", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Néo-banque", "Standard (Mastercard)", "Paiements gratuits, 3 retraits gratuits/mois puis 1,7%",
+      "Aucune condition de revenus", "Non disponible", "Non incluse sur la formule Standard"),
+  },
+  {
+    id: "mkt-banque-n26-you", category: "Banque", name: "N26 -- You", price: 9.90,
+    promo: null, score: 8.7, engagement: "Sans engagement",
+    pros: ["Retraits illimités gratuits partout dans le monde", "Assurance voyage et assistance médicale incluses",
+      "Sous-comptes Espaces pour organiser son budget courant"],
+    cons: ["9,90€/mois fixe quelle que soit l'utilisation", "Pas de dépôt de chèques ni d'espèces"],
+    link: "https://n26.com/fr-fr/compte-bancaire", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Néo-banque", "Premium", "Gratuit dans le monde entier",
+      "Aucune condition de revenus", "Non disponible", "Assurance voyage, médicale et vol de téléphone incluses"),
+  },
+  {
+    id: "mkt-banque-sumeria-lydia", category: "Banque", name: "Sumeria (Lydia) -- Compte courant", price: 0.0,
+    promo: null, score: 7.8, engagement: "Sans engagement",
+    pros: ["Paiements entre proches instantanés et gratuits", "Cartes virtuelles personnalisables",
+      "Gestion de budget en temps réel très intuitive"],
+    cons: ["2% + 1€ de commission sur les paiements hors zone euro", "Pas de dépôt de chèques ni d'espèces"],
+    link: "https://sumeria.fr/tarifs", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Néo-banque", "Standard", "2% + 1€ par paiement hors zone euro",
+      "Aucune condition de revenus, dès 16 ans", "Non disponible", "Protection fraude de base incluse"),
+  },
+  // --- Banques traditionnelles ---
+  {
+    id: "mkt-banque-bnp-esprit-libre", category: "Banque", name: "BNP Paribas -- Esprit Libre", price: 7.50,
+    promo: null, score: 6.2, engagement: "Sans engagement",
+    pros: ["Réseau d'agences physiques dans toute la France", "Conseiller dédié et support téléphonique",
+      "Dépôt de chèques et d'espèces en agence"],
+    cons: ["7,50€/mois pour une simple carte Visa Classic", "2% + 2,50€ de commission sur les paiements hors zone euro"],
+    link: "https://mabanque.bnpparibas/fr/tarifs", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Banque traditionnelle", "Standard (Visa Classic)", "2% + 2,50€ par paiement hors zone euro",
+      "Sous condition de revenus (étude de dossier)", "Oui, en agence", "Assurance moyens de paiement incluse dans le package"),
+  },
+  {
+    id: "mkt-banque-ca-globe-trotter", category: "Banque", name: "Crédit Agricole -- Formule Globe-Trotter 18-30",
+    price: 2.0, promo: "Réservée aux 18-30 ans", score: 8.1, engagement: "Sans engagement",
+    pros: ["2€/mois seulement pour les 18-30 ans", "Zéro frais de paiement et de retrait à l'étranger",
+      "Réseau d'agences physiques pour dépôt chèques/espèces"],
+    cons: ["Réservée aux 18-30 ans (bascule ensuite vers une offre standard plus chère, ~8€/mois)",
+      "Conditions variables selon la caisse régionale"],
+    link: "https://www.credit-agricole.fr/particulier/tarifs.html", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Banque traditionnelle", "Standard (Visa Classic)", "Gratuit dans le monde entier",
+      "Réservée aux 18-30 ans", "Oui, en agence", "Assurance moyens de paiement incluse"),
+  },
+];
+
 /** Catalogue de repli, servi uniquement quand l'API renvoie 0 offre pour une
  * catégorie que le produit considère pourtant active (ex: base de données pas
  * encore migrée/seedée sur cet environnement) -- une catégorie activée dans
  * `LabComparatorPage` ne doit jamais rendre une page blanche. Contenu
- * identique aux migrations backend `b2c94a71e8d3_add_sport_fitness_market_offers` et
- * `c4d8f2a913e7_add_transport_mobilite_market_offers`. */
+ * identique aux migrations backend `b2c94a71e8d3_add_sport_fitness_market_offers`,
+ * `c4d8f2a913e7_add_transport_mobilite_market_offers` et
+ * `a4f7c9e2b6d1_add_banque_market_offers`. */
 export const MARKET_OFFERS_FALLBACK: Partial<Record<string, MarketOffer[]>> = {
   Sport: SPORT_OFFERS,
   Transport: TRANSPORT_OFFERS,
+  Banque: BANQUE_OFFERS,
 };

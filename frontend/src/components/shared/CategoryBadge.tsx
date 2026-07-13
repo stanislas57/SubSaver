@@ -5,7 +5,7 @@ const CATEGORY_VARIANT: Record<string, "default" | "success" | "warning" | "dang
   Telephonie: "default",
   Sport: "success",
   Streaming: "danger",
-  "Banque & Invest": "neutral",
+  Banque: "neutral",
   Musique: "default",
   Transport: "warning",
   Autre: "neutral",

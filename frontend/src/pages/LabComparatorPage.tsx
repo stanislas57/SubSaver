@@ -11,14 +11,14 @@ import { ComparatorOfferTable } from "@/components/lab/ComparatorOfferTable";
 import { useMarketOffers } from "@/hooks/useMarket";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { useAuth } from "@/contexts/AuthContext";
-import { CATEGORIES, CATEGORY_DISPLAY_LABELS, SPORT_ATTRIBUTE_KEYS, TRANSPORT_ATTRIBUTE_KEYS, FRENCH_REGIONS } from "@/types";
+import { CATEGORIES, CATEGORY_DISPLAY_LABELS, SPORT_ATTRIBUTE_KEYS, TRANSPORT_ATTRIBUTE_KEYS, BANKING_ATTRIBUTE_KEYS, FRENCH_REGIONS } from "@/types";
 import { getErrorMessage } from "@/api/axiosClient";
 import { cn } from "@/lib/utils";
 import { computeOfferBadges } from "@/lib/marketBadges";
 import { MARKET_OFFERS_FALLBACK } from "@/data/marketOffersFallback";
 import { matchesUserLocation, withEmployerReimbursement, isFreeTransportCity } from "@/lib/transportGeo";
 
-const COMING_SOON_CATEGORIES = new Set(["Logement", "Banque & Invest"]);
+const COMING_SOON_CATEGORIES = new Set(["Logement"]);
 
 type SortMode = "relevance" | "price";
 type ViewMode = "cards" | "table";
@@ -37,6 +37,7 @@ export function LabComparatorPage() {
   const [budgetMax, setBudgetMax] = React.useState("");
   const [engagementFilter, setEngagementFilter] = React.useState<EngagementFilter>("all");
   const [activityType, setActivityType] = React.useState("all");
+  const [bankType, setBankType] = React.useState("all");
   const [geoRegion, setGeoRegion] = React.useState("");
   const [geoCity, setGeoCity] = React.useState("");
   const [employerReimbursement, setEmployerReimbursement] = React.useState(false);
@@ -60,6 +61,16 @@ export function LabComparatorPage() {
   const activityTypes = React.useMemo(() => {
     const values = baseOffers
       .map((offer) => offer.attributes?.find((attr) => attr.key === SPORT_ATTRIBUTE_KEYS.subcategory)?.value)
+      .filter((value): value is string => Boolean(value));
+    return Array.from(new Set(values));
+  }, [baseOffers]);
+
+  // Types d'établissement disponibles pour la catégorie affichée, dérivés de
+  // l'attribute optionnel `bank_type` (renseigné pour Banque, cf. migration
+  // banking_attrs) -- même logique générique qu'activityTypes ci-dessus.
+  const bankTypes = React.useMemo(() => {
+    const values = baseOffers
+      .map((offer) => offer.attributes?.find((attr) => attr.key === BANKING_ATTRIBUTE_KEYS.bankType)?.value)
       .filter((value): value is string => Boolean(value));
     return Array.from(new Set(values));
   }, [baseOffers]);
@@ -88,10 +99,14 @@ export function LabComparatorPage() {
         const offerType = offer.attributes?.find((attr) => attr.key === SPORT_ATTRIBUTE_KEYS.subcategory)?.value;
         if (offerType !== activityType) return false;
       }
+      if (bankType !== "all") {
+        const offerBankType = offer.attributes?.find((attr) => attr.key === BANKING_ATTRIBUTE_KEYS.bankType)?.value;
+        if (offerBankType !== bankType) return false;
+      }
       if (!matchesUserLocation(offer, geoRegion, geoCity)) return false;
       return true;
     });
-  }, [baseOffers, budgetMax, engagementFilter, activityType, geoRegion, geoCity]);
+  }, [baseOffers, budgetMax, engagementFilter, activityType, bankType, geoRegion, geoCity]);
 
   // Réduction légale de 50% employeur (Code du travail Art. L3261-2) sur les
   // abonnements domicile-travail éligibles -- appliquée après le filtrage,
@@ -192,6 +207,17 @@ export function LabComparatorPage() {
                 <Select value={activityType} onChange={(e) => setActivityType(e.target.value)}>
                   <option value="all">Tous</option>
                   {activityTypes.map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </Select>
+              </div>
+            )}
+            {bankTypes.length > 1 && (
+              <div className="w-56">
+                <label className="mb-1.5 block text-xs font-medium text-luxury-text-light">Type d'établissement</label>
+                <Select value={bankType} onChange={(e) => setBankType(e.target.value)}>
+                  <option value="all">Tous</option>
+                  {bankTypes.map((type) => (
                     <option key={type} value={type}>{type}</option>
                   ))}
                 </Select>
