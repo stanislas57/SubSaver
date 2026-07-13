@@ -17,7 +17,7 @@ import { CTALink } from "@/components/shared/CTALink";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useExportSubscriptionsCsv, useSubscriptions } from "@/hooks/useSubscriptions";
+import { useExportSubscriptionsExcel, useSubscriptions } from "@/hooks/useSubscriptions";
 import { STRIPE_BILLING_URL, STRIPE_CUSTOMER_PORTAL_URL } from "@/api/config";
 import { cn } from "@/lib/utils";
 import { PARTICULIER_TOOLS } from "@/lib/premiumTools";
@@ -45,11 +45,11 @@ export function PremiumPage() {
   const { user } = useAuth();
   const isPremium = !!user?.is_premium;
   const subscriptionsQuery = useSubscriptions();
-  const exportCsv = useExportSubscriptionsCsv();
+  const exportExcel = useExportSubscriptionsExcel();
   const [showExportConfirm, setShowExportConfirm] = React.useState(false);
 
-  /** Ouvre la modale de confirmation d'export CSV. Non-Premium -> Stripe. */
-  function handleExportCsvClick() {
+  /** Ouvre la modale de confirmation d'export Excel. Non-Premium -> Stripe. */
+  function handleExportExcelClick() {
     if (!isPremium) {
       window.location.href = STRIPE_BILLING_URL;
       return;
@@ -58,9 +58,9 @@ export function PremiumPage() {
   }
 
   /** Confirme l'export et le déclenche réellement. */
-  function confirmExportCsv() {
+  function confirmExportExcel() {
     setShowExportConfirm(false);
-    exportCsv.mutate();
+    exportExcel.mutate();
   }
 
   /** Redirige vers Stripe Billing/Portal selon le statut Premium. Pour
@@ -161,10 +161,10 @@ export function PremiumPage() {
         </div>
         <p className="mt-2 text-sm text-luxury-text-light">Pensé pour les indépendants et les entreprises.</p>
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Export CSV : seul outil Pro réellement fonctionnel. Verrouillé tant que
+          {/* Export Excel : seul outil Pro réellement fonctionnel. Verrouillé tant que
            * non-Premium (clic -> Stripe), débloqué instantanément une fois Premium. */}
           <BentoTile
-            onClick={handleExportCsvClick}
+            onClick={handleExportExcelClick}
             role="button"
             tabIndex={0}
             className={cn(
@@ -193,10 +193,12 @@ export function PremiumPage() {
               <Download className="h-5 w-5" />
             </div>
             <h3 className="text-base font-bold text-luxury-text">
-              {exportCsv.isPending ? "Export en cours…" : "Export CSV"}
+              {exportExcel.isPending ? "Export en cours…" : "Export Excel"}
             </h3>
             <p className="mt-1 text-sm text-luxury-text-light">
-              {isPremium ? "Exporte tous tes abonnements au format CSV." : "Fonctionnalité Premium — clique pour débloquer."}
+              {isPremium
+                ? "Classeur Excel complet : abonnements, résumé par catégorie, partage et règlements."
+                : "Fonctionnalité Premium — clique pour débloquer."}
             </p>
           </BentoTile>
 
@@ -224,20 +226,21 @@ export function PremiumPage() {
         </div>
       </div>
 
-      {/* Modale de confirmation : Export CSV */}
+      {/* Modale de confirmation : Export Excel */}
       <Dialog open={showExportConfirm} onOpenChange={setShowExportConfirm}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Générer et télécharger vos abonnements</DialogTitle>
             <DialogDescription>
-              Voulez-vous générer et télécharger l'historique de vos abonnements au format CSV ?
+              Voulez-vous générer et télécharger un classeur Excel complet de vos abonnements (résumé, catégories,
+              partage et règlements) ?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowExportConfirm(false)}>
               Annuler
             </Button>
-            <Button onClick={confirmExportCsv} loading={exportCsv.isPending}>
+            <Button onClick={confirmExportExcel} loading={exportExcel.isPending}>
               <Download className="h-4 w-4" /> Télécharger
             </Button>
           </DialogFooter>
