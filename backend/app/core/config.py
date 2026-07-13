@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     POWENS_DOMAIN: str = "subsaver-sandbox.biapi.pro"
     POWENS_CLIENT_ID: str = ""
     POWENS_CLIENT_SECRET: str = ""
-    POWENS_REDIRECT_URI: str = "https://app.subsaver.fr/subscriptions"
+    POWENS_REDIRECT_URI: str = "https://subsaver.fr/subscriptions"
     POWENS_WEBVIEW_BASE_URL: str = "https://webview.powens.com/connect"
     POWENS_STATE_TTL_MINUTES: int = 10
 

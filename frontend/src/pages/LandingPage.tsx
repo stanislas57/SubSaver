@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck,
   Landmark,
@@ -17,11 +18,6 @@ import { GoldParticles } from "@/components/auth/GoldParticles";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { formatPrice } from "@/lib/format";
 import { ConsentBanner } from "@/components/consent/ConsentBanner";
-
-/** L'app (login/register/overview...) vit désormais sur un sous-domaine dédié,
- * distinct de la landing publique sur subsaver.fr -- les CTA doivent donc
- * pointer vers une URL absolue plutôt qu'une route react-router interne. */
-const APP_URL = "https://app.subsaver.fr";
 
 const STEPS = [
   {
@@ -81,6 +77,8 @@ const DEPENSES_MOYENNES = [
  * & Or) déjà utilisé sur /login pour la cohérence visuelle, sans nouveau système
  * de design. Rendue uniquement aux visiteurs non authentifiés (cf. RootPage). */
 export function LandingPage() {
+  const navigate = useNavigate();
+
   function scrollToPreview() {
     document.getElementById("apercu")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -95,12 +93,12 @@ export function LandingPage() {
           <div className="absolute -right-32 bottom-0 h-[380px] w-[380px] rounded-full bg-luxury-sapphire/30 blur-[140px]" />
         </div>
 
-        <a
-          href={`${APP_URL}/login`}
+        <button
+          onClick={() => navigate("/login")}
           className="absolute right-6 top-6 text-sm font-medium text-slate-300 transition-colors duration-200 hover:text-luxury-gold"
         >
           Se connecter
-        </a>
+        </button>
 
         <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
           <div className="mb-8 flex items-center gap-3">
@@ -118,11 +116,7 @@ export function LandingPage() {
           </RevealText>
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
-            <CTALink
-              variant="solid"
-              onClick={() => (window.location.href = `${APP_URL}/register`)}
-              className="px-10 py-4 text-base"
-            >
+            <CTALink variant="solid" onClick={() => navigate("/register")} className="px-10 py-4 text-base">
               Essayer gratuitement
             </CTALink>
             <CTALink variant="ghost" onClick={scrollToPreview} className="text-slate-300 hover:text-luxury-gold">
@@ -321,11 +315,7 @@ export function LandingPage() {
           Rejoignez SubSaver gratuitement et découvrez en 30 secondes combien vos abonnements vous coûtent vraiment.
         </RevealText>
         <div className="mt-8 flex justify-center">
-          <CTALink
-            variant="solid"
-            onClick={() => (window.location.href = `${APP_URL}/register`)}
-            className="px-10 py-4 text-base"
-          >
+          <CTALink variant="solid" onClick={() => navigate("/register")} className="px-10 py-4 text-base">
             Essayer gratuitement, sans carte bancaire
           </CTALink>
         </div>
