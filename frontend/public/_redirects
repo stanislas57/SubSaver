@@ -1,0 +1,19 @@
+# Le frontend est un Static Site Render : pas de process Node, donc pas de
+# server.js -- ce fichier (syntaxe Netlify, supportée par Render) est le
+# seul endroit où on peut forcer une redirection avant que Render ne serve
+# les fichiers statiques. Sans ça, l'URL par défaut *.onrender.com (toujours
+# active en parallèle du domaine personnalisé) sert le même site avec un
+# localStorage (JWT) et des redirections externes (Powens, Stripe) qui ne
+# sont configurées que pour subsaver.fr -- source des bugs "je suis
+# déconnecté"/"je retombe au mauvais endroit". Les règles matchent en premier
+# tour gagnant, donc elles doivent précéder le fallback SPA ci-dessous.
+#
+# IMPORTANT : ce fichier doit vivre dans public/, pas à la racine de
+# frontend/ -- Vite ne copie que le contenu de public/ dans dist/ au build.
+# Un _redirects placé ailleurs n'est jamais servi par Render (c'est ce qui
+# s'est passé jusqu'ici : le fichier existait mais n'atteignait jamais le
+# build déployé).
+https://subserver-frontend.onrender.com/*  https://subsaver.fr/:splat  301!
+https://subsaver-frontend.onrender.com/*   https://subsaver.fr/:splat  301!
+
+/* /index.html 200
