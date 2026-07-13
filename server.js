@@ -19,13 +19,14 @@ app.use(compression());
 // site, mais avec un localStorage (JWT) et des redirections externes
 // (Powens, Stripe) qui ne sont configurées que pour subsaver.fr -- source
 // de bugs "je suis déconnecté"/"je retombe au mauvais endroit". On force
-// donc systématiquement le domaine canonique en production (le check est
-// sauté hors production pour ne pas casser `npm start` en local).
+// donc systématiquement le domaine canonique. Gate sur le host plutôt que
+// sur NODE_ENV=production : ce dernier n'est pas garanti d'être défini sur
+// le service Render réel (son env n'est pas forcément synchronisé avec
+// render.yaml), ce qui aurait fait passer ce garde-fou en no-op silencieux.
 const CANONICAL_HOST = 'subsaver.fr';
-const ALLOWED_HOSTS = new Set(['subsaver.fr', 'www.subsaver.fr']);
+const ALLOWED_HOSTS = new Set(['subsaver.fr', 'www.subsaver.fr', 'localhost', '127.0.0.1']);
 
 app.use((req, res, next) => {
-  if (process.env.NODE_ENV !== 'production') return next();
   const host = (req.headers.host || '').split(':')[0];
   if (host && !ALLOWED_HOSTS.has(host)) {
     return res.redirect(301, `https://${CANONICAL_HOST}${req.originalUrl}`);
