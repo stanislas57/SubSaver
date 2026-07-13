@@ -12,6 +12,27 @@ const PORT = process.env.PORT || 3000;
 // compressé -- gzip/brotli réduit le JS/CSS transféré d'environ 3x.
 app.use(compression());
 
+// Render sert cette app sur plusieurs hôtes en parallèle : le domaine
+// personnalisé (subsaver.fr) mais aussi l'URL *.onrender.com par défaut,
+// qui reste active même une fois le domaine perso branché. Un visiteur (ou
+// un lien indexé par Google) qui tombe sur l'URL onrender.com voit le même
+// site, mais avec un localStorage (JWT) et des redirections externes
+// (Powens, Stripe) qui ne sont configurées que pour subsaver.fr -- source
+// de bugs "je suis déconnecté"/"je retombe au mauvais endroit". On force
+// donc systématiquement le domaine canonique en production (le check est
+// sauté hors production pour ne pas casser `npm start` en local).
+const CANONICAL_HOST = 'subsaver.fr';
+const ALLOWED_HOSTS = new Set(['subsaver.fr', 'www.subsaver.fr']);
+
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV !== 'production') return next();
+  const host = (req.headers.host || '').split(':')[0];
+  if (host && !ALLOWED_HOSTS.has(host)) {
+    return res.redirect(301, `https://${CANONICAL_HOST}${req.originalUrl}`);
+  }
+  next();
+});
+
 // Servir les fichiers statiques depuis dist/. Les fichiers construits par
 // Vite dans assets/ ont un hash dans leur nom (immuables entre deux builds :
 // cache long terme sûr) ; tout le reste (index.html, sitemap, logos...) est

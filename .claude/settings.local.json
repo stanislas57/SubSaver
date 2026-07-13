@@ -1,7 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cd ~/Documents/GitHub/SubServer && pwd && ls -la)",
       "Bash(npm run *)",
       "Bash(git init *)",
       "Bash(git config *)",
