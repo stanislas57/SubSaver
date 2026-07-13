@@ -47,6 +47,13 @@ export function getErrorMessage(error: unknown, fallback = "Une erreur est surve
     if (error.code === "ECONNABORTED") {
       return "Le serveur met plus de temps que prévu à répondre (ça peut arriver après une période d'inactivité). Réessaie dans un instant.";
     }
+    // Pas de "detail" exploitable mais une vraie réponse HTTP en erreur (5xx) :
+    // typiquement la page d'erreur du proxy Render pendant un cold start (le
+    // backend gratuit se met en veille après inactivité et met 30-60s à
+    // redémarrer), pas une erreur applicative avec message utile.
+    if (error.response && error.response.status >= 500) {
+      return "Le serveur redémarre après une période d'inactivité. Réessaie dans quelques secondes.";
+    }
   }
   return fallback;
 }
