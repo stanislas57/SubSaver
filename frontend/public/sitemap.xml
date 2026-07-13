@@ -1,35 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sitemap volontairement limité aux 3 routes listées dans ROUTES de
+  frontend/scripts/prerender.mjs, les seules pages où un crawler qui
+  n'exécute pas JS (la majorité, cf. robots.txt) trouve du contenu
+  prérendu au lieu d'une coquille vide. /login, /register et
+  /forgot-password (précédemment listées ici) ne sont pas prérendues :
+  les y référencer aurait fait indexer des pages vides par Search
+  Console, un signal de qualité négatif sans aucun bénéfice de ranking
+  (ce sont des formulaires transactionnels, pas du contenu de recherche).
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://subsaver.fr/</loc>
-    <lastmod>2026-07-09</lastmod>
-    <changefreq>daily</changefreq>
+    <lastmod>2026-07-13</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://subsaver.fr/login</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://subsaver.fr/register</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://subsaver.fr/forgot-password</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://subsaver.fr/privacy</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
   </url>
   <url>
     <loc>https://subsaver.fr/guide-abonnements</loc>
     <lastmod>2026-07-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://subsaver.fr/privacy</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>
