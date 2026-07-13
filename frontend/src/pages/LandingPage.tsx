@@ -17,6 +17,7 @@ import { BentoTile } from "@/components/shared/BentoTile";
 import { GoldParticles } from "@/components/auth/GoldParticles";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { formatPrice } from "@/lib/format";
+import { ConsentBanner } from "@/components/consent/ConsentBanner";
 
 const STEPS = [
   {
@@ -329,6 +330,8 @@ export function LandingPage() {
         </div>
         <p className="mt-6">© {new Date().getFullYear()} SubSaver. Tous droits réservés.</p>
       </footer>
+
+      <ConsentBanner />
     </div>
   );
 }
