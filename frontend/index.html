@@ -39,22 +39,141 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "SubSaver",
-        "applicationCategory": "FinanceApplication",
-        "operatingSystem": "Web",
-        "description": "Application de suivi et de gestion d'abonnements : détection automatique des prélèvements récurrents, alertes sur les hausses de prix, comparateur d'offres.",
-        "url": "https://subserver-frontend.onrender.com/",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "EUR"
-        }
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://subserver-frontend.onrender.com/#organization",
+            "name": "SubSaver",
+            "url": "https://subserver-frontend.onrender.com/",
+            "logo": "https://subserver-frontend.onrender.com/logo.svg"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://subserver-frontend.onrender.com/#website",
+            "url": "https://subserver-frontend.onrender.com/",
+            "name": "SubSaver",
+            "publisher": { "@id": "https://subserver-frontend.onrender.com/#organization" },
+            "inLanguage": "fr-FR"
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://subserver-frontend.onrender.com/#software",
+            "name": "SubSaver",
+            "applicationCategory": "FinanceApplication",
+            "operatingSystem": "Web",
+            "description": "Application de suivi et de gestion d'abonnements : détection automatique des prélèvements récurrents, alertes sur les hausses de prix, comparateur d'offres.",
+            "url": "https://subserver-frontend.onrender.com/",
+            "publisher": { "@id": "https://subserver-frontend.onrender.com/#organization" },
+            "inLanguage": "fr-FR",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "EUR"
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://subserver-frontend.onrender.com/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Est-ce vraiment gratuit pour commencer ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Oui. La détection de vos abonnements et le tableau de bord de base sont accessibles sans carte bancaire. Le Premium n'est nécessaire que pour le comparateur d'offres, le partage de frais et les exports avancés."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Comment SubSaver accède-t-il à mes données bancaires ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Via Powens, établissement de paiement agréé par l'ACPR dans le respect de la directive européenne DSP2. Vos identifiants bancaires ne transitent jamais par nos serveurs, et nous n'avons aucun accès à votre IBAN ni à la possibilité d'effectuer une opération sur votre compte."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Quelle est la meilleure application pour suivre ses abonnements ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Une bonne application de suivi d'abonnements doit détecter automatiquement vos prélèvements récurrents depuis votre historique bancaire, sans ressaisie manuelle. SubSaver scanne vos transactions passées, classe chaque abonnement par catégorie et vous alerte dès qu'un prix augmente."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Comment résilier un abonnement facilement ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Une fois vos abonnements détectés, SubSaver centralise les liens et informations de résiliation de chaque service dans votre tableau de bord, pour éviter de chercher la procédure sur chaque site."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Puis-je déconnecter ma banque à tout moment ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Oui, depuis votre Profil. La déconnexion révoque immédiatement l'accès de Powens à vos données, sans démarche supplémentaire."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Que se passe-t-il si je résilie mon abonnement Premium ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Vous conservez l'accès à la détection d'abonnements et au tableau de bord ; seules les fonctionnalités Premium (comparateur, partage, exports) redeviennent verrouillées."
+                }
+              }
+            ]
+          }
+        ]
       }
     </script>
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      Contenu statique de secours pour les crawlers qui n'exécutent pas
+      JavaScript (GPTBot, ClaudeBot, PerplexityBot, etc.) : l'app étant un
+      SPA React monté côté client, ces bots ne verraient sinon qu'un <div>
+      vide. Ce bloc reprend le contenu déjà visible pour les utilisateurs
+      humains sur la LandingPage (cf. src/pages/LandingPage.tsx) — à tenir
+      synchronisé si la FAQ ou le tableau y sont modifiés.
+    -->
+    <noscript>
+      <main>
+        <h1>SubSaver — Suivi et gestion d'abonnements en France</h1>
+        <p>
+          SubSaver est une application française gratuite qui connecte votre banque,
+          détecte automatiquement tous vos abonnements récurrents et repère les
+          hausses de prix silencieuses, pour comparer, partager ou résilier vos
+          abonnements en un clic.
+        </p>
+
+        <h2>Combien coûtent réellement vos abonnements ?</h2>
+        <table>
+          <thead>
+            <tr><th>Catégorie d'abonnement</th><th>Budget moyen</th><th>Risque fréquent</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Streaming vidéo (Netflix, Disney+, Prime...)</td><td>18 € / mois</td><td>Hausses de prix fréquentes</td></tr>
+            <tr><td>Streaming musical (Spotify, Deezer...)</td><td>10 € / mois</td><td>Changement d'offre silencieux</td></tr>
+            <tr><td>Salle de sport &amp; bien-être</td><td>35 € / mois</td><td>Reconduction tacite</td></tr>
+            <tr><td>Stockage cloud &amp; logiciels</td><td>12 € / mois</td><td>Essais gratuits oubliés</td></tr>
+            <tr><td>Presse &amp; actualités en ligne</td><td>9 € / mois</td><td>Abonnements fantômes</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Questions fréquentes sur le suivi d'abonnements</h2>
+        <h3>Est-ce vraiment gratuit pour commencer ?</h3>
+        <p>Oui. La détection de vos abonnements et le tableau de bord de base sont accessibles sans carte bancaire. Le Premium n'est nécessaire que pour le comparateur d'offres, le partage de frais et les exports avancés.</p>
+        <h3>Comment SubSaver accède-t-il à mes données bancaires ?</h3>
+        <p>Via Powens, établissement de paiement agréé par l'ACPR dans le respect de la directive européenne DSP2. Vos identifiants bancaires ne transitent jamais par nos serveurs.</p>
+        <h3>Quelle est la meilleure application pour suivre ses abonnements ?</h3>
+        <p>Une bonne application de suivi d'abonnements doit détecter automatiquement vos prélèvements récurrents depuis votre historique bancaire, sans ressaisie manuelle. SubSaver scanne vos transactions passées, classe chaque abonnement par catégorie et vous alerte dès qu'un prix augmente.</p>
+        <h3>Comment résilier un abonnement facilement ?</h3>
+        <p>Une fois vos abonnements détectés, SubSaver centralise les liens et informations de résiliation de chaque service dans votre tableau de bord.</p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

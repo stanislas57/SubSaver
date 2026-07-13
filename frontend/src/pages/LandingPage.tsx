@@ -71,16 +71,6 @@ const DEPENSES_MOYENNES = [
   { categorie: "Presse & actualités en ligne", moyenne: "9 € / mois", risque: "Abonnements fantômes" },
 ];
 
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: FAQ.map((item) => ({
-    "@type": "Question",
-    name: item.q,
-    acceptedAnswer: { "@type": "Answer", text: item.a },
-  })),
-};
-
 /** Landing page publique — n'existait pas jusqu'ici, la racine "/" redirigeait
  * directement vers /overview (post-connexion). Reprend le thème Luxe (Bleu Nuit
  * & Or) déjà utilisé sur /login pour la cohérence visuelle, sans nouveau système
@@ -94,8 +84,6 @@ export function LandingPage() {
 
   return (
     <div className="bg-luxury-bg">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
-
       {/* ---------- Hero ---------- */}
       <section className="relative flex h-[100svh] flex-col items-center justify-center overflow-hidden bg-luxury-night px-6 py-0">
         <GoldParticles />
