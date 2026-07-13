@@ -1,6 +1,32 @@
 <!DOCTYPE html>
 <html lang="fr">
   <head>
+    <!--
+      Render (Static Site) ne route que sur le chemin, jamais sur le Host --
+      son fichier _redirects ne peut donc pas cibler spécifiquement
+      *.onrender.com (source obligatoirement un chemin relatif, cf. doc
+      Render). Résultat : le sous-domaine par défaut du service
+      (subserver-frontend.onrender.com, dérivé du nom du service Render, à
+      ne pas confondre avec la marque "SubSaver") reste actif en parallèle
+      de subsaver.fr et sert exactement le même bundle. Sans ce garde-fou,
+      un visiteur qui atterrit dessus (lien indexé, ancien favori) garde un
+      localStorage (JWT) et des redirections externes (Powens, Stripe) qui
+      ne sont configurées que pour subsaver.fr -- d'où les bugs "je suis
+      déconnecté"/"je retombe au mauvais endroit". Placé en tout premier
+      dans <head>, avant tout script/style, pour rediriger le plus tôt
+      possible dans le parsing -- avant même le chargement du bundle React.
+    -->
+    <script>
+      (function () {
+        var host = window.location.hostname;
+        var canonicalHosts = ["subsaver.fr", "www.subsaver.fr", "localhost", "127.0.0.1"];
+        if (canonicalHosts.indexOf(host) === -1) {
+          window.location.replace(
+            "https://subsaver.fr" + window.location.pathname + window.location.search + window.location.hash
+          );
+        }
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SubSaver – Application de Suivi d'Abonnements Gratuite</title>
