@@ -1,8 +1,8 @@
-import { SPORT_ATTRIBUTE_KEYS, TRANSPORT_ATTRIBUTE_KEYS } from "@/types";
+import { SPORT_ATTRIBUTE_KEYS, TRANSPORT_ATTRIBUTE_KEYS, BANKING_ATTRIBUTE_KEYS } from "@/types";
 import type { MarketOffer } from "@/types";
 
 export interface OfferBadge {
-  key: "max_savings" | "zero_commitment" | "home_fitness" | "free_transport" | "remote_work_friendly";
+  key: "max_savings" | "zero_commitment" | "home_fitness" | "free_transport" | "remote_work_friendly" | "zero_foreign_fees";
   label: string;
 }
 
@@ -52,6 +52,9 @@ export function computeOfferBadges(offers: MarketOffer[], currentPrice?: number 
     }
     if ((getAttribute(offer, TRANSPORT_ATTRIBUTE_KEYS.flexibleUsage) ?? "").startsWith("Oui")) {
       push(offer.id, { key: "remote_work_friendly", label: "🏡 Idéal télétravail hybride" });
+    }
+    if ((getAttribute(offer, BANKING_ATTRIBUTE_KEYS.foreignFees) ?? "").startsWith("Gratuit")) {
+      push(offer.id, { key: "zero_foreign_fees", label: "💳 Zéro frais à l'étranger" });
     }
   }
 

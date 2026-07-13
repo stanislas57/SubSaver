@@ -317,25 +317,25 @@ BANK_LABEL_ALIASES: dict[str, tuple[str, str]] = {
 # propre dict pour ne pas mélanger deux concepts différents : une empreinte
 # BANK_LABEL_ALIASES route un service tiers facturé via un intermédiaire
 # (Apple, Google...), alors qu'un frais bancaire est facturé PAR la banque
-# elle-même, quel que soit l'établissement. Catégorie "Banque & Invest" pour
+# elle-même, quel que soit l'établissement. Catégorie "Banque" pour
 # rester aligné avec la catégorie déjà utilisée côté frontend (CATEGORIES).
 # ---------------------------------------------------------------------------
 
 BANK_FEE_ALIASES: dict[str, tuple[str, str]] = {
-    "COTISATION CARTE": ("Cotisation carte bancaire", "Banque & Invest"),
-    "COTISATION CARTE BANCAIRE": ("Cotisation carte bancaire", "Banque & Invest"),
-    "COTIS CARTE": ("Cotisation carte bancaire", "Banque & Invest"),
-    "COTISATION CB": ("Cotisation carte bancaire", "Banque & Invest"),
-    "FRAIS DE TENUE DE COMPTE": ("Frais de tenue de compte", "Banque & Invest"),
-    "FRAIS TENUE DE COMPTE": ("Frais de tenue de compte", "Banque & Invest"),
-    "FRAIS TENUE COMPTE": ("Frais de tenue de compte", "Banque & Invest"),
-    "TENUE DE COMPTE": ("Frais de tenue de compte", "Banque & Invest"),
-    "FRAIS DE GESTION DE COMPTE": ("Frais de gestion de compte", "Banque & Invest"),
-    "FRAIS DE GESTION": ("Frais de gestion de compte", "Banque & Invest"),
-    "COTISATION ASSURANCE MOYENS DE PAIEMENT": ("Assurance moyens de paiement", "Banque & Invest"),
-    "ASSURANCE MOYENS DE PAIEMENT": ("Assurance moyens de paiement", "Banque & Invest"),
-    "COTISATION PACK": ("Cotisation forfait bancaire", "Banque & Invest"),
-    "COTISATION FORMULE": ("Cotisation forfait bancaire", "Banque & Invest"),
+    "COTISATION CARTE": ("Cotisation carte bancaire", "Banque"),
+    "COTISATION CARTE BANCAIRE": ("Cotisation carte bancaire", "Banque"),
+    "COTIS CARTE": ("Cotisation carte bancaire", "Banque"),
+    "COTISATION CB": ("Cotisation carte bancaire", "Banque"),
+    "FRAIS DE TENUE DE COMPTE": ("Frais de tenue de compte", "Banque"),
+    "FRAIS TENUE DE COMPTE": ("Frais de tenue de compte", "Banque"),
+    "FRAIS TENUE COMPTE": ("Frais de tenue de compte", "Banque"),
+    "TENUE DE COMPTE": ("Frais de tenue de compte", "Banque"),
+    "FRAIS DE GESTION DE COMPTE": ("Frais de gestion de compte", "Banque"),
+    "FRAIS DE GESTION": ("Frais de gestion de compte", "Banque"),
+    "COTISATION ASSURANCE MOYENS DE PAIEMENT": ("Assurance moyens de paiement", "Banque"),
+    "ASSURANCE MOYENS DE PAIEMENT": ("Assurance moyens de paiement", "Banque"),
+    "COTISATION PACK": ("Cotisation forfait bancaire", "Banque"),
+    "COTISATION FORMULE": ("Cotisation forfait bancaire", "Banque"),
 }
 
 # Marchands-parapluie de facturation centralisée : un même libellé bancaire y
@@ -886,7 +886,7 @@ if __name__ == "__main__":
         # Transaction hors fenêtre de 6 mois -> ignorée.
         RawTransaction(id="33", wording="PRLV SEPA NETFLIX.COM 442213 FR", value=-13.49, date=_iso(210)),
         # Frais bancaires : cotisation carte récurrente -> détectée comme un
-        # abonnement classique (catégorie "Banque & Invest"), jamais jetée.
+        # abonnement classique (catégorie "Banque"), jamais jetée.
         RawTransaction(id="34", wording="PRLV SEPA COTISATION CARTE VISA PREMIER", value=-3.00, date=_iso(63)),
         RawTransaction(id="35", wording="PRLV SEPA COTISATION CARTE VISA PREMIER", value=-3.00, date=_iso(33)),
         RawTransaction(id="36", wording="PRLV SEPA COTISATION CARTE VISA PREMIER", value=-3.00, date=_iso(3)),
