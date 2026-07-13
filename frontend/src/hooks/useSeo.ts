@@ -13,7 +13,7 @@ export interface SeoOptions {
   jsonLd?: Record<string, unknown>;
 }
 
-const SITE_ORIGIN = "https://subserver-frontend.onrender.com";
+const SITE_ORIGIN = "https://subsaver.fr";
 
 /** Cette SPA n'a pas de gestion de <head> par route (pas de react-helmet) --
  * ce hook met à jour le titre, la meta description et le canonical au

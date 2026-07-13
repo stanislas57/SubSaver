@@ -61,7 +61,7 @@ export function GuideAbonnementsPage() {
       publisher: { "@type": "Organization", name: "SubSaver" },
       datePublished: "2026-07-10",
       dateModified: "2026-07-10",
-      mainEntityOfPage: "https://subserver-frontend.onrender.com/guide-abonnements",
+      mainEntityOfPage: "https://subsaver.fr/guide-abonnements",
     }),
     []
   );
