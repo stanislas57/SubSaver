@@ -97,7 +97,7 @@ interface CategoryDatum {
   value: number;
 }
 
-/** Tooltip partagé BarChart/PieChart : "Logement : 123 €" avec pastille de
+/** Tooltip partagé BarChart/PieChart : "Streaming : 123 €" avec pastille de
  * couleur -- remplace le tooltip brut par défaut de recharts qui affichait
  * le nom technique du champ ("price") au lieu du nom de catégorie. */
 function CategoryTooltip({

@@ -1,7 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 
 const CATEGORY_VARIANT: Record<string, "default" | "success" | "warning" | "danger" | "neutral"> = {
-  Logement: "warning",
   Telephonie: "default",
   Sport: "success",
   Streaming: "danger",

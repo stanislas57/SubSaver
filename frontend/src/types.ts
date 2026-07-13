@@ -264,7 +264,6 @@ export interface CancellableSubscription {
 // ---------------------------------------------------------------------------
 
 export const CATEGORIES = [
-  "Logement",
   "Telephonie",
   "Sport",
   "Streaming",

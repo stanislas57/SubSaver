@@ -18,7 +18,7 @@ import { computeOfferBadges } from "@/lib/marketBadges";
 import { MARKET_OFFERS_FALLBACK } from "@/data/marketOffersFallback";
 import { matchesUserLocation, withEmployerReimbursement, isFreeTransportCity } from "@/lib/transportGeo";
 
-const COMING_SOON_CATEGORIES = new Set(["Logement"]);
+const COMING_SOON_CATEGORIES = new Set<string>();
 
 type SortMode = "relevance" | "price";
 type ViewMode = "cards" | "table";
