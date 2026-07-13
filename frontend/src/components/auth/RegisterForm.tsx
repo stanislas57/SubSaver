@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import type { GoogleCredentialPayload } from "@/lib/googleCredential";
 
 const SOCIAL_PROVIDERS = [
   { id: "apple", label: "Apple", initial: "A" },
@@ -69,8 +70,20 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
+    setValue,
+    setFocus,
     formState: { errors },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
+
+  function handleGooglePrefill(payload: GoogleCredentialPayload) {
+    setValue("email", payload.email, { shouldValidate: true });
+    setValue("firstName", payload.given_name ?? payload.name ?? "", { shouldValidate: true });
+    // Le mot de passe reste vide : contrairement à la connexion Google
+    // (LoginForm), on ne crée pas le compte automatiquement ici, donc
+    // l'utilisateur doit choisir lui-même son mot de passe avant de valider.
+    setFocus("password");
+    toast.success("Prénom et email récupérés depuis Google. Choisis ton mot de passe pour finaliser.");
+  }
 
   async function onSubmit(values: FormValues) {
     try {
@@ -93,7 +106,7 @@ export function RegisterForm() {
     <div className="space-y-5">
       <h2 className="font-display text-xl font-bold text-slate-50">Créer un compte</h2>
 
-      <GoogleLoginButton />
+      <GoogleLoginButton mode="prefill" onPrefill={handleGooglePrefill} />
       <SocialLoginRow />
 
       <div className="flex items-center gap-3 text-xs text-slate-400">
