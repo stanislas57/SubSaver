@@ -260,6 +260,41 @@ export interface CancellableSubscription {
 }
 
 // ---------------------------------------------------------------------------
+// Espace Pro / BtoB (Premium) -- Extraction comptable, Récupération de TVA,
+// Détection des frais bancaires. Cf. GET /pro/vat-recovery, GET /pro/bank-fees.
+// ---------------------------------------------------------------------------
+
+export interface VatRecoveryLine {
+  subscription_id: string;
+  display_name: string;
+  category: string;
+  price_ttc: number;
+  price_ht: number;
+  vat_amount: number;
+}
+
+export interface VatRecoveryReport {
+  vat_rate: number;
+  lines: VatRecoveryLine[];
+  total_price_ttc: number;
+  total_vat_amount: number;
+}
+
+export interface BankFee {
+  transaction_id: string;
+  label: string;
+  date: string;
+  amount: number;
+}
+
+export interface BankFeeReport {
+  bank_connected: boolean;
+  fees: BankFee[];
+  total_amount: number;
+  count: number;
+}
+
+// ---------------------------------------------------------------------------
 // Constantes partagées
 // ---------------------------------------------------------------------------
 

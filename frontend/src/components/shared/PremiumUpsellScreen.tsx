@@ -1,18 +1,22 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { CTALink } from "@/components/shared/CTALink";
-import { PARTICULIER_TOOLS } from "@/lib/premiumTools";
+import { PARTICULIER_TOOLS, BTOB_TOOLS } from "@/lib/premiumTools";
 import { STRIPE_BILLING_URL } from "@/api/config";
 
 /** Paywall contextuel : affiché à la place d'un outil Premium plutôt que de
  * rediriger instantanément et silencieusement vers Stripe (ancien comportement
  * de PremiumOnlyRoute). L'utilisateur voit ce qu'il débloquerait -- avec le
  * contenu réel de l'outil qu'il vient de cliquer, pas un message générique --
- * et ne part vers le paiement qu'en cliquant explicitement "Passer Premium". */
+ * et ne part vers le paiement qu'en cliquant explicitement "Passer Premium".
+ * Cherche dans PARTICULIER_TOOLS puis BTOB_TOOLS (les deux familles de routes
+ * derrière PremiumOnlyRoute) : couvre aussi bien /lab/* que /pro/*. */
 export function PremiumUpsellScreen() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const tool = PARTICULIER_TOOLS.find((t) => pathname.startsWith(t.path));
+  const tool =
+    PARTICULIER_TOOLS.find((t) => pathname.startsWith(t.path)) ??
+    BTOB_TOOLS.find((t) => "path" in t && pathname.startsWith(t.path));
   const Icon = tool?.icon ?? ShieldCheck;
 
   return (

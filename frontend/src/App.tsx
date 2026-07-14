@@ -58,6 +58,12 @@ const LabComparatorPage = lazy(() =>
 const LabCancellationPage = lazy(() =>
   import("@/pages/LabCancellationPage").then((m) => ({ default: m.LabCancellationPage }))
 );
+const VatRecoveryPage = lazy(() =>
+  import("@/pages/VatRecoveryPage").then((m) => ({ default: m.VatRecoveryPage }))
+);
+const BankFeesPage = lazy(() =>
+  import("@/pages/BankFeesPage").then((m) => ({ default: m.BankFeesPage }))
+);
 const ProfilePage = lazy(() =>
   import("@/pages/ProfilePage").then((m) => ({ default: m.ProfilePage }))
 );
@@ -168,6 +174,8 @@ export default function App() {
                   <Route path="/lab/comparator" element={<LabComparatorPage />} />
                   <Route path="/lab/shared" element={<SharedSubscriptionPage />} />
                   <Route path="/lab/cancellation" element={<LabCancellationPage />} />
+                  <Route path="/pro/vat-recovery" element={<VatRecoveryPage />} />
+                  <Route path="/pro/bank-fees" element={<BankFeesPage />} />
                 </Route>
               </Route>
             </Route>

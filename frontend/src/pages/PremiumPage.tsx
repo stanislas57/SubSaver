@@ -1,44 +1,66 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  Sparkles,
-  ShieldCheck,
-  Building2,
-  Receipt,
-  FileSpreadsheet,
-  Landmark,
-  Download,
-  Lock,
-} from "lucide-react";
+import { toast } from "sonner";
+import { Sparkles, ShieldCheck, Building2, Download } from "lucide-react";
 import { RevealText } from "@/components/shared/RevealText";
 import { BentoTile } from "@/components/shared/BentoTile";
 import { CTALink } from "@/components/shared/CTALink";
+import { PremiumGate } from "@/components/shared/PremiumGate";
+import { PremiumLockBadge } from "@/components/shared/PremiumLockBadge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useExportSubscriptionsExcel, useSubscriptions } from "@/hooks/useSubscriptions";
+import { useExportAccounting } from "@/hooks/usePro";
+import { getErrorMessage } from "@/api/axiosClient";
 import { STRIPE_BILLING_URL, STRIPE_CUSTOMER_PORTAL_URL } from "@/api/config";
 import { cn } from "@/lib/utils";
-import { PARTICULIER_TOOLS } from "@/lib/premiumTools";
+import { PARTICULIER_TOOLS, BTOB_TOOLS } from "@/lib/premiumTools";
 
-const PRO_TOOLS = [
-  {
-    icon: FileSpreadsheet,
-    title: "Extraction comptable",
-    description: "Exporte tes dépenses récurrentes au format compatible avec ton logiciel comptable.",
-  },
-  {
-    icon: Receipt,
-    title: "Récupération de TVA",
-    description: "Identifie automatiquement la TVA récupérable sur tes abonnements professionnels.",
-  },
-  {
-    icon: Landmark,
-    title: "Détection des frais bancaires",
-    description: "Repère les frais et commissions bancaires cachés dans tes relevés.",
-  },
-];
+const [ACCOUNTING_EXPORT_TOOL, VAT_RECOVERY_TOOL, BANK_FEES_TOOL] = BTOB_TOOLS;
+
+const EXCEL_EXPORT_FEATURE = {
+  title: "Export Excel",
+  description: "Classeur Excel complet : abonnements, résumé par catégorie, partage et règlements.",
+  benefits: [
+    "4 onglets : résumé, abonnements, partage, règlements",
+    "Généré à la demande, toujours à jour",
+    "Compatible Excel et Google Sheets",
+  ],
+};
+
+const ACCOUNTING_EXPORT_FEATURE = {
+  icon: ACCOUNTING_EXPORT_TOOL.icon,
+  title: ACCOUNTING_EXPORT_TOOL.title,
+  description: ACCOUNTING_EXPORT_TOOL.description,
+  benefits: [
+    "Format français prêt pour ton comptable (TTC / HT / TVA)",
+    "Un fichier, tous tes abonnements professionnels",
+    "Gagne du temps à chaque clôture",
+  ],
+};
+
+const VAT_RECOVERY_FEATURE = {
+  icon: VAT_RECOVERY_TOOL.icon,
+  title: VAT_RECOVERY_TOOL.title,
+  description: VAT_RECOVERY_TOOL.description,
+  benefits: [
+    "Calcul automatique de la TVA récupérable",
+    "Détail ligne par ligne, prêt à transmettre",
+    "Taux standard français appliqué automatiquement",
+  ],
+};
+
+const BANK_FEES_FEATURE = {
+  icon: BANK_FEES_TOOL.icon,
+  title: BANK_FEES_TOOL.title,
+  description: BANK_FEES_TOOL.description,
+  benefits: [
+    "Repère agios, commissions et frais de rejet",
+    "Analyse tout ton historique bancaire synchronisé",
+    "Un seul prélèvement suspect suffit à être signalé",
+  ],
+};
 
 export function PremiumPage() {
   const navigate = useNavigate();
@@ -46,21 +68,29 @@ export function PremiumPage() {
   const isPremium = !!user?.is_premium;
   const subscriptionsQuery = useSubscriptions();
   const exportExcel = useExportSubscriptionsExcel();
+  const exportAccounting = useExportAccounting();
   const [showExportConfirm, setShowExportConfirm] = React.useState(false);
 
-  /** Ouvre la modale de confirmation d'export Excel. Non-Premium -> Stripe. */
+  /** Ouvre la modale de confirmation d'export Excel (Premium uniquement --
+   * le paywall non-Premium est géré par PremiumGate autour de la tuile). */
   function handleExportExcelClick() {
-    if (!isPremium) {
-      window.location.href = STRIPE_BILLING_URL;
-      return;
-    }
     setShowExportConfirm(true);
   }
 
   /** Confirme l'export et le déclenche réellement. */
   function confirmExportExcel() {
     setShowExportConfirm(false);
-    exportExcel.mutate();
+    exportExcel.mutate(undefined, {
+      onSuccess: () => toast.success("Classeur Excel téléchargé."),
+      onError: (error) => toast.error(getErrorMessage(error)),
+    });
+  }
+
+  function handleAccountingExportClick() {
+    exportAccounting.mutate(undefined, {
+      onSuccess: () => toast.success("Extraction comptable téléchargée."),
+      onError: (error) => toast.error(getErrorMessage(error)),
+    });
   }
 
   /** Redirige vers Stripe Billing/Portal selon le statut Premium. Pour
@@ -128,19 +158,7 @@ export function PremiumPage() {
                 tabIndex={0}
                 className={cn("relative cursor-pointer", !isPremium && "opacity-70")}
               >
-                <AnimatePresence>
-                  {!isPremium && (
-                    <motion.span
-                      initial={{ opacity: 0, scale: 0.5, rotate: 15 }}
-                      animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                      exit={{ opacity: 0, scale: 0.4, rotate: -20 }}
-                      transition={{ duration: 0.35, ease: "easeOut" }}
-                      className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-luxury-night text-luxury-gold"
-                    >
-                      <Lock className="h-3.5 w-3.5" />
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+                <PremiumLockBadge show={!isPremium} />
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">
                   <Icon className="h-5 w-5" />
                 </div>
@@ -161,68 +179,108 @@ export function PremiumPage() {
         </div>
         <p className="mt-2 text-sm text-luxury-text-light">Pensé pour les indépendants et les entreprises.</p>
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Export Excel : seul outil Pro réellement fonctionnel. Verrouillé tant que
-           * non-Premium (clic -> Stripe), débloqué instantanément une fois Premium. */}
-          <BentoTile
-            onClick={handleExportExcelClick}
-            role="button"
-            tabIndex={0}
-            className={cn(
-              "relative",
-              !isPremium
-                ? "cursor-pointer opacity-70"
-                : subscriptionsQuery.data?.length
-                  ? "cursor-pointer"
-                  : "cursor-not-allowed opacity-60"
-            )}
-          >
-            <AnimatePresence>
-              {!isPremium && (
-                <motion.span
-                  initial={{ opacity: 0, scale: 0.5, rotate: 15 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  exit={{ opacity: 0, scale: 0.4, rotate: -20 }}
-                  transition={{ duration: 0.35, ease: "easeOut" }}
-                  className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-luxury-night text-luxury-gold"
-                >
-                  <Lock className="h-3.5 w-3.5" />
-                </motion.span>
-              )}
-            </AnimatePresence>
-            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">
-              <Download className="h-5 w-5" />
-            </div>
-            <h3 className="text-base font-bold text-luxury-text">
-              {exportExcel.isPending ? "Export en cours…" : "Export Excel"}
-            </h3>
-            <p className="mt-1 text-sm text-luxury-text-light">
-              {isPremium
-                ? "Classeur Excel complet : abonnements, résumé par catégorie, partage et règlements."
-                : "Fonctionnalité Premium — clique pour débloquer."}
-            </p>
-          </BentoTile>
-
-          {/* Extraction comptable / TVA / Frais bancaires : en développement,
-           * pas encore connectées à un backend -- indisponibles pour tout le
-           * monde, y compris les membres Premium. Pas de cadenas : ce badge
-           * viendrait laisser croire que Premium suffirait à les débloquer. */}
-          {PRO_TOOLS.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <BentoTile key={tool.title} className="relative opacity-70">
-                <div className="absolute right-6 top-6">
-                  <span className="rounded-full border border-slate-900/10 bg-white shadow-sm px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-luxury-text-light">
-                    En développement
-                  </span>
-                </div>
+          {/* Export Excel */}
+          <PremiumGate feature={EXCEL_EXPORT_FEATURE}>
+            {({ isPremium: unlocked, guard }) => (
+              <BentoTile
+                onClick={guard(handleExportExcelClick)}
+                role="button"
+                tabIndex={0}
+                className={cn(
+                  "relative",
+                  !unlocked ? "cursor-pointer opacity-70" : subscriptionsQuery.data?.length ? "cursor-pointer" : "cursor-not-allowed opacity-60"
+                )}
+              >
+                <PremiumLockBadge show={!unlocked} />
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">
-                  <Icon className="h-5 w-5" />
+                  <Download className="h-5 w-5" />
                 </div>
-                <h3 className="text-base font-bold text-luxury-text">{tool.title}</h3>
-                <p className="mt-1 text-sm text-luxury-text-light">{tool.description}</p>
+                <h3 className="text-base font-bold text-luxury-text">
+                  {exportExcel.isPending ? "Export en cours…" : "Export Excel"}
+                </h3>
+                <p className="mt-1 text-sm text-luxury-text-light">
+                  {unlocked
+                    ? "Classeur Excel complet : abonnements, résumé par catégorie, partage et règlements."
+                    : "Fonctionnalité Premium — clique pour débloquer."}
+                </p>
               </BentoTile>
-            );
-          })}
+            )}
+          </PremiumGate>
+
+          {/* Extraction comptable : télécharge un CSV au format français
+           * (TTC/HT/TVA) directement depuis la tuile, comme l'Export Excel. */}
+          <PremiumGate feature={ACCOUNTING_EXPORT_FEATURE}>
+            {({ isPremium: unlocked, guard }) => {
+              const Icon = ACCOUNTING_EXPORT_TOOL.icon;
+              return (
+                <BentoTile
+                  onClick={guard(handleAccountingExportClick)}
+                  role="button"
+                  tabIndex={0}
+                  className={cn("relative cursor-pointer", !unlocked && "opacity-70")}
+                >
+                  <PremiumLockBadge show={!unlocked} />
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-luxury-text">
+                    {exportAccounting.isPending ? "Génération en cours…" : ACCOUNTING_EXPORT_TOOL.title}
+                  </h3>
+                  <p className="mt-1 text-sm text-luxury-text-light">
+                    {unlocked ? ACCOUNTING_EXPORT_TOOL.description : "Fonctionnalité Premium — clique pour débloquer."}
+                  </p>
+                </BentoTile>
+              );
+            }}
+          </PremiumGate>
+
+          {/* Récupération de TVA : ouvre le rapport dédié (/pro/vat-recovery). */}
+          <PremiumGate feature={VAT_RECOVERY_FEATURE}>
+            {({ isPremium: unlocked, guard }) => {
+              const Icon = VAT_RECOVERY_TOOL.icon;
+              return (
+                <BentoTile
+                  onClick={guard(() => navigate(VAT_RECOVERY_TOOL.path))}
+                  role="button"
+                  tabIndex={0}
+                  className={cn("relative cursor-pointer", !unlocked && "opacity-70")}
+                >
+                  <PremiumLockBadge show={!unlocked} />
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-luxury-text">{VAT_RECOVERY_TOOL.title}</h3>
+                  <p className="mt-1 text-sm text-luxury-text-light">
+                    {unlocked ? VAT_RECOVERY_TOOL.description : "Fonctionnalité Premium — clique pour débloquer."}
+                  </p>
+                </BentoTile>
+              );
+            }}
+          </PremiumGate>
+
+          {/* Détection des frais bancaires : ouvre le rapport dédié (/pro/bank-fees). */}
+          <PremiumGate feature={BANK_FEES_FEATURE}>
+            {({ isPremium: unlocked, guard }) => {
+              const Icon = BANK_FEES_TOOL.icon;
+              return (
+                <BentoTile
+                  onClick={guard(() => navigate(BANK_FEES_TOOL.path))}
+                  role="button"
+                  tabIndex={0}
+                  className={cn("relative cursor-pointer", !unlocked && "opacity-70")}
+                >
+                  <PremiumLockBadge show={!unlocked} />
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-luxury-gold-soft text-luxury-gold-deep">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-luxury-text">{BANK_FEES_TOOL.title}</h3>
+                  <p className="mt-1 text-sm text-luxury-text-light">
+                    {unlocked ? BANK_FEES_TOOL.description : "Fonctionnalité Premium — clique pour débloquer."}
+                  </p>
+                </BentoTile>
+              );
+            }}
+          </PremiumGate>
         </div>
       </div>
 

@@ -29,3 +29,15 @@ def get_current_admin_user(current_user: User = Depends(get_current_user)) -> Us
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs.")
     return current_user
+
+
+def get_current_premium_user(current_user: User = Depends(get_current_user)) -> User:
+    """Garde d'accès aux fonctionnalités Premium/BtoB (cf. app/api/v1/pro.py).
+    La sécurité de ces fonctionnalités ne doit jamais reposer uniquement sur le
+    frontend (qui ne fait qu'AFFICHER un cadenas) : cette dépendance revérifie
+    le statut réel en base à chaque requête. Renvoie 402 (Payment Required) --
+    distinct du 403 de get_current_admin_user -- pour que le frontend puisse
+    distinguer "authentifié mais pas payé" de "droits insuffisants"."""
+    if not current_user.is_premium:
+        raise HTTPException(status_code=402, detail="Fonctionnalité réservée aux membres Premium.")
+    return current_user

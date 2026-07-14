@@ -338,6 +338,42 @@ class CancellableSubscriptionOut(BaseModel):
     domain: str
 
 
+class VatRecoveryLineOut(BaseModel):
+    """Une ligne du rapport de Récupération de TVA (Espace Pro/BtoB) --
+    ventilation TTC/HT/TVA d'un abonnement, cf. app/core/pro_tools.py."""
+
+    subscription_id: str
+    display_name: str
+    category: str
+    price_ttc: float
+    price_ht: float
+    vat_amount: float
+
+
+class VatRecoveryReportOut(BaseModel):
+    vat_rate: float
+    lines: list[VatRecoveryLineOut]
+    total_price_ttc: float
+    total_vat_amount: float
+
+
+class BankFeeOut(BaseModel):
+    """Un frais bancaire détecté (Espace Pro/BtoB) -- une ligne par
+    prélèvement matché, jamais regroupée, cf. app/core/pro_tools.py."""
+
+    transaction_id: str
+    label: str
+    date: str
+    amount: float
+
+
+class BankFeeReportOut(BaseModel):
+    bank_connected: bool
+    fees: list[BankFeeOut]
+    total_amount: float
+    count: int
+
+
 class ContactBody(BaseModel):
     """Corps de POST /contact (formulaire public, non authentifié). `name`,
     `email` et `subject` finissent dans des en-têtes SMTP (Reply-To, Subject)
