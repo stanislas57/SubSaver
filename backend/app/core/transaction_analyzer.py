@@ -24,9 +24,12 @@ Ordre d'évaluation pour chaque transaction (débits des 6 derniers mois) :
    abonnement plutôt que jetés par la liste noire.
 2. Liste noire (`EXCLUSION_BLACKLIST`) : dépenses récurrentes qui ne sont PAS
    des abonnements au sens de l'app -- grande distribution, loyers,
-   remboursements de prêts, impôts, virements d'épargne, retraits. Bloquées
-   ici, AVANT toute analyse de récurrence : un prélèvement "LOYER" tous les
-   30 jours ne doit jamais remonter, même avec un rythme parfait.
+   remboursements de prêts, impôts, virements d'épargne, retraits, énergie
+   (EDF, Engie...), assurances/mutuelles (AXA, MAIF...) et eau (Veolia,
+   Suez...) : des charges courantes récurrentes, pas des abonnements que
+   l'utilisateur choisit et peut résilier en un clic. Bloquées ici, AVANT
+   toute analyse de récurrence : un prélèvement "LOYER" tous les 30 jours ne
+   doit jamais remonter, même avec un rythme parfait.
 3. Heuristique marchand inconnu : ni whitelisté ni blacklisté. Retenu
    seulement si le motif est celui d'un abonnement quasi certain --
    au moins 3 occurrences, TOUS les intervalles à ~30/31 jours (tolérance
@@ -173,11 +176,6 @@ SUBSCRIPTION_WHITELIST: dict[str, tuple[str, ...]] = {
         "Orange", "Freebox", "Bouygues", "SFR", "RED Box", "Starlink", "Nordnet", "K-Net",
         "Wifirst",
     ),
-    "Énergie": (
-        "EDF", "Engie", "TotalEnergies", "Ekwateur", "Enercoop", "Mint Énergie",
-        "Ohm Énergie", "Octopus Energy", "Vattenfall", "Alpiq", "Elmy", "Barry Energy",
-        "Gaz de Bordeaux",
-    ),
     "Mobilité & Transports": (
         "Ulys", "Bip&Go", "Fulli", "Vinci Autoroutes", "Télépéage APRR", "Chargemap",
         "Freshmile", "Shell Recharge", "Tesla Premium Connectivity", "Mobilize Charge Pass",
@@ -213,14 +211,8 @@ SUBSCRIPTION_WHITELIST: dict[str, tuple[str, ...]] = {
         "Bitdefender", "Norton", "Avast", "AVG", "Kaspersky", "ESET", "Malwarebytes",
         "1Password", "Dashlane", "Keeper", "NordPass", "Bitwarden Premium",
     ),
-    "Assurances, Mutuelles & Animaux": (
-        "AXA", "MAIF", "MACIF", "GMF", "MMA", "Groupama", "Matmut", "Allianz", "SwissLife",
-        "Direct Assurance", "L'Olivier", "Lovys", "Acheel", "Alan", "AÉSIO", "Malakoff Humanis",
-        "Harmonie Mutuelle", "MGEN", "April", "Apivia", "SantéVet", "Dalma", "Assur O'Poil",
-        "Bulle Bleue", "Kozoo", "Trupanion", "Fidanimo", "Otherwise",
-    ),
     "Maison & Sécurité": (
-        "Veolia", "Suez", "SAUR", "HomeServe", "Verisure", "Sector Alarm",
+        "HomeServe", "Verisure", "Sector Alarm",
         "Orange Maison Protégée", "IKEA Family+", "Engie Home Services",
     ),
     "Investissement & Trading": (
@@ -300,7 +292,6 @@ BANK_LABEL_ALIASES: dict[str, tuple[str, str]] = {
     "TGVMAX": ("TGV Max", "Mobilité & Transports"),
     "SNCF CARTE AVANTAGE": ("SNCF Carte Avantage", "Mobilité & Transports"),
     # --- Utilitaires & Télécoms (formes bancaires longues) ---
-    "EDF CLIENTS PARTICULIERS": ("EDF", "Énergie"),
     "FREE MOBILE": ("Free", "Téléphonie Mobile"),
     "FREE HAUTDEBIT": ("Freebox", "Box Internet"),
     "FREE TELECOM": ("Free", "Téléphonie Mobile"),
@@ -384,6 +375,20 @@ EXCLUSION_BLACKLIST: dict[str, tuple[str, ...]] = {
     ),
     "Espèces": (
         "RETRAIT", "RETRAIT DAB", "DAB",
+    ),
+    "Énergie": (
+        "EDF", "ENGIE", "TOTALENERGIES", "EKWATEUR", "ENERCOOP", "MINT ENERGIE",
+        "OHM ENERGIE", "OCTOPUS ENERGY", "VATTENFALL", "ALPIQ", "ELMY", "BARRY ENERGY",
+        "GAZ DE BORDEAUX",
+    ),
+    "Eau": (
+        "VEOLIA", "SUEZ", "SAUR",
+    ),
+    "Assurances & Mutuelles": (
+        "AXA", "MAIF", "MACIF", "GMF", "MMA", "GROUPAMA", "MATMUT", "ALLIANZ", "SWISSLIFE",
+        "DIRECT ASSURANCE", "L'OLIVIER", "LOVYS", "ACHEEL", "ALAN", "AESIO", "MALAKOFF HUMANIS",
+        "HARMONIE MUTUELLE", "MGEN", "APRIL", "APIVIA", "SANTEVET", "DALMA", "ASSUR O'POIL",
+        "BULLE BLEUE", "KOZOO", "TRUPANION", "FIDANIMO", "OTHERWISE",
     ),
 }
 
@@ -577,9 +582,9 @@ def _group_by_merchant_key(
 ) -> dict[str, list[tuple[RawTransaction, str]]]:
     """Regroupe (reduce) les transactions whitelistées par Clé Marchand
     canonique -- jamais par libellé brut ni par montant. C'est ce qui garantit
-    qu'"EDF" et "EDF CLIENTS PARTICULIERS", ou deux prélèvements Prixtel à des
-    prix différents (changement de forfait), tombent dans le MÊME groupe au
-    lieu de générer un doublon."""
+    que "FREE MOBILE" et "Free", ou deux prélèvements Prixtel à des prix
+    différents (changement de forfait), tombent dans le MÊME groupe au lieu
+    de générer un doublon."""
 
     def _accumulate(
         acc: dict[str, list[tuple[RawTransaction, str]]],
@@ -840,24 +845,25 @@ if __name__ == "__main__":
         RawTransaction(id="4", wording="PRLV SEPA SPOTIFY 99001122", value=-9.99, date=_iso(3)),
         # Disney+ : dernière occurrence il y a 4 mois, aucune récurrence prouvée -> ignoré (résilié probable).
         RawTransaction(id="5", wording="PRLV SEPA DISNEY PLUS", value=-8.99, date=_iso(120)),
-        # EDF : changement de forfait (45€ -> 52€) + libellé qui varie -> UN SEUL
-        # résultat à 52€ (le plus récent), pas deux entrées en double.
-        RawTransaction(id="6", wording="PRLV SEPA EDF CLIENTS PARTICULIERS", value=-45.00, date=_iso(35)),
-        RawTransaction(id="7", wording="PRLV SEPA EDF", value=-52.00, date=_iso(5)),
-        # Prixtel : même marchand, casse différente ("prixtel" vs "PRIXTEL") -> regroupés.
+        # Prixtel : même marchand, casse différente ("prixtel" vs "PRIXTEL") et
+        # changement de forfait (8€ -> 10€) -> UN SEUL résultat, pas de doublon.
         RawTransaction(id="8", wording="prlv sepa prixtel mobile", value=-8.00, date=_iso(33)),
         RawTransaction(id="9", wording="PRLV SEPA PRIXTEL MOBILE", value=-10.00, date=_iso(3)),
         # Marchand inconnu, seulement 2 occurrences -> ignoré (il en faut 3).
         RawTransaction(id="10", wording="CB ACHAT BOULANGERIE MARTIN", value=-4.50, date=_iso(30)),
         RawTransaction(id="11", wording="CB ACHAT BOULANGERIE MARTIN", value=-4.50, date=_iso(60)),
-        # Blacklist : grande distribution, impôts, épargne, loyer -> exclus
-        # AVANT analyse de récurrence, même avec un rythme parfait.
+        # Blacklist : grande distribution, impôts, épargne, loyer, énergie,
+        # eau, assurances -> exclus AVANT analyse de récurrence, même avec un
+        # rythme parfait (charges courantes, pas des abonnements résiliables).
         RawTransaction(id="12", wording="CB LIDL PARIS 18", value=-32.10, date=_iso(4)),
         RawTransaction(id="13", wording="CB CARREFOUR PARIS 11", value=-64.20, date=_iso(4)),
         RawTransaction(id="14", wording="CB CARREFOUR PARIS 11", value=-64.20, date=_iso(34)),
         RawTransaction(id="15", wording="PRLV DGFIP IMPOT REVENU", value=-250.00, date=_iso(4)),
         RawTransaction(id="16", wording="VIR PERMANENT LIVRET A", value=-200.00, date=_iso(4)),
         RawTransaction(id="17", wording="PRLV SEPA LOYER AGENCE FONCIA", value=-750.00, date=_iso(2)),
+        RawTransaction(id="17b", wording="PRLV SEPA EDF CLIENTS PARTICULIERS", value=-52.00, date=_iso(5)),
+        RawTransaction(id="17c", wording="PRLV SEPA VEOLIA EAU", value=-18.40, date=_iso(6)),
+        RawTransaction(id="17d", wording="PRLV SEPA AXA ASSURANCES", value=-32.00, date=_iso(7)),
         # Empreintes bancaires cryptiques -> résolues et détectées (100%).
         # iCloud à 0,99 € : micro-transaction, jamais filtrée sur le montant.
         RawTransaction(id="18", wording="CB APPLE.COM/BILL 0,99EUR", value=-0.99, date=_iso(63)),
