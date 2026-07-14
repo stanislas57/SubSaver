@@ -7,15 +7,12 @@ import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/alert";
 import { CATEGORIES, IMPORTANCE_LABELS, type Subscription, type SubscriptionInput } from "@/types";
+import { guessDomain } from "@/lib/bank";
 
 const schema = z.object({
   name: z.string().min(1, "Le nom est requis").max(80),
   price: z.coerce.number().min(0, "Le prix doit être positif"),
   category: z.enum(CATEGORIES),
-  domain: z
-    .string()
-    .min(1, "Le domaine est requis (ex: netflix.com)")
-    .regex(/^[a-z0-9.-]+\.[a-z]{2,}$/i, "Domaine invalide"),
   billing_day: z.coerce.number().int().min(1, "Entre 1 et 31").max(31, "Entre 1 et 31"),
   importance: z.coerce.number().int().min(1).max(3) as unknown as z.ZodType<1 | 2 | 3>,
   start_date: z.string().optional().or(z.literal("")),
@@ -44,7 +41,6 @@ export function SubscriptionForm({ defaultValues, onSubmit, onCancel, submitting
           name: defaultValues.name,
           price: defaultValues.price,
           category: defaultValues.category as FormValues["category"],
-          domain: defaultValues.domain,
           billing_day: defaultValues.billing_day,
           importance: defaultValues.importance,
           start_date: defaultValues.start_date ?? "",
@@ -53,12 +49,21 @@ export function SubscriptionForm({ defaultValues, onSubmit, onCancel, submitting
       : { category: CATEGORIES[0], importance: 2, billing_day: 1 },
   });
 
+  /** Le domaine (utilisé uniquement pour aller chercher le logo, cf.
+   * LogoWithFallback) n'est plus un champ du formulaire -- demander à
+   * l'utilisateur de le taper pour un simple visuel n'apportait rien.
+   * À la création, on le devine depuis le nom (même heuristique que pour
+   * les abonnements détectés automatiquement via la banque, cf.
+   * subscriptionReconciliation.ts) ; à l'édition, on garde le domaine déjà
+   * stocké tel quel plutôt que de le re-deviner à chaque enregistrement,
+   * ce qui écraserait silencieusement une valeur déjà correcte si le nom
+   * n'a pas changé. */
   function submit(values: FormValues) {
     onSubmit({
       name: values.name,
       price: values.price,
       category: values.category,
-      domain: values.domain,
+      domain: defaultValues?.domain ?? guessDomain(values.name),
       billing_day: values.billing_day,
       importance: values.importance,
       start_date: values.start_date || null,
@@ -87,12 +92,6 @@ export function SubscriptionForm({ defaultValues, onSubmit, onCancel, submitting
           <Input id="billing_day" type="number" min="1" max="31" error={!!errors.billing_day} {...register("billing_day")} />
           {errors.billing_day && <p className="mt-1 text-xs text-red-600">{errors.billing_day.message}</p>}
         </div>
-      </div>
-
-      <div>
-        <Label htmlFor="domain">Domaine (pour le logo)</Label>
-        <Input id="domain" placeholder="netflix.com" error={!!errors.domain} {...register("domain")} />
-        {errors.domain && <p className="mt-1 text-xs text-red-600">{errors.domain.message}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
