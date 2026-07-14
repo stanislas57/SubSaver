@@ -19,17 +19,17 @@ export function AdminDashboardPage() {
         <div className="rounded-lg border border-slate-800 bg-slate-900 p-5">
           <Activity className="mb-3 h-5 w-5 text-amber-500" />
           <p className="text-xs uppercase tracking-wider text-slate-500">Inscrits totaux</p>
-          <p className="mt-1 text-2xl font-bold text-slate-100">{data?.total_users ?? "—"}</p>
+          <p className="mt-1 text-2xl font-bold text-slate-100">{data?.total_users ?? "-"}</p>
         </div>
         <div className="rounded-lg border border-slate-800 bg-slate-900 p-5">
           <Activity className="mb-3 h-5 w-5 text-amber-500" />
           <p className="text-xs uppercase tracking-wider text-slate-500">Conversion Premium</p>
-          <p className="mt-1 text-2xl font-bold text-slate-100">{data ? `${data.premium_conversion_rate}%` : "—"}</p>
+          <p className="mt-1 text-2xl font-bold text-slate-100">{data ? `${data.premium_conversion_rate}%` : "-"}</p>
         </div>
         <div className="rounded-lg border border-slate-800 bg-slate-900 p-5">
           <Activity className="mb-3 h-5 w-5 text-amber-500" />
           <p className="text-xs uppercase tracking-wider text-slate-500">Nouveaux aujourd'hui</p>
-          <p className="mt-1 text-2xl font-bold text-slate-100">{data?.new_users_today ?? "—"}</p>
+          <p className="mt-1 text-2xl font-bold text-slate-100">{data?.new_users_today ?? "-"}</p>
         </div>
       </div>
 

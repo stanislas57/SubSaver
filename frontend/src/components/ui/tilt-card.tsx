@@ -9,7 +9,7 @@ export interface TiltCardProps
 
 type Quick = ReturnType<typeof gsap.quickTo>;
 
-/** Carte vitrée (glassmorphism) avec tilt 3D + glare piloté par GSAP quickTo — lissage
+/** Carte vitrée (glassmorphism) avec tilt 3D + glare piloté par GSAP quickTo - lissage
  * indépendant du framerate. Entrée en cascade basée sur la position parmi ses frères.
  * Désactivée automatiquement si l'utilisateur préfère moins d'animations.
  */

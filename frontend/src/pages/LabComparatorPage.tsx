@@ -339,7 +339,7 @@ export function LabComparatorPage() {
 
         {baseOffers.length > 0 && !currentPrice && (
           <p className="rounded-lg border border-luxury-gold/30 bg-luxury-gold-soft/40 px-4 py-3 text-sm text-luxury-text">
-            Aucun abonnement {(CATEGORY_DISPLAY_LABELS as Record<string, string>)[category] ?? category} détecté sur ton compte —
+            Aucun abonnement {(CATEGORY_DISPLAY_LABELS as Record<string, string>)[category] ?? category} détecté sur ton compte -
             voici les meilleures offres du marché pour te lancer ou optimiser ton budget.
           </p>
         )}

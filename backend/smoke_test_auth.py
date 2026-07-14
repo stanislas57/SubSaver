@@ -27,12 +27,12 @@ results = []
 
 def check(label, condition, extra=""):
     status = "\033[92m✅" if condition else "\033[91m❌"
-    print(f"{status} {label}{(' — ' + extra) if extra and not condition else ''}\033[0m")
+    print(f"{status} {label}{(' - ' + extra) if extra and not condition else ''}\033[0m")
     results.append(condition)
 
 
 print("=" * 60)
-print("SMOKE TEST — Inscription simplifiée (sans vérification)")
+print("SMOKE TEST - Inscription simplifiée (sans vérification)")
 print("=" * 60)
 
 print("\n[1] POST /api/v1/auth/register")
@@ -40,7 +40,7 @@ r = client.post(
     "/api/v1/auth/register",
     json={"email": "smoketest@example.com", "password": "SecureP@ss123", "first_name": "Jean"},
 )
-print(f"  Status: {r.status_code} — {r.json()}")
+print(f"  Status: {r.status_code} - {r.json()}")
 check("Statut 201 Created", r.status_code == 201, str(r.status_code))
 check("Message de succès renvoyé", "message" in r.json())
 
@@ -58,7 +58,7 @@ access_token = auth_body.get("access_token", "")
 
 print("\n[3] GET /api/v1/users/me (avec token)")
 r3 = client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {access_token}"})
-print(f"  Status: {r3.status_code} — {r3.json()}")
+print(f"  Status: {r3.status_code} - {r3.json()}")
 check("Statut 200 OK", r3.status_code == 200, str(r3.status_code))
 check("Email correspond", r3.json().get("email") == "smoketest@example.com")
 
@@ -67,7 +67,7 @@ r4 = client.post(
     "/api/v1/auth/register",
     json={"email": "smoketest@example.com", "password": "SecureP@ss123", "first_name": "Autre"},
 )
-print(f"  Status: {r4.status_code} — {r4.json()}")
+print(f"  Status: {r4.status_code} - {r4.json()}")
 check("Rejet 400 pour email dupliqué", r4.status_code == 400, str(r4.status_code))
 
 print("\n[5] POST /api/v1/auth/login (mauvais mot de passe)")

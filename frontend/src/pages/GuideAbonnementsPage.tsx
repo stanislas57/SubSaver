@@ -11,7 +11,7 @@ const SOURCES = [
   { label: "Résiliation abonnement OCS", href: "https://www.monpetitforfait.com/comparateur-box-internet/aides/resiliation-ocs" },
   { label: "Contact Spotify", href: "https://www.spotify.com/fr/about-us/contact/" },
   { label: "Fermeture Orange Bank et Hello bank!", href: "https://www.detective-banque.fr/banque/hello-bank/fermeture-orange-bank-hello-bank/" },
-  { label: "Orange Bank — Wikipédia", href: "https://fr.wikipedia.org/wiki/Orange_Bank" },
+  { label: "Orange Bank - Wikipédia", href: "https://fr.wikipedia.org/wiki/Orange_Bank" },
   { label: "Max Jeune (ex-TGVmax)", href: "https://www.sncf-voyageurs.com/fr/voyagez-avec-nous/en-france/tarifs-grandes-lignes/abonnements-max/max-jeune/" },
   { label: "Réglo Mobile forfaits", href: "https://www.jechange.fr/telecom/reglo-mobile" },
   { label: "Webmail Free", href: "https://www.echosdunet.net/free/aide/boite-mail" },

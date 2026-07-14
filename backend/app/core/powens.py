@@ -1,4 +1,4 @@
-"""Client Powens (Open Banking, Bank API) — flux Webview (mode redirect).
+"""Client Powens (Open Banking, Bank API) - flux Webview (mode redirect).
 
 Ce module implémente uniquement les 2 premiers appels du protocole Powens :
 1. /auth/init      : crée un token utilisateur permanent (1 utilisateur SubSaver = 1 utilisateur Powens)

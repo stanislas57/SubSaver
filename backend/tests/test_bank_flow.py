@@ -6,7 +6,7 @@ transactions réelles nécessitent le parcours navigateur Webview, impossible à
 automatiser ici (cf. limite documentée en F3) : ces étapes sont donc testées au
 niveau du contrat de l'API (statuts, validations, sécurité du state) avec des
 données insérées directement en base, ce qui reste un test e2e légitime de
-notre code — seule l'authentification bancaire réelle est hors de portée d'un
+notre code - seule l'authentification bancaire réelle est hors de portée d'un
 test automatisé sans navigateur.
 """
 
@@ -31,7 +31,7 @@ def _insert_transaction(user_id: str, tx_id: str, wording: str, value: float, da
 
 
 class TestConnectUrl:
-    """F2 — appel réel à la sandbox Powens (auth/init + auth/token/code)."""
+    """F2 - appel réel à la sandbox Powens (auth/init + auth/token/code)."""
 
     def test_connect_url_returns_real_webview_url(self, client, auth_headers):
         response = client.get("/api/v1/bank/connect-url", headers=auth_headers)
@@ -66,7 +66,7 @@ class TestConnectUrl:
 
 
 class TestCallback:
-    """F2 — sécurité et contrat de /bank/callback."""
+    """F2 - sécurité et contrat de /bank/callback."""
 
     def test_callback_rejects_invalid_state(self, client, auth_headers):
         response = client.post(
@@ -130,7 +130,7 @@ class TestCallback:
 
 
 class TestTransactionsSync:
-    """F3 — synchronisation réelle contre Powens (pas de connexion bancaire réelle établie ici,
+    """F3 - synchronisation réelle contre Powens (pas de connexion bancaire réelle établie ici,
     donc l'appel doit échouer proprement en 502 plutôt que renvoyer un faux succès)."""
 
     def test_sync_without_bank_connected_returns_400(self, client, auth_headers):
@@ -152,7 +152,7 @@ class TestTransactionsSync:
 
 
 class TestDetection:
-    """F4 — algorithme de détection sur des transactions stockées."""
+    """F4 - algorithme de détection sur des transactions stockées."""
 
     def test_detects_recurring_and_ignores_noise(self, client, auth_headers, registered_user):
         uid = registered_user["user_id"]
@@ -176,7 +176,7 @@ class TestDetection:
 
 
 class TestFullFlow:
-    """F5 — bout en bout : détection -> acceptation -> abonnement réellement créé."""
+    """F5 - bout en bout : détection -> acceptation -> abonnement réellement créé."""
 
     def test_accept_detected_subscription_creates_real_subscription(self, client, auth_headers, registered_user):
         uid = registered_user["user_id"]

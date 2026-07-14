@@ -70,14 +70,14 @@ export function CharterModal() {
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Charte informatique — texte intégral</DialogTitle>
+              <DialogTitle>Charte informatique - texte intégral</DialogTitle>
             </DialogHeader>
 
             <div className="max-h-[55vh] space-y-6 overflow-y-auto pr-2 text-sm text-luxury-text-light">
               <p className="text-xs italic text-luxury-text-light">Dernière mise à jour : 7 juillet 2026</p>
 
               <section className="space-y-2">
-                <h3 className="font-semibold text-luxury-text">Article 1 — Objet et champ d'application</h3>
+                <h3 className="font-semibold text-luxury-text">Article 1 - Objet et champ d'application</h3>
                 <p>
                   La présente Charte Informatique a pour objet de définir les règles d'utilisation du service
                   SubSaver (ci-après « le Service ») ainsi que les droits et obligations de tout Utilisateur créant
@@ -88,7 +88,7 @@ export function CharterModal() {
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-semibold text-luxury-text">Article 2 — Conditions d'accès et d'inscription</h3>
+                <h3 className="font-semibold text-luxury-text">Article 2 - Conditions d'accès et d'inscription</h3>
                 <p>
                   L'accès au Service nécessite la création d'un compte nominatif, associé à une adresse e-mail
                   valide et vérifiée. L'Utilisateur s'engage à fournir des informations exactes et à jamais usurper
@@ -97,7 +97,7 @@ export function CharterModal() {
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-semibold text-luxury-text">Article 3 — Obligations de sécurité de l'Utilisateur</h3>
+                <h3 className="font-semibold text-luxury-text">Article 3 - Obligations de sécurité de l'Utilisateur</h3>
                 <p>
                   L'Utilisateur est seul responsable de la confidentialité de son mot de passe et de son adresse
                   e-mail associée. Toute action réalisée depuis un compte authentifié est présumée effectuée par son
@@ -108,7 +108,7 @@ export function CharterModal() {
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-semibold text-luxury-text">Article 4 — Usage conforme du Service</h3>
+                <h3 className="font-semibold text-luxury-text">Article 4 - Usage conforme du Service</h3>
                 <p>Sont notamment interdits, sans que cette liste soit exhaustive :</p>
                 <ul className="list-inside list-disc space-y-1">
                   <li>La rétro-ingénierie, décompilation ou tentative d'extraction du code source du Service ;</li>
@@ -128,7 +128,7 @@ export function CharterModal() {
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-semibold text-luxury-text">Article 5 — Propriété intellectuelle</h3>
+                <h3 className="font-semibold text-luxury-text">Article 5 - Propriété intellectuelle</h3>
                 <p>
                   Le code source, la marque, les interfaces graphiques et l'ensemble des éléments constitutifs du
                   Service demeurent la propriété exclusive de SubSaver. Aucune disposition de la présente Charte ne
@@ -139,7 +139,7 @@ export function CharterModal() {
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-semibold text-luxury-text">Article 6 — Disponibilité et maintenance</h3>
+                <h3 className="font-semibold text-luxury-text">Article 6 - Disponibilité et maintenance</h3>
                 <p>
                   SubSaver s'efforce d'assurer une disponibilité continue du Service mais ne garantit pas une
                   disponibilité ininterrompue. Des interruptions programmées (maintenance) ou exceptionnelles
@@ -149,7 +149,7 @@ export function CharterModal() {
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-semibold text-luxury-text">Article 7 — Responsabilités et limites</h3>
+                <h3 className="font-semibold text-luxury-text">Article 7 - Responsabilités et limites</h3>
                 <p>
                   SubSaver agrège et présente des informations financières à titre purement informatif à partir des
                   données bancaires de l'Utilisateur. Ces informations ne constituent en aucun cas un conseil
@@ -159,7 +159,7 @@ export function CharterModal() {
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-semibold text-luxury-text">Article 8 — Sanctions en cas de manquement</h3>
+                <h3 className="font-semibold text-luxury-text">Article 8 - Sanctions en cas de manquement</h3>
                 <p>
                   Tout manquement à la présente Charte peut entraîner, selon sa gravité, un avertissement, une
                   suspension temporaire ou une résiliation immédiate et sans préavis du compte de l'Utilisateur
@@ -168,7 +168,7 @@ export function CharterModal() {
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-semibold text-luxury-text">Article 9 — Droit applicable et juridiction</h3>
+                <h3 className="font-semibold text-luxury-text">Article 9 - Droit applicable et juridiction</h3>
                 <p>
                   La présente Charte est soumise au droit français. Tout litige relatif à son interprétation ou à son
                   exécution relève de la compétence exclusive des tribunaux français, sauf disposition légale
@@ -177,7 +177,7 @@ export function CharterModal() {
               </section>
 
               <section className="space-y-2">
-                <h3 className="font-semibold text-luxury-text">Article 10 — Acceptation</h3>
+                <h3 className="font-semibold text-luxury-text">Article 10 - Acceptation</h3>
                 <p>
                   En cliquant sur « J'accepte la charte informatique », l'Utilisateur reconnaît avoir lu, compris et
                   accepté sans réserve l'intégralité des dispositions de la présente Charte.

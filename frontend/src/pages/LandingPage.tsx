@@ -23,7 +23,7 @@ const STEPS = [
   {
     icon: Landmark,
     title: "Connectez votre banque",
-    detail: "Via Powens, agréé ACPR — en toute sécurité, en 30 secondes.",
+    detail: "Via Powens, agréé ACPR - en toute sécurité, en 30 secondes.",
   },
   {
     icon: ScanSearch,
@@ -72,7 +72,7 @@ const DEPENSES_MOYENNES = [
   { categorie: "Presse & actualités en ligne", moyenne: "9 € / mois", risque: "Abonnements fantômes" },
 ];
 
-/** Landing page publique — n'existait pas jusqu'ici, la racine "/" redirigeait
+/** Landing page publique - n'existait pas jusqu'ici, la racine "/" redirigeait
  * directement vers /overview (post-connexion). Reprend le thème Luxe (Bleu Nuit
  * & Or) déjà utilisé sur /login pour la cohérence visuelle, sans nouveau système
  * de design. Rendue uniquement aux visiteurs non authentifiés (cf. RootPage). */
@@ -111,7 +111,7 @@ export function LandingPage() {
           </RevealText>
           <RevealText className="mt-5 max-w-xl text-lg text-slate-300">
             SubSaver est l'application qui connecte votre banque, détecte automatiquement tous vos abonnements
-            récurrents et repère les hausses de prix silencieuses — pour que vous puissiez comparer, partager ou
+            récurrents et repère les hausses de prix silencieuses - pour que vous puissiez comparer, partager ou
             résilier en un clic, sans paperasse.
           </RevealText>
 
@@ -149,7 +149,7 @@ export function LandingPage() {
             Un tableau de bord clair pour gérer tous vos abonnements
           </RevealText>
           <RevealText className="mx-auto mt-4 max-w-xl text-luxury-text-light">
-            Aperçu illustratif de l'interface — vos propres montants et abonnements récurrents apparaissent dès la
+            Aperçu illustratif de l'interface - vos propres montants et abonnements récurrents apparaissent dès la
             première synchronisation bancaire.
           </RevealText>
         </div>
@@ -224,7 +224,7 @@ export function LandingPage() {
               </div>
               <h3 className="text-base font-bold text-luxury-text">Hausses de prix silencieuses</h3>
               <p className="mt-1 text-sm text-luxury-text-light">
-                Les abonnements augmentent rarement d'un coup — SubSaver compare chaque prélèvement au précédent.
+                Les abonnements augmentent rarement d'un coup - SubSaver compare chaque prélèvement au précédent.
               </p>
             </BentoTile>
             <BentoTile>
@@ -281,7 +281,7 @@ export function LandingPage() {
             </table>
           </div>
           <p className="mt-4 text-center text-xs text-luxury-text-light">
-            Estimations à titre indicatif — SubSaver calcule vos montants réels dès la connexion de votre banque.
+            Estimations à titre indicatif - SubSaver calcule vos montants réels dès la connexion de votre banque.
           </p>
         </div>
       </section>
@@ -338,7 +338,7 @@ export function LandingPage() {
         </div>
         {/* Raison sociale + statut EI exigés par la LCEN (Art. 6-III) sur toute page du site. */}
         <p className="mt-6">
-          © {new Date().getFullYear()} SubSaver — Stanislas Humbert, EI (Entrepreneur Individuel). Tous droits
+          © {new Date().getFullYear()} SubSaver - Stanislas Humbert, EI (Entrepreneur Individuel). Tous droits
           réservés.
         </p>
       </footer>

@@ -1,5 +1,5 @@
 // ============================================================================
-// SubSaver — Types partagés Frontend
+// SubSaver - Types partagés Frontend
 // Miroir strict des schémas Pydantic exposés par l'API FastAPI (/api/v1).
 // ============================================================================
 
@@ -44,7 +44,7 @@ export interface MessageResult {
   message: string;
 }
 
-/** Corps de PATCH /users/me — tous les champs sont optionnels. */
+/** Corps de PATCH /users/me - tous les champs sont optionnels. */
 export interface ProfileUpdatePayload {
   first_name?: string;
   language?: Language;
@@ -469,7 +469,7 @@ export interface AdminUsersPage {
   page_size: number;
 }
 
-/** Corps de PATCH /admin/users/{id} — tous les champs sont optionnels. */
+/** Corps de PATCH /admin/users/{id} - tous les champs sont optionnels. */
 export interface AdminUserUpdateInput {
   email?: string;
   first_name?: string;

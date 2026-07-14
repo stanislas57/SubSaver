@@ -72,10 +72,10 @@ export function SubscriptionSplitModal({ subscriptionId, currency, onOpenChange 
     validationMessage = "Sélectionne au moins un membre.";
   } else if (mode === "percentage" && Math.abs(sumValues - 100) > 0.5) {
     isValid = false;
-    validationMessage = `${sumValues.toFixed(1)}% réparti — il manque ${(100 - sumValues).toFixed(1)}% pour atteindre 100%.`;
+    validationMessage = `${sumValues.toFixed(1)}% réparti - il manque ${(100 - sumValues).toFixed(1)}% pour atteindre 100%.`;
   } else if (mode === "fixed" && Math.abs(sumValues - price) > 0.5) {
     isValid = false;
-    validationMessage = `${formatPrice(sumValues, currency)} réparti sur ${formatPrice(price, currency)} — il manque ${formatPrice(price - sumValues, currency)}.`;
+    validationMessage = `${formatPrice(sumValues, currency)} réparti sur ${formatPrice(price, currency)} - il manque ${formatPrice(price - sumValues, currency)}.`;
   }
 
   function handleSave() {
@@ -103,7 +103,7 @@ export function SubscriptionSplitModal({ subscriptionId, currency, onOpenChange 
         <DialogHeader>
           <DialogTitle>Répartir {splitQuery.data?.display_name ?? "cet abonnement"}</DialogTitle>
           <DialogDescription>
-            {splitQuery.data && `${formatPrice(splitQuery.data.price, currency)} / mois — choisis qui participe et comment.`}
+            {splitQuery.data && `${formatPrice(splitQuery.data.price, currency)} / mois - choisis qui participe et comment.`}
           </DialogDescription>
         </DialogHeader>
 

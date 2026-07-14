@@ -14,7 +14,7 @@ export interface BankConsentModalProps {
 const TIPS = [
   {
     icon: TrendingUp,
-    text: "Une hausse de prix passe rarement inaperçue sur un relevé — SubSaver compare chaque prélèvement à son historique pour la repérer.",
+    text: "Une hausse de prix passe rarement inaperçue sur un relevé - SubSaver compare chaque prélèvement à son historique pour la repérer.",
   },
   {
     icon: Ghost,
@@ -22,7 +22,7 @@ const TIPS = [
   },
   {
     icon: Lock,
-    text: "Aucune donnée n'est partagée avec un tiers pendant l'analyse — tout reste entre ta banque et SubSaver.",
+    text: "Aucune donnée n'est partagée avec un tiers pendant l'analyse - tout reste entre ta banque et SubSaver.",
   },
   {
     icon: ScanSearch,

@@ -5,7 +5,7 @@ interface FooterProps {
   onContactClick?: () => void;
 }
 
-/** Footer minimaliste, discret, style Apple — liens légaux, contact, réseaux.
+/** Footer minimaliste, discret, style Apple - liens légaux, contact, réseaux.
  * onContactClick permet d'ouvrir une modale de contact depuis la page. */
 export function Footer({ onContactClick }: FooterProps) {
   return (
@@ -32,7 +32,7 @@ export function Footer({ onContactClick }: FooterProps) {
         {/* Mention légale -- raison sociale + statut EI exigés par la LCEN
          * (Art. 6-III) sur toute page du site, pas seulement /mentions-legales. */}
         <p className="text-xs text-luxury-text-light/70">
-          © {new Date().getFullYear()} SubSaver — Stanislas Humbert, EI (Entrepreneur Individuel). Tous droits
+          © {new Date().getFullYear()} SubSaver - Stanislas Humbert, EI (Entrepreneur Individuel). Tous droits
           réservés.
         </p>
       </div>

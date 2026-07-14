@@ -21,7 +21,7 @@ export default {
         danger: "#ef4444",
         warning: "#f59e0b",
 
-        // Thème "Luxe" — Bleu Nuit & Or sur fond clair
+        // Thème "Luxe" - Bleu Nuit & Or sur fond clair
         "luxury-bg": "#f8fafc",            // Gris perle (fond app)
         "luxury-card": "#ffffff",           // Blanc pur (cartes Bento)
         "luxury-night": "#0A1128",          // Bleu Nuit profond (fond login, titres forts)

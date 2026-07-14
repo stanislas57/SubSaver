@@ -28,7 +28,7 @@ export const sharedSubscriptionService = {
     return data;
   },
 
-  /** DELETE /family/members/{id} — 204 No Content */
+  /** DELETE /family/members/{id} - 204 No Content */
   async removeMember(memberId: string): Promise<void> {
     await axiosClient.delete(`/family/members/${memberId}`);
   },
@@ -45,7 +45,7 @@ export const sharedSubscriptionService = {
     return data;
   },
 
-  /** PUT /family/shared-subscriptions — remplace toute la sélection. */
+  /** PUT /family/shared-subscriptions - remplace toute la sélection. */
   async setSharedSubscriptions(subscriptionIds: string[]): Promise<ShareableSubscription[]> {
     const { data } = await axiosClient.put<ShareableSubscription[]>("/family/shared-subscriptions", {
       subscription_ids: subscriptionIds,
@@ -65,7 +65,7 @@ export const sharedSubscriptionService = {
     return data;
   },
 
-  /** GET /family/debts — déjà simplifié (nombre minimal de transactions). */
+  /** GET /family/debts - déjà simplifié (nombre minimal de transactions). */
   async getDebts(): Promise<DebtEdge[]> {
     const { data } = await axiosClient.get<DebtEdge[]>("/family/debts");
     return data;
@@ -83,7 +83,7 @@ export const sharedSubscriptionService = {
     return data;
   },
 
-  /** POST /family/debts/remind — envoi serveur, limité à 10/heure côté backend. */
+  /** POST /family/debts/remind - envoi serveur, limité à 10/heure côté backend. */
   async sendReminder(input: SendReminderInput): Promise<{ message: string }> {
     const { data } = await axiosClient.post<{ message: string }>("/family/debts/remind", input);
     return data;

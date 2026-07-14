@@ -226,7 +226,7 @@ export function AnalyticsPage() {
   }, [stats.monthlyTotal]);
 
   // Données pour LineChart : évolution des 6 derniers mois (simulée mais
-  // DÉTERMINISTE — sinusoïde douce, pas de Math.random qui provoquait un
+  // DÉTERMINISTE - sinusoïde douce, pas de Math.random qui provoquait un
   // graphique différent à chaque re-render et des animations parasites)
   const evolutionData = useMemo(() => {
     const data = [];

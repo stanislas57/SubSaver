@@ -71,7 +71,7 @@ export function BankSecurityAssuranceModal({ open, onOpenChange, onConfirm, onLa
           </div>
           <DialogTitle className="text-xl">Une connexion blindée et certifiée</DialogTitle>
           <DialogDescription>
-            Avant de continuer, voici exactement ce que SubSaver peut voir — et surtout, ce qu'il ne pourra jamais voir
+            Avant de continuer, voici exactement ce que SubSaver peut voir - et surtout, ce qu'il ne pourra jamais voir
             ni faire.
           </DialogDescription>
         </DialogHeader>

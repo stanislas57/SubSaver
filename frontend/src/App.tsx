@@ -20,7 +20,7 @@ const AdminLayout = lazy(() =>
 );
 
 // La landing page reste en import statique : c'est la route "/" servie aux
-// visiteurs non connectés (SEO, LCP) — elle doit être prête dans le bundle
+// visiteurs non connectés (SEO, LCP) - elle doit être prête dans le bundle
 // initial sans aller-retour réseau supplémentaire.
 import { LandingPage } from "@/pages/LandingPage";
 

@@ -27,7 +27,7 @@ export function BankConnectPromptModal({ open, onOpenChange, onConnect, onSkip, 
           </div>
           <DialogTitle className="text-xl">Trouvons vos abonnements cachés</DialogTitle>
           <DialogDescription>
-            Connectez votre banque pour que SubSaver repère automatiquement vos prélèvements récurrents — et vous
+            Connectez votre banque pour que SubSaver repère automatiquement vos prélèvements récurrents - et vous
             propose des économies concrètes en quelques secondes.
           </DialogDescription>
         </DialogHeader>

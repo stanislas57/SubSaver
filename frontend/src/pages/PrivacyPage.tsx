@@ -14,7 +14,7 @@ import { useSeo } from "@/hooks/useSeo";
  * lire avant de s'inscrire -- cf. App.tsx. */
 export function PrivacyPage() {
   useSeo({
-    title: "Politique de confidentialité — SubSaver",
+    title: "Politique de confidentialité - SubSaver",
     description:
       "Comment SubSaver collecte, protège et utilise vos données personnelles et bancaires : RGPD, DSP2, durées de conservation et vos droits.",
     path: "/privacy",

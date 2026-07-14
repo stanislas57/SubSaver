@@ -2,8 +2,8 @@
 
 Application de gestion d'abonnements (mode famille, comparateur d'offres, connexion bancaire simulée).
 
-- **Frontend** : React 19 + Vite + TypeScript + Tailwind + React Query — `subsaver/`
-- **Backend** : FastAPI + SQLAlchemy + Alembic + PostgreSQL — `subsaver-backend/`
+- **Frontend** : React 19 + Vite + TypeScript + Tailwind + React Query - `subsaver/`
+- **Backend** : FastAPI + SQLAlchemy + Alembic + PostgreSQL - `subsaver-backend/`
 
 ---
 
@@ -50,7 +50,7 @@ L'API est disponible sur `http://localhost:8000`, documentation interactive sur 
 | Variable | Description | Défaut |
 |---|---|---|
 | `DATABASE_URL` | URL de connexion PostgreSQL | `postgresql+psycopg2://postgres:postgres@localhost:5432/subsaver` |
-| `SECRET_KEY` | Clé de signature JWT — **à changer en production** | `change-me-in-production` |
+| `SECRET_KEY` | Clé de signature JWT - **à changer en production** | `change-me-in-production` |
 | `ALGORITHM` | Algorithme JWT | `HS256` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Durée de validité du token | `10080` (7 jours) |
 | `CORS_ORIGINS` | Origines autorisées (JSON list) | `["http://localhost:5173"]` |
@@ -84,13 +84,13 @@ npm run preview  # sert le build de production localement
 Trois terminaux :
 
 ```bash
-# Terminal 1 — base de données (si non déjà lancée en service/Docker)
+# Terminal 1 - base de données (si non déjà lancée en service/Docker)
 sudo service postgresql start
 
-# Terminal 2 — backend
+# Terminal 2 - backend
 cd subsaver-backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000
 
-# Terminal 3 — frontend
+# Terminal 3 - frontend
 cd subsaver && npm run dev
 ```
 

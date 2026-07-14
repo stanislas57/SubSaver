@@ -201,7 +201,7 @@ export function PremiumPage() {
                 <p className="mt-1 text-sm text-luxury-text-light">
                   {unlocked
                     ? "Classeur Excel complet : abonnements, résumé par catégorie, partage et règlements."
-                    : "Fonctionnalité Premium — clique pour débloquer."}
+                    : "Fonctionnalité Premium - clique pour débloquer."}
                 </p>
               </BentoTile>
             )}
@@ -227,7 +227,7 @@ export function PremiumPage() {
                     {exportAccounting.isPending ? "Génération en cours…" : ACCOUNTING_EXPORT_TOOL.title}
                   </h3>
                   <p className="mt-1 text-sm text-luxury-text-light">
-                    {unlocked ? ACCOUNTING_EXPORT_TOOL.description : "Fonctionnalité Premium — clique pour débloquer."}
+                    {unlocked ? ACCOUNTING_EXPORT_TOOL.description : "Fonctionnalité Premium - clique pour débloquer."}
                   </p>
                 </BentoTile>
               );
@@ -251,7 +251,7 @@ export function PremiumPage() {
                   </div>
                   <h3 className="text-base font-bold text-luxury-text">{VAT_RECOVERY_TOOL.title}</h3>
                   <p className="mt-1 text-sm text-luxury-text-light">
-                    {unlocked ? VAT_RECOVERY_TOOL.description : "Fonctionnalité Premium — clique pour débloquer."}
+                    {unlocked ? VAT_RECOVERY_TOOL.description : "Fonctionnalité Premium - clique pour débloquer."}
                   </p>
                 </BentoTile>
               );
@@ -275,7 +275,7 @@ export function PremiumPage() {
                   </div>
                   <h3 className="text-base font-bold text-luxury-text">{BANK_FEES_TOOL.title}</h3>
                   <p className="mt-1 text-sm text-luxury-text-light">
-                    {unlocked ? BANK_FEES_TOOL.description : "Fonctionnalité Premium — clique pour débloquer."}
+                    {unlocked ? BANK_FEES_TOOL.description : "Fonctionnalité Premium - clique pour débloquer."}
                   </p>
                 </BentoTile>
               );

@@ -213,7 +213,7 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
             {settlementsQuery.data.map((s) => (
               <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-surface px-3 py-2 text-xs">
                 <span className="text-text-muted">
-                  {formatDateTime(s.created_at)} — <span className="font-medium text-text-main">{s.from_member_name}</span> a
+                  {formatDateTime(s.created_at)} - <span className="font-medium text-text-main">{s.from_member_name}</span> a
                   remboursé <span className="font-medium text-text-main">{s.to_member_name}</span>
                 </span>
                 <span className="font-semibold text-text-main">{formatPrice(s.amount, currency)}</span>
@@ -286,7 +286,7 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
                 </div>
                 <div className="col-span-2">
                   <p className="text-xs text-text-muted">Raison</p>
-                  <p className="font-medium text-text-main">Abonnements partagés — {currentPeriodLabel()}</p>
+                  <p className="font-medium text-text-main">Abonnements partagés - {currentPeriodLabel()}</p>
                 </div>
               </div>
 
@@ -300,7 +300,7 @@ export function SharedSubscriptionDebts({ currency }: { currency: Currency }) {
                   <p className="mt-2">
                     Montant dû : <strong>{formatPrice(debtToRemind.amount, currency)}</strong>
                     <br />
-                    Raison : Abonnements partagés — {currentPeriodLabel()}
+                    Raison : Abonnements partagés - {currentPeriodLabel()}
                     <br />
                     Date de la demande : {todayLabel()}
                   </p>

@@ -23,31 +23,31 @@ export const bankService = {
     return data;
   },
 
-  /** GET /bank/connect-url — récupère l'URL de la Webview Powens à ouvrir. */
+  /** GET /bank/connect-url - récupère l'URL de la Webview Powens à ouvrir. */
   async getConnectUrl(): Promise<BankConnectUrl> {
     const { data } = await axiosClient.get<BankConnectUrl>("/bank/connect-url");
     return data;
   },
 
-  /** POST /bank/callback — à appeler avec les query params reçus au retour de la Webview. */
+  /** POST /bank/callback - à appeler avec les query params reçus au retour de la Webview. */
   async handleCallback(input: BankCallbackInput): Promise<BankCallbackResult> {
     const { data } = await axiosClient.post<BankCallbackResult>("/bank/callback", input);
     return data;
   },
 
-  /** POST /bank/transactions/sync — récupère les transactions brutes depuis Powens. */
+  /** POST /bank/transactions/sync - récupère les transactions brutes depuis Powens. */
   async syncTransactions(): Promise<BankTransactionsSyncResult> {
     const { data } = await axiosClient.post<BankTransactionsSyncResult>("/bank/transactions/sync");
     return data;
   },
 
-  /** GET /bank/subscriptions/detect — lance l'algorithme de détection sur les transactions stockées. */
+  /** GET /bank/subscriptions/detect - lance l'algorithme de détection sur les transactions stockées. */
   async detectSubscriptions(): Promise<DetectedSubscription[]> {
     const { data } = await axiosClient.get<DetectedSubscription[]>("/bank/subscriptions/detect");
     return data;
   },
 
-  /** GET /bank/status — établissement, dernière synchro, nombre de transactions. */
+  /** GET /bank/status - établissement, dernière synchro, nombre de transactions. */
   async getStatus(): Promise<BankStatus> {
     const { data } = await axiosClient.get<BankStatus>("/bank/status");
     return data;

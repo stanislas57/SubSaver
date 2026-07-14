@@ -11,7 +11,7 @@ import { useSeo } from "@/hooks/useSeo";
  * /login pour se connecter. */
 export function RegisterPage() {
   useSeo({
-    title: "Créer un compte gratuit — SubSaver",
+    title: "Créer un compte gratuit - SubSaver",
     description: "Créez votre compte SubSaver gratuitement et détectez tous vos abonnements en 30 secondes, sans carte bancaire.",
     path: "/register",
   });

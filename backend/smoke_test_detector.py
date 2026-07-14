@@ -31,12 +31,12 @@ results_log = []
 
 def check(label, condition, extra=""):
     status = "\033[92m✅" if condition else "\033[91m❌"
-    print(f"{status} {label}{(' — ' + str(extra)) if extra and not condition else ''}\033[0m")
+    print(f"{status} {label}{(' - ' + str(extra)) if extra and not condition else ''}\033[0m")
     results_log.append(condition)
 
 
 print("=" * 70)
-print("SMOKE TEST — Moteur de détection d'abonnements")
+print("SMOKE TEST - Moteur de détection d'abonnements")
 print("=" * 70)
 
 # ---------------------------------------------------------------------------

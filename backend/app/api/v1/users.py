@@ -31,7 +31,7 @@ def upgrade_premium(current_user: User = Depends(get_current_user), db: Session 
     """Marque l'utilisateur courant comme Premium, appelé par le frontend au
     retour de la page de succès Stripe (/success).
 
-    SÉCURITÉ (placeholder) : cet endpoint fait confiance au client — n'importe
+    SÉCURITÉ (placeholder) : cet endpoint fait confiance au client - n'importe
     quel utilisateur authentifié peut s'auto-upgrader en l'appelant directement,
     sans avoir réellement payé. Il n'y a pas encore d'intégration Stripe
     serveur (clé secrète, webhook signé) dans ce projet. Avant mise en

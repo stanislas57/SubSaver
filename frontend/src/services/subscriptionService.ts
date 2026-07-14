@@ -20,7 +20,7 @@ export const subscriptionService = {
     return data;
   },
 
-  /** DELETE /subscriptions/{id} — 204 No Content */
+  /** DELETE /subscriptions/{id} - 204 No Content */
   async remove(id: string): Promise<void> {
     await axiosClient.delete(`/subscriptions/${id}`);
   },

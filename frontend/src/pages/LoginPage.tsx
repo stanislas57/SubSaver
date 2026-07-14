@@ -9,7 +9,7 @@ import { useSeo } from "@/hooks/useSeo";
  * connexion glassmorphism à droite. Empilé sur mobile. */
 export function LoginPage() {
   useSeo({
-    title: "Connexion — SubSaver",
+    title: "Connexion - SubSaver",
     description: "Connectez-vous à votre compte SubSaver pour suivre et gérer vos abonnements.",
     path: "/login",
   });

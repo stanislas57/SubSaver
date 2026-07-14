@@ -2,8 +2,8 @@
 
 Gestionnaire d'abonnements : abonnement partagé, comparateur d'offres (base curatée), connexion bancaire réelle (Powens sandbox) avec détection automatique des abonnements.
 
-- **Frontend** : React 19 + Vite + TypeScript + Tailwind + React Query + Framer Motion — `frontend/`
-- **Backend** : FastAPI + SQLAlchemy + Alembic + PostgreSQL — `backend/`
+- **Frontend** : React 19 + Vite + TypeScript + Tailwind + React Query + Framer Motion - `frontend/`
+- **Backend** : FastAPI + SQLAlchemy + Alembic + PostgreSQL - `backend/`
 
 **Déployé** : https://subsaver-frontend.onrender.com (API : https://subsaver-urna.onrender.com)
 
@@ -51,13 +51,13 @@ API sur `http://localhost:8000`, doc interactive sur `http://localhost:8000/docs
 | Variable | Description |
 |---|---|
 | `DATABASE_URL` | URL de connexion PostgreSQL |
-| `SECRET_KEY` | Clé de signature JWT — **à changer en production** |
+| `SECRET_KEY` | Clé de signature JWT - **à changer en production** |
 | `ALGORITHM` | Algorithme JWT (`HS256`) |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Durée de validité du token (`10080` = 7 jours) |
 | `CORS_ORIGINS` | Origines autorisées (JSON list) |
 | `POWENS_DOMAIN` | Domaine sandbox/prod Powens (ex: `xxx-sandbox.biapi.pro`) |
-| `POWENS_CLIENT_ID` | Identifiant client Powens — **ne jamais committer** |
-| `POWENS_CLIENT_SECRET` | Secret client Powens — **ne jamais committer** |
+| `POWENS_CLIENT_ID` | Identifiant client Powens - **ne jamais committer** |
+| `POWENS_CLIENT_SECRET` | Secret client Powens - **ne jamais committer** |
 | `POWENS_REDIRECT_URI` | URL de retour après la Webview Powens (ex: `.../subscriptions`) |
 
 ### Tests
@@ -114,7 +114,7 @@ Ouvre `http://localhost:5173`, crée un compte via `/register`.
 - **Abonnements** : CRUD, calendrier, analytique, export CSV
 - **Connexion bancaire réelle** (Powens, Bank API de base, flow Webview redirect) : `/subscriptions` → "Connecter ma banque" → détection automatique des abonnements récurrents (algorithme maison : nettoyage libellés + matching récurrence 7/30/365 jours)
 - **Abonnement partagé** : groupe, membres, répartition des coûts (accessible depuis Premium)
-- **Comparateur d'offres** : base curatée d'offres réelles (Streaming, Musique, Téléphonie), mise à jour manuelle — accessible depuis Premium (premium requis)
+- **Comparateur d'offres** : base curatée d'offres réelles (Streaming, Musique, Téléphonie), mise à jour manuelle - accessible depuis Premium (premium requis)
 - **Lettre de résiliation** : génération 100% client-side, accessible depuis Premium
 - **Refonte visuelle** : tilt 3D + micro-interactions (Framer Motion + CSS 3D transforms)
 
@@ -158,7 +158,7 @@ backend/
 ## Notes
 
 - `bank/providers` reste un catalogue de démonstration ; la vraie connexion passe par `bank/connect-url` + `bank/callback` (Powens).
-- `market/offers` est une base curatée manuellement (pas de scraping/API tierce) — mise à jour via nouvelle migration Alembic en cas de changement tarifaire.
+- `market/offers` est une base curatée manuellement (pas de scraping/API tierce) - mise à jour via nouvelle migration Alembic en cas de changement tarifaire.
 - Toute évolution de modèle : `alembic revision --autogenerate -m "message"` puis `alembic upgrade head`.
 - JWT stocké côté frontend dans `localStorage` (clé `subsaver_token`).
 - Base Postgres Render (plan free) : vérifier la date d'expiration et upgrader si besoin.

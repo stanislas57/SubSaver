@@ -78,7 +78,7 @@ export function ComparatorOfferCard({ offer, currency, isCheapest, isBestMatch, 
         {setupFee !== null && (
           <p className="mt-2 rounded-md bg-warning/10 px-2 py-1 text-xs font-medium text-warning">
             Frais à prévoir : {formatPrice(setupFee, currency)}
-            {offer.setup_fee_note ? ` — ${offer.setup_fee_note}` : ""}
+            {offer.setup_fee_note ? ` - ${offer.setup_fee_note}` : ""}
           </p>
         )}
 

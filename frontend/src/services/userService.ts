@@ -14,13 +14,13 @@ export const userService = {
     return data;
   },
 
-  /** POST /users/me/upgrade-premium — appelé au retour de la page de succès Stripe. */
+  /** POST /users/me/upgrade-premium - appelé au retour de la page de succès Stripe. */
   async upgradeToPremium(): Promise<User> {
     const { data } = await axiosClient.post<User>("/users/me/upgrade-premium");
     return data;
   },
 
-  /** POST /users/me/accept-charter — appelé au clic sur "J'accepte" dans CharterModal. */
+  /** POST /users/me/accept-charter - appelé au clic sur "J'accepte" dans CharterModal. */
   async acceptCharter(): Promise<User> {
     const { data } = await axiosClient.post<User>("/users/me/accept-charter");
     return data;

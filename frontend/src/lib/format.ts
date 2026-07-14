@@ -16,7 +16,7 @@ export function formatPrice(amount: number, currency: Currency = "EUR"): string 
 }
 
 export function formatDate(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const date = new Date(`${iso}T00:00:00`);
   return new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short", year: "numeric" }).format(date);
 }
@@ -36,9 +36,9 @@ export function billingDayLabel(day: number): string {
  * admin) -- contrairement à `formatDate`, ne pas ajouter "T00:00:00" : la
  * valeur contient déjà une heure précise. */
 export function formatDateTime(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return "-";
   return new Intl.DateTimeFormat("fr-FR", {
     day: "2-digit",
     month: "short",

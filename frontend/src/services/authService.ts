@@ -16,7 +16,7 @@ const REGISTER_TIMEOUT_MS = 45_000;
 const LOGIN_TIMEOUT_MS = 45_000;
 
 export const authService = {
-  /** POST /auth/register — le compte est actif immédiatement, aucune vérification
+  /** POST /auth/register - le compte est actif immédiatement, aucune vérification
    * requise, et le backend renvoie directement un token (comme /auth/login) pour
    * permettre une connexion automatique juste après l'inscription. */
   async register(email: string, password: string, firstName: string): Promise<AuthResponse> {
@@ -28,7 +28,7 @@ export const authService = {
     return data;
   },
 
-  /** POST /auth/login — contrat OAuth2PasswordRequestForm (x-www-form-urlencoded). */
+  /** POST /auth/login - contrat OAuth2PasswordRequestForm (x-www-form-urlencoded). */
   async login(email: string, password: string): Promise<AuthResponse> {
     const form = new URLSearchParams();
     form.set("username", email);
@@ -40,7 +40,7 @@ export const authService = {
     return data;
   },
 
-  /** POST /auth/google — flux "ID token" : le credential vient de Google
+  /** POST /auth/google - flux "ID token" : le credential vient de Google
    * Identity Services (déjà signé par Google), ce backend le revérifie
    * lui-même avant de faire confiance à quoi que ce soit qu'il contient. */
   async loginWithGoogle(idToken: string): Promise<AuthResponse> {

@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def send_email(to: str, subject: str, html_body: str, reply_to: str | None = None) -> None:
     if not settings.SMTP_HOST:
         # Pas de SMTP configuré (dev local) : log au lieu d'échouer silencieusement.
-        logger.warning("SMTP non configuré — email à %s non envoyé.\nSujet: %s\n%s", to, subject, html_body)
+        logger.warning("SMTP non configuré - email à %s non envoyé.\nSujet: %s\n%s", to, subject, html_body)
         return
 
     message = MIMEMultipart("alternative")
@@ -108,7 +108,7 @@ def send_debt_reminder_email(
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #334155;">
           <tr>
             <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0; color: #64748b;">Raison</td>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600;">Abonnements partagés — {safe_period}</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600;">Abonnements partagés - {safe_period}</td>
           </tr>
           <tr>
             <td style="padding: 8px 0; color: #64748b;">Date de la demande</td>

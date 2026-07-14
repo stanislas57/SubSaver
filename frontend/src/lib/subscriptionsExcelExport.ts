@@ -71,7 +71,7 @@ export async function buildSubscriptionsWorkbook(data: SubscriptionsExportData):
   summary.getColumn(4).width = 14;
 
   summary.mergeCells("A1:D1");
-  summary.getCell("A1").value = "SubSaver — Rapport d'abonnements";
+  summary.getCell("A1").value = "SubSaver - Rapport d'abonnements";
   summary.getCell("A1").font = { bold: true, size: 16, color: { argb: NAVY } };
   summary.getCell("A2").value = `Compte : ${user.first_name} (${user.email})`;
   summary.getCell("A2").font = { color: { argb: MUTED } };

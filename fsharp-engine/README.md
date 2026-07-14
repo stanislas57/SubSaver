@@ -1,4 +1,4 @@
-# SubSaver Engine — implémentation F# / Fable (module de référence)
+# SubSaver Engine - implémentation F# / Fable (module de référence)
 
 Moteur de détection d'abonnements récurrents à partir de transactions
 bancaires brutes (API Powens), écrit en **F# pur** (fonctions pures,
@@ -10,7 +10,7 @@ immuabilité, Discriminated Unions), avec une vue de validation humaine en
 Ce module est une **implémentation de référence autonome**. Le moteur en
 production de SubSaver est en Python
 ([`backend/app/core/transaction_analyzer.py`](../backend/app/core/transaction_analyzer.py)),
-et le frontend en TypeScript/React. Rien ici n'est branché sur l'app — ce
+et le frontend en TypeScript/React. Rien ici n'est branché sur l'app - ce
 code compile et se teste indépendamment, et sert de spécification exécutable
 typée du moteur de détection.
 
@@ -59,7 +59,7 @@ transactions
 
 **Scoring** (spec) : dictionnaire connu **+40**, écart temporel parfait
 **+40** (dégressif jusqu'à +15 à la limite de tolérance), montant exact
-**+20** (+10 si la fluctuation reste dans la tolérance de la catégorie —
+**+20** (+10 si la fluctuation reste dans la tolérance de la catégorie -
 0 % streaming/musique, 15 % énergie, 10 % télécom).
 
 **Paliers de confiance** : `>= 80` → `High` (auto-validé), `50–79` →

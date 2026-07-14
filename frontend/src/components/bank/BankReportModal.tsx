@@ -182,7 +182,7 @@ export function BankReportModal({
                     </span>
                     {c.confidence < 1 && (
                       <span className="rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-800">
-                        Marchand inconnu — à vérifier
+                        Marchand inconnu - à vérifier
                       </span>
                     )}
                   </p>

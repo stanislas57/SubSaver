@@ -12,7 +12,7 @@ import { useSeo } from "@/hooks/useSeo";
  * sans compte ni connexion -- cf. App.tsx. */
 export function MentionsLegalesPage() {
   useSeo({
-    title: "Mentions légales — SubSaver",
+    title: "Mentions légales - SubSaver",
     description:
       "Identité de l'éditeur, de l'hébergeur et informations légales de la plateforme SubSaver, conformément à la LCEN.",
     path: "/mentions-legales",
@@ -68,7 +68,7 @@ export function MentionsLegalesPage() {
                 <strong>Numéro SIRET (siège) :</strong> 107 475 535 00012
               </p>
               <p className="text-sm text-luxury-text">
-                <strong>Code APE / NAF :</strong> 6201Z — Programmation informatique
+                <strong>Code APE / NAF :</strong> 6201Z - Programmation informatique
               </p>
               <p className="text-sm text-luxury-text">
                 <strong>Adresse du siège :</strong> 48 Rue Sainte Anne, 54000 Nancy, France
@@ -95,7 +95,7 @@ export function MentionsLegalesPage() {
             </p>
             <div className="rounded-lg border border-dashed border-amber-400 bg-amber-50 p-4 space-y-1">
               <p className="text-sm font-semibold text-amber-900">
-                [ À COMPLÉTER — Coordonnées de l'hébergeur ]
+                [ À COMPLÉTER - Coordonnées de l'hébergeur ]
               </p>
               <p className="text-sm text-amber-900">
                 [ Raison sociale de l'hébergeur, ex. Render Services, Inc. / Vercel Inc. / OVH SAS / Amazon Web
@@ -106,7 +106,7 @@ export function MentionsLegalesPage() {
               <p className="text-sm text-amber-900">[ Numéro de téléphone ou contact ]</p>
               <p className="text-xs italic text-amber-800">
                 Le domaine de secours <code>subserver-frontend.onrender.com</code> référencé dans le code (cf.
-                redirections de <code>index.html</code>) indique un hébergement sur Render — vérifie les mentions
+                redirections de <code>index.html</code>) indique un hébergement sur Render - vérifie les mentions
                 légales officielles de Render (raison sociale, adresse) avant de publier cet encart.
               </p>
             </div>
@@ -173,7 +173,7 @@ export function MentionsLegalesPage() {
             </p>
             <div className="rounded-lg border border-dashed border-amber-400 bg-amber-50 p-4">
               <p className="text-sm font-semibold text-amber-900">
-                [ À COMPLÉTER — Nom et coordonnées du médiateur de la consommation retenu ]
+                [ À COMPLÉTER - Nom et coordonnées du médiateur de la consommation retenu ]
               </p>
             </div>
           </section>
@@ -193,7 +193,7 @@ export function MentionsLegalesPage() {
           {/* Séparateur et signature */}
           <div className="border-t border-slate-900/10 pt-8">
             <p className="text-xs text-luxury-text-light">
-              SubSaver — Stanislas Humbert, Entrepreneur Individuel — SIREN 107 475 535.
+              SubSaver - Stanislas Humbert, Entrepreneur Individuel - SIREN 107 475 535.
             </p>
           </div>
         </article>

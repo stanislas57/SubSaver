@@ -25,7 +25,7 @@ const SOCIAL_PROVIDERS = [
  * laisser croire que l'option fonctionne déjà. */
 function SocialLoginRow() {
   function handleClick(label: string) {
-    toast.info(`Connexion avec ${label} — bientôt disponible.`);
+    toast.info(`Connexion avec ${label} - bientôt disponible.`);
   }
 
   return (
@@ -36,7 +36,7 @@ function SocialLoginRow() {
           type="button"
           onClick={() => handleClick(provider.label)}
           aria-disabled
-          title={`Connexion avec ${provider.label} — bientôt disponible`}
+          title={`Connexion avec ${provider.label} - bientôt disponible`}
           className="group relative flex cursor-not-allowed flex-col items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 py-3 text-slate-300 opacity-60 transition-colors hover:opacity-80"
         >
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-xs font-bold">
@@ -99,7 +99,7 @@ export function RegisterForm() {
   }
 
   function handlePhoneTabClick() {
-    toast.info("Inscription par téléphone (vérification SMS) — bientôt disponible. Utilise ton email pour l'instant.");
+    toast.info("Inscription par téléphone (vérification SMS) - bientôt disponible. Utilise ton email pour l'instant.");
   }
 
   return (

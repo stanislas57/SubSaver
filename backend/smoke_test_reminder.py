@@ -48,12 +48,12 @@ results = []
 
 def check(label, condition, extra=""):
     status = "\033[92m✅" if condition else "\033[91m❌"
-    print(f"{status} {label}{(' — ' + extra) if extra and not condition else ''}\033[0m")
+    print(f"{status} {label}{(' - ' + extra) if extra and not condition else ''}\033[0m")
     results.append(condition)
 
 
 print("=" * 60)
-print("SMOKE TEST — Relance de paiement (Abonnement partagé)")
+print("SMOKE TEST - Relance de paiement (Abonnement partagé)")
 print("=" * 60)
 
 print("\n[Setup] Inscription + connexion du propriétaire")
@@ -89,7 +89,7 @@ check("Au moins une dette générée", len(debts) > 0)
 
 print("\n[5] POST /api/v1/family/debts/remind (Charles, montant valide)")
 r5 = client.post("/api/v1/family/debts/remind", headers=headers, json={"member_id": charles_id, "amount": 2.99})
-print(f"  Status: {r5.status_code} — {r5.json()}")
+print(f"  Status: {r5.status_code} - {r5.json()}")
 check("Statut 200", r5.status_code == 200, str(r5.status_code))
 check("Email envoyé à charles@example.com", any(e["to"] == "charles@example.com" for e in captured_emails))
 if captured_emails:
@@ -98,7 +98,7 @@ if captured_emails:
 
 print("\n[6] POST /api/v1/family/debts/remind (membre sans email -> 400)")
 r6 = client.post("/api/v1/family/debts/remind", headers=headers, json={"member_id": sans_email_id, "amount": 1.0})
-print(f"  Status: {r6.status_code} — {r6.json()}")
+print(f"  Status: {r6.status_code} - {r6.json()}")
 check("Rejet 400 (pas d'email)", r6.status_code == 400, str(r6.status_code))
 
 print("\n[7] POST /api/v1/family/debts/remind (membre introuvable -> 404)")

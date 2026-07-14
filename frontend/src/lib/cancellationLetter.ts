@@ -3,7 +3,7 @@ import { generateMailtoLink } from "@/lib/mailto";
 
 /**
  * Génère une lettre de résiliation type à partir des données déjà en cache
- * (aucun appel API dédié — décision d'architecture : fonction pure côté client).
+ * (aucun appel API dédié - décision d'architecture : fonction pure côté client).
  * `subscription.display_name` est déjà le nom de marchand normalisé (Clé
  * Marchand), jamais le libellé bancaire brut -- cf. GET
  * /subscriptions/cancellation-candidates.
