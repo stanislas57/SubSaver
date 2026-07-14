@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Sitemap volontairement limité aux 3 routes listées dans ROUTES de
+  Sitemap volontairement limité aux routes listées dans ROUTES de
   frontend/scripts/prerender.mjs, les seules pages où un crawler qui
   n'exécute pas JS (la majorité, cf. robots.txt) trouve du contenu
   prérendu au lieu d'une coquille vide. /login, /register et
@@ -25,6 +25,12 @@
   <url>
     <loc>https://subsaver.fr/privacy</loc>
     <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://subsaver.fr/mentions-legales</loc>
+    <lastmod>2026-07-14</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

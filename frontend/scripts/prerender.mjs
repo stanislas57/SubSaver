@@ -22,7 +22,7 @@ const distDir = path.join(rootDir, "dist");
 // (overview, subscriptions, admin...) ne doit jamais être prérendu : ce
 // contenu est propre à chaque utilisateur et n'a rien à faire dans un
 // export statique servi anonymement.
-const ROUTES = ["/", "/guide-abonnements", "/privacy"];
+const ROUTES = ["/", "/guide-abonnements", "/privacy", "/mentions-legales"];
 
 const PORT = 4173;
 const BASE_URL = `http://localhost:${PORT}`;

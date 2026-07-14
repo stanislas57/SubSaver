@@ -82,6 +82,9 @@ const AdminAnalyticsPage = lazy(() =>
 const PrivacyPage = lazy(() =>
   import("@/pages/PrivacyPage").then((m) => ({ default: m.PrivacyPage }))
 );
+const MentionsLegalesPage = lazy(() =>
+  import("@/pages/MentionsLegalesPage").then((m) => ({ default: m.MentionsLegalesPage }))
+);
 // Article de contenu public (SEO) : chargé à la demande comme le reste, mais
 // route top-level hors ProtectedRoute -- cf. son commentaire de tête.
 const GuideAbonnementsPage = lazy(() =>
@@ -183,6 +186,9 @@ export default function App() {
             {/* Publique (hors ProtectedRoute) : une politique de confidentialité doit
              * rester consultable sans compte, pour Google comme pour un visiteur. */}
             <Route path="/privacy" element={<PrivacyPage />} />
+            {/* Publique (hors ProtectedRoute) : la LCEN exige un accès direct et
+             * permanent aux mentions légales, sans compte ni connexion. */}
+            <Route path="/mentions-legales" element={<MentionsLegalesPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
           </Suspense>

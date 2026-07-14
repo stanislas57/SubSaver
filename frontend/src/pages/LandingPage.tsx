@@ -331,11 +331,16 @@ export function LandingPage() {
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <a href="/guide-abonnements" className="hover:text-luxury-text">Guide des abonnements</a>
             <a href="/privacy" className="hover:text-luxury-text">Confidentialité &amp; RGPD</a>
+            <a href="/mentions-legales" className="hover:text-luxury-text">Mentions légales</a>
             <a href="#apercu" className="hover:text-luxury-text">Aperçu</a>
             <a href="mailto:contact.subsaver@proton.me" className="hover:text-luxury-text">Contact</a>
           </div>
         </div>
-        <p className="mt-6">© {new Date().getFullYear()} SubSaver. Tous droits réservés.</p>
+        {/* Raison sociale + statut EI exigés par la LCEN (Art. 6-III) sur toute page du site. */}
+        <p className="mt-6">
+          © {new Date().getFullYear()} SubSaver — Stanislas Humbert, EI (Entrepreneur Individuel). Tous droits
+          réservés.
+        </p>
       </footer>
 
       <ConsentBanner />

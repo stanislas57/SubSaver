@@ -23,12 +23,17 @@ export function Footer({ onContactClick }: FooterProps) {
             <Link to="/privacy" className="hover:text-luxury-text transition-colors">
               Charte de confidentialité
             </Link>
+            <Link to="/mentions-legales" className="hover:text-luxury-text transition-colors">
+              Mentions légales
+            </Link>
           </div>
         </nav>
 
-        {/* Mention légale */}
+        {/* Mention légale -- raison sociale + statut EI exigés par la LCEN
+         * (Art. 6-III) sur toute page du site, pas seulement /mentions-legales. */}
         <p className="text-xs text-luxury-text-light/70">
-          © {new Date().getFullYear()} SubSaver. Tous droits réservés.
+          © {new Date().getFullYear()} SubSaver — Stanislas Humbert, EI (Entrepreneur Individuel). Tous droits
+          réservés.
         </p>
       </div>
     </footer>
