@@ -2,13 +2,6 @@ import { LineChart, Users, FileText, FileSpreadsheet, Receipt, Landmark, Wallet 
 
 export const PARTICULIER_TOOLS = [
   {
-    icon: Wallet,
-    title: "Vos Ressources",
-    description:
-      "Votre copilote de santé financière : revenu détecté, reste à vivre, répartiteur de budget et académie de l'épargne.",
-    path: "/ressources",
-  },
-  {
     icon: LineChart,
     title: "Comparateur d'offres",
     description: "Compare tes abonnements aux meilleures offres du marché.",
@@ -25,6 +18,13 @@ export const PARTICULIER_TOOLS = [
     title: "Lettre de résiliation",
     description: "Génère une lettre de résiliation prête à envoyer.",
     path: "/lab/cancellation",
+  },
+  {
+    icon: Wallet,
+    title: "Vos Ressources",
+    description:
+      "Votre copilote de santé financière : revenu détecté, reste à vivre, répartiteur de budget et académie de l'épargne.",
+    path: "/ressources",
   },
 ] as const;
 

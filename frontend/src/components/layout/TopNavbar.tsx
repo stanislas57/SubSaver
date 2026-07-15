@@ -10,11 +10,11 @@ import { NotificationCenter } from "@/components/shared/NotificationCenter";
 const NAV_LINKS: { to: string; label: string; premium?: boolean }[] = [
   { to: "/overview", label: "Vue d'ensemble" },
   { to: "/subscriptions", label: "Abonnements" },
-  { to: "/ressources", label: "Vos Ressources", premium: true },
   { to: "/lab/comparator", label: "Comparateur" },
   { to: "/analytics", label: "Analytique" },
   { to: "/calendar", label: "Calendrier" },
   { to: "/bank-connect", label: "Banque" },
+  { to: "/ressources", label: "Vos Ressources", premium: true },
   { to: "/premium", label: "Premium" },
 ];
 
