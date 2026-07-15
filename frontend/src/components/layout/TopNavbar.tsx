@@ -1,12 +1,16 @@
 import * as React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { LogOut, Menu, X, User as UserIcon } from "lucide-react";
+import { LogOut, Menu, X, User as UserIcon, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationCenter } from "@/components/shared/NotificationCenter";
 
-const NAV_LINKS = [
+/** `premium: true` marque une entrée réservée aux membres Premium : elle porte
+ * un badge étincelant discret dans la barre. L'accès reste garanti côté route
+ * par PremiumOnlyRoute (paywall contextuel) -- le badge n'est qu'un repère. */
+const NAV_LINKS: { to: string; label: string; premium?: boolean }[] = [
   { to: "/overview", label: "Vue d'ensemble" },
   { to: "/subscriptions", label: "Abonnements" },
+  { to: "/ressources", label: "Vos Ressources", premium: true },
   { to: "/lab/comparator", label: "Comparateur" },
   { to: "/analytics", label: "Analytique" },
   { to: "/calendar", label: "Calendrier" },
@@ -66,7 +70,12 @@ export function TopNavbar() {
                 }`
               }
             >
-              {link.label}
+              <span className="inline-flex items-center gap-1">
+                {link.label}
+                {link.premium && (
+                  <Sparkles className="h-3 w-3 text-luxury-gold motion-safe:animate-pulse" aria-label="Premium" />
+                )}
+              </span>
             </NavLink>
           ))}
         </nav>
@@ -138,7 +147,14 @@ export function TopNavbar() {
                   }`
                 }
               >
-                {link.label}
+                <span className="inline-flex items-center gap-1.5">
+                  {link.label}
+                  {link.premium && (
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-luxury-gold-soft px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-luxury-gold-deep">
+                      <Sparkles className="h-2.5 w-2.5" /> Premium
+                    </span>
+                  )}
+                </span>
               </NavLink>
             ))}
           </nav>

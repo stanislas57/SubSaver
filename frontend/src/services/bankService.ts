@@ -6,6 +6,7 @@ import type {
   BankProvider,
   BankStatus,
   BankSyncResult,
+  BankTransaction,
   BankTransactionsSyncResult,
   DetectedSubscription,
 } from "@/types";
@@ -44,6 +45,13 @@ export const bankService = {
   /** GET /bank/subscriptions/detect - lance l'algorithme de détection sur les transactions stockées. */
   async detectSubscriptions(): Promise<DetectedSubscription[]> {
     const { data } = await axiosClient.get<DetectedSubscription[]>("/bank/subscriptions/detect");
+    return data;
+  },
+
+  /** GET /bank/transactions - transactions brutes stockées de l'utilisateur.
+   * Matière première de la détection de revenu (cf. lib/detectSalary.ts). */
+  async listTransactions(): Promise<BankTransaction[]> {
+    const { data } = await axiosClient.get<BankTransaction[]>("/bank/transactions");
     return data;
   },
 

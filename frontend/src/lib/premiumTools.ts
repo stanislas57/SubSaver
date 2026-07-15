@@ -1,6 +1,13 @@
-import { LineChart, Users, FileText, FileSpreadsheet, Receipt, Landmark } from "lucide-react";
+import { LineChart, Users, FileText, FileSpreadsheet, Receipt, Landmark, Wallet } from "lucide-react";
 
 export const PARTICULIER_TOOLS = [
+  {
+    icon: Wallet,
+    title: "Vos Ressources",
+    description:
+      "Votre copilote de santé financière : revenu détecté, reste à vivre, répartiteur de budget et académie de l'épargne.",
+    path: "/ressources",
+  },
   {
     icon: LineChart,
     title: "Comparateur d'offres",

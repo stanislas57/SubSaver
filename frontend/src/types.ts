@@ -416,6 +416,18 @@ export interface BankTransactionsSyncResult {
   total_stored: number;
 }
 
+/** Transaction bancaire brute (GET /bank/transactions) -- miroir de
+ * BankTransactionOut côté API. Crédit si `value > 0`, débit si `value < 0`.
+ * Consommée par l'algorithme de détection du revenu (lib/detectSalary.ts). */
+export interface BankTransaction {
+  id: string;
+  wording: string;
+  value: number;
+  /** Format ISO "YYYY-MM-DD". */
+  date: string;
+  transaction_type: string | null;
+}
+
 /** Candidat renvoyé par GET /bank/subscriptions/detect. */
 export interface DetectedSubscription {
   merchant: string;
