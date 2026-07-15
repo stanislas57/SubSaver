@@ -13,7 +13,11 @@ const schema = z.object({
   name: z.string().min(1, "Le nom est requis").max(80),
   price: z.coerce.number().min(0, "Le prix doit être positif"),
   category: z.enum(CATEGORIES),
-  billing_day: z.coerce.number().int().min(1, "Entre 1 et 31").max(31, "Entre 1 et 31"),
+  billing_day: z.coerce
+    .number({ invalid_type_error: "Entre 1 et 31" })
+    .int("Entre 1 et 31")
+    .min(1, "Entre 1 et 31")
+    .max(31, "Entre 1 et 31"),
   importance: z.coerce.number().int().min(1).max(3) as unknown as z.ZodType<1 | 2 | 3>,
   start_date: z.string().optional().or(z.literal("")),
   trial_end_date: z.string().optional().or(z.literal("")),

@@ -1,5 +1,7 @@
 import * as React from "react";
+import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { authService } from "@/services/authService";
 import { userService } from "@/services/userService";
 import { axiosClient, getErrorMessage } from "@/api/axiosClient";
@@ -53,13 +55,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   // Si le token est invalide (401), l'intercepteur axios le supprime déjà ;
-  // on synchronise l'état local pour renvoyer vers /login proprement.
+  // on synchronise l'état local pour renvoyer vers /login proprement. Pour
+  // toute autre erreur (réseau coupée, timeout, 5xx) la session doit être
+  // préservée : ce ne sont pas des preuves que le token est invalide, juste
+  // que le serveur est momentanément injoignable.
   React.useEffect(() => {
-    if (meQuery.isError) {
+    if (!meQuery.isError) return;
+    const error = meQuery.error;
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
       setHasToken(false);
+    } else {
+      toast.error(getErrorMessage(error, "Impossible de contacter le serveur, réessaie."));
     }
-  }, [meQuery.isError]);
+  }, [meQuery.isError, meQuery.error]);
 
   function applyAuthResponse(data: { access_token: string; user: User }) {
     localStorage.setItem(TOKEN_STORAGE_KEY, data.access_token);
