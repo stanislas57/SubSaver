@@ -76,6 +76,12 @@ export interface Subscription {
    * Clé Marchand), jamais le libellé bancaire brut. Utilisé par ex. par le
    * Calendrier pour ne jamais afficher un badge tronqué illisible. */
   display_name: string;
+  /** Métadonnées géographiques optionnelles, consommées par le moteur de
+   * correspondance du Comparateur (Étape 3 du parcours guidé) -- jamais
+   * déduites automatiquement, absentes tant que non renseignées. */
+  location?: string | null;
+  region?: string | null;
+  scope?: string | null;
 }
 
 /** Corps commun à POST /subscriptions et PUT /subscriptions/{id}. */
@@ -149,6 +155,14 @@ export interface MarketOffer {
   setup_fee: number | null;
   setup_fee_note: string | null;
   attributes: MarketOfferAttribute[];
+  /** Métadonnées géographiques optionnelles pour le moteur de correspondance
+   * du Comparateur -- distinctes des attributes `scope`/`region` déjà
+   * présents pour la famille Transport (JSONB, valeurs riches consommées par
+   * lib/transportGeo.ts pour les filtres complémentaires) : ces champs-ci ne
+   * servent qu'au filtrage initial grossier de l'Étape 3 (catégorie + portée). */
+  location?: string | null;
+  region?: string | null;
+  scope?: string | null;
 }
 
 // ---------------------------------------------------------------------------

@@ -34,3 +34,16 @@ class MarketOffer(Base):
     # forfaits mobiles) : liste de {key, label, value} plutôt que des colonnes dédiées par famille,
     # pour que le même modèle serve toutes les catégories sans migration à chaque nouvelle famille.
     attributes: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list)
+
+    # Métadonnées géographiques optionnelles pour le moteur de correspondance
+    # du Comparateur (Étape 3 du parcours guidé) : location = ville précise
+    # (ex: "Metz"), region = région française, scope = "national" | "local".
+    # Distinct des attributs `scope`/`region` déjà présents dans `attributes`
+    # pour la famille Transport (JSONB, valeurs françaises riches type "Urbain
+    # local"/"Régional (TER)", consommées par lib/transportGeo.ts pour les
+    # filtres complémentaires) : ces colonnes-ci ne servent qu'au filtrage
+    # initial grossier catégorie + portée de l'Étape 3, gardé volontairement
+    # simple (cf. décision produit).
+    location: Mapped[str | None] = mapped_column(String, nullable=True)
+    region: Mapped[str | None] = mapped_column(String, nullable=True)
+    scope: Mapped[str | None] = mapped_column(String, nullable=True)

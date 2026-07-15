@@ -88,6 +88,12 @@ class SubscriptionOut(BaseModel):
     # Champ en lecture seule (jamais dans SubscriptionInput) : nom normalisé
     # (moteur Clé Marchand), jamais le libellé bancaire brut -- ex: Calendrier.
     display_name: str = ""
+    # Métadonnées géographiques optionnelles, consommées par le moteur de
+    # correspondance du Comparateur (Étape 3 du parcours guidé) -- jamais
+    # déduites automatiquement, null tant que non renseignées.
+    location: Optional[str] = None
+    region: Optional[str] = None
+    scope: Optional[str] = None
 
 
 class SubscriptionInput(BaseModel):
@@ -99,6 +105,9 @@ class SubscriptionInput(BaseModel):
     importance: int
     start_date: Optional[str] = None
     trial_end_date: Optional[str] = None
+    location: Optional[str] = None
+    region: Optional[str] = None
+    scope: Optional[str] = None
 
 
 class BankProviderOut(BaseModel):
@@ -196,6 +205,11 @@ class MarketOfferOut(BaseModel):
     setup_fee: Optional[float] = None
     setup_fee_note: Optional[str] = None
     attributes: list[MarketOfferAttributeOut] = Field(default_factory=list)
+    # Métadonnées géographiques optionnelles pour le moteur de correspondance
+    # du Comparateur -- cf. commentaire sur app/models/market_offer.py.
+    location: Optional[str] = None
+    region: Optional[str] = None
+    scope: Optional[str] = None
 
 
 class FamilyMemberOut(BaseModel):

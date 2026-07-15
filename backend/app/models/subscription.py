@@ -22,6 +22,15 @@ class Subscription(Base):
     start_date: Mapped[str | None] = mapped_column(String, nullable=True)
     trial_end_date: Mapped[str | None] = mapped_column(String, nullable=True)
 
+    # Métadonnées géographiques optionnelles, consommées par le moteur de
+    # correspondance du Comparateur (cf. app/lib/comparatorMatch côté front) :
+    # location = ville précise (ex: "Metz"), region = région française,
+    # scope = "national" | "local" -- aucune n'est renseignée automatiquement
+    # (pas de détection d'adresse), à saisir manuellement si besoin.
+    location: Mapped[str | None] = mapped_column(String, nullable=True)
+    region: Mapped[str | None] = mapped_column(String, nullable=True)
+    scope: Mapped[str | None] = mapped_column(String, nullable=True)
+
     # Sélection pour l'Abonnement partagé (cf. app/api/v1/family.py) : seuls
     # les abonnements marqués is_shared=True entrent dans le calcul de
     # répartition des coûts du groupe, jamais le total global de l'utilisateur.

@@ -50,6 +50,7 @@ const SPORT_OFFERS: MarketOffer[] = [
     attributes: sportAttrs("Salle de sport physique", "Oui, tous les clubs Basic-Fit en France",
       "Non inclus (formule Premium requise)", "Suivi d'entraînement inclus",
       "Non inclus (formule Premium requise)"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-fitnesspark-ultimate", category: "Sport", name: "Fitness Park Ultimate", price: 50.0,
@@ -62,6 +63,7 @@ const SPORT_OFFERS: MarketOffer[] = [
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: sportAttrs("Salle de sport physique", "Oui, réseau Fitness Park national",
       "Coaching en ligne + cours collectifs en club", "Application de coaching incluse", "1 invité par séance"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-neoness-first", category: "Sport", name: "Neoness", price: 19.90,
@@ -74,6 +76,7 @@ const SPORT_OFFERS: MarketOffer[] = [
     setup_fee_note: "Carte d'accès + kit de bienvenue (réduit dès 20€ en tarif étudiant)",
     attributes: sportAttrs("Salle de sport physique", "Oui, réseau Neoness (clubs urbains)",
       "Illimités, inclus dans la formule unique", "Suivi d'entraînement + réservation de cours", "Non inclus"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-orangebleue-enjoy", category: "Sport", name: "L'Orange Bleue Enjoy", price: 29.90,
@@ -88,6 +91,7 @@ const SPORT_OFFERS: MarketOffer[] = [
     setup_fee_note: "Pack adhérent obligatoire à l'inscription (dès 20€ en tarif étudiant)",
     attributes: sportAttrs("Salle de sport physique", "Club de proximité (réseau national 400+ clubs)",
       "Illimités avec coachs diplômés", "Suivi + programme personnalisé via l'appli", "Non inclus"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-keepcool-prime", category: "Sport", name: "Keepcool Prime", price: 49.90,
@@ -101,6 +105,7 @@ const SPORT_OFFERS: MarketOffer[] = [
     setup_fee_note: "Frais d'inscription (~39€) + carte d'accès (~10€)",
     attributes: sportAttrs("Salle de sport physique", "Oui, réseau national KeepCool (300+ clubs)",
       "Illimités (formule Prime)", "Suivi + réservation de cours", "Non inclus"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-classpass", category: "Sport", name: "ClassPass", price: 39.99,
@@ -113,6 +118,7 @@ const SPORT_OFFERS: MarketOffer[] = [
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: sportAttrs("Agrégateur multi-activités", "Oui, centaines de salles/studios partenaires (selon ville)",
       "Selon crédits : yoga, boxe, pilates, piscine, etc.", "Réservation via l'appli ClassPass", "Non inclus"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-freeletics-coach", category: "Sport", name: "Freeletics Coach", price: 7.49,
@@ -125,6 +131,7 @@ const SPORT_OFFERS: MarketOffer[] = [
     attributes: sportAttrs("Application de coaching / Fitness à domicile", "Non applicable (application seule)",
       "Non applicable (entraînement individuel guidé par IA)",
       "Coeur du service : appli iOS/Android avec plans personnalisés", "Non inclus"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-strava-premium", category: "Sport", name: "Strava Premium", price: 9.99,
@@ -137,6 +144,7 @@ const SPORT_OFFERS: MarketOffer[] = [
     annual_price: 59.99, setup_fee: null, setup_fee_note: null,
     attributes: sportAttrs("Application de coaching / Fitness à domicile", "Non applicable (application seule)",
       "Non applicable (suivi individuel)", "Coeur du service : suivi GPS, segments, communauté", "Non inclus"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-zwift", category: "Sport", name: "Zwift", price: 19.99,
@@ -150,6 +158,7 @@ const SPORT_OFFERS: MarketOffer[] = [
     attributes: sportAttrs("Application de coaching / Fitness à domicile", "Non applicable (application seule)",
       "Non applicable (courses et sorties virtuelles en groupe)",
       "Coeur du service : appli + plateforme d'entraînement connectée", "Non inclus"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-dazn", category: "Sport", name: "DAZN", price: 14.99,
@@ -164,6 +173,74 @@ const SPORT_OFFERS: MarketOffer[] = [
     attributes: sportAttrs("Streaming sportif", "Non applicable (service de streaming)",
       "Non applicable (retransmission uniquement)", "Appli disponible sur tous supports (TV, mobile, web)",
       "Non inclus"),
+    location: null, region: null, scope: "national"
+  },
+  {
+    id: "mkt-gymlib", category: "Sport", name: "Gymlib", price: 29.99,
+    promo: "Souvent pris en charge partiellement par l'employeur (avantage CSE/RH)", score: 8.0,
+    engagement: "Sans engagement",
+    pros: ["Accès à des milliers de salles partenaires partout en France", "Cours collectifs, bien-être et coaching en ligne inclus"],
+    cons: ["Nombre de séances par mois limité selon la formule"],
+    link: "https://www.gymlib.com/", price_checked_at: CHECKED,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: sportAttrs("Agrégateur multi-activités", "Oui, milliers de salles partenaires en France",
+      "Cours collectifs et bien-être inclus", "Réservation et suivi inclus", "Non inclus"),
+    location: null, region: null, scope: "national"
+  },
+  {
+    id: "mkt-decathlon-coach", category: "Sport", name: "Decathlon Coach Premium", price: 4.99,
+    promo: null, score: 7.3, engagement: "Sans engagement",
+    pros: ["Le moins cher du comparatif", "Programmes personnalisés par Decathlon, utilisable partout en France"],
+    cons: ["Pas d'accès à une salle physique, coaching app uniquement"],
+    link: "https://www.decathloncoach.com/", price_checked_at: CHECKED,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: sportAttrs("Application de coaching / Fitness à domicile", "Non applicable (app uniquement)",
+      "Non inclus", "Suivi d'entraînement complet inclus", "Non applicable"),
+    location: null, region: null, scope: "national"
+  },
+  {
+    id: "mkt-vivactif-metz", category: "Sport", name: "Vivactif Metz", price: 34.90,
+    promo: null, score: 6.8, engagement: "Sans engagement",
+    pros: ["Salle indépendante avec suivi personnalisé", "Ambiance conviviale, coachs disponibles aux heures d'ouverture"],
+    cons: ["Un seul club, pas d'accès dans une autre ville", "Pas d'application de suivi dédiée"],
+    link: "https://www.vivactif-metz.fr/", price_checked_at: CHECKED,
+    annual_price: null, setup_fee: 29.0, setup_fee_note: "Frais d'inscription, souvent offerts en période promotionnelle",
+    attributes: sportAttrs("Salle de sport physique", "Non, club unique à Metz",
+      "Cours collectifs inclus (renforcement, cardio)", "Non disponible", "1 invité par mois"),
+    location: "Metz", region: "Grand Est", scope: "local"
+  },
+  {
+    id: "mkt-onair-fitness-nancy", category: "Sport", name: "On Air Fitness Nancy", price: 27.90,
+    promo: null, score: 6.9, engagement: "Sans engagement",
+    pros: ["Plateau musculation et cardio récent", "Tarif compétitif pour une salle indépendante"],
+    cons: ["Un seul club, pas d'accès dans une autre ville"],
+    link: "https://www.onair-fitness.fr/", price_checked_at: CHECKED,
+    annual_price: null, setup_fee: 19.0, setup_fee_note: "Frais d'inscription",
+    attributes: sportAttrs("Salle de sport physique", "Non, club unique à Nancy",
+      "Cours collectifs inclus", "Non disponible", "Non inclus"),
+    location: "Nancy", region: "Grand Est", scope: "local"
+  },
+  {
+    id: "mkt-cmg-sportsclub-paris", category: "Sport", name: "CMG Sports Club Paris", price: 54.90,
+    promo: null, score: 7.0, engagement: "Engagement 12 mois (69,90€/mois sans engagement)",
+    pros: ["Studios haut de gamme, cours collectifs premium (cycling, yoga, boxe)", "Coachs diplômés, encadrement soigné"],
+    cons: ["Uniquement les clubs parisiens du réseau", "Le plus cher des salles indépendantes du comparatif"],
+    link: "https://www.cmg-sportsclub.com/", price_checked_at: CHECKED,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: sportAttrs("Salle de sport physique", "Oui, entre les clubs CMG parisiens uniquement",
+      "Cours collectifs premium inclus", "Réservation de cours incluse", "1 invité par séance selon formule"),
+    location: "Paris", region: "Île-de-France", scope: "local"
+  },
+  {
+    id: "mkt-magicform-toulouse", category: "Sport", name: "Magic Form Toulouse", price: 22.90,
+    promo: "8 semaines offertes à l'inscription", score: 6.7, engagement: "Sans engagement",
+    pros: ["Tarif accessible pour une salle indépendante", "Créneaux étendus (ouvert tôt/tard)"],
+    cons: ["Un seul club à Toulouse, pas de réseau national"],
+    link: "https://www.magicform-toulouse.fr/", price_checked_at: CHECKED,
+    annual_price: null, setup_fee: 15.0, setup_fee_note: "Frais d'inscription",
+    attributes: sportAttrs("Salle de sport physique", "Non, club unique à Toulouse",
+      "Cours collectifs inclus", "Non disponible", "Non inclus"),
+    location: "Toulouse", region: "Occitanie", scope: "local"
   },
 ];
 
@@ -176,6 +253,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.iledefrance-mobilites.fr/titres-et-tarifs/detail/forfait-navigo-mois", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Île-de-France"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Paris et toute l'Île-de-France"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Île-de-France Mobilités"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (métro/RER/bus/tram)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Paris", region: "Île-de-France", scope: "local",
   },
   {
     id: "mkt-transport-velib", category: "Transport", name: "Vélib' Métropole -- V-Max", price: 9.3,
@@ -185,6 +263,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.velib-metropole.fr/offers", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Île-de-France"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Paris et petite couronne"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Île-de-France Mobilités"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Vélo en libre-service (électrique inclus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "Éligible au Forfait Mobilités Durables (jusqu'à 800€/an, facultatif)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (usage libre, sans trajet fixe)"}],
+    location: "Paris", region: "Île-de-France", scope: "local",
   },
   {
     id: "mkt-transport-tcl-lyon", category: "Transport", name: "TCL Lyon -- Abonnement 26-64 ans (zones 1+2)", price: 75.9,
@@ -194,6 +273,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.tcl.fr/titres-et-tarifs/tarification-tcl/les-abonnements-tcl", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Auvergne-Rhône-Alpes"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Lyon et métropole (zones 1+2)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Sytral Mobilités"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (métro/tram/bus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Lyon", region: "Auvergne-Rhône-Alpes", scope: "local",
   },
   {
     id: "mkt-transport-rtm-marseille", category: "Transport", name: "RTM Marseille -- Pass Permanent Zone Bleue", price: 40.0,
@@ -203,6 +283,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.rtm.fr/tarifs", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Provence-Alpes-Côte d'Azur"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Marseille (zone bleue)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "RTM / Métropole Aix-Marseille-Provence"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (métro/tram/bus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non (gratuit pour les -25 ans)"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Marseille", region: "Provence-Alpes-Côte d'Azur", scope: "local",
   },
   {
     id: "mkt-transport-tisseo-toulouse", category: "Transport", name: "Tisséo Toulouse -- Abonnement tout public", price: 50.5,
@@ -212,6 +293,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.tisseo.fr/acheter/tarifs", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Occitanie"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Toulouse Métropole"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Tisséo Collectivités"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (métro/tram/bus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Toulouse", region: "Occitanie", scope: "local",
   },
   {
     id: "mkt-transport-lignesazur-nice", category: "Transport", name: "Lignes d'Azur Nice -- Abonnement mensuel", price: 30.0,
@@ -221,6 +303,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.lignesdazur.com/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Provence-Alpes-Côte d'Azur"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Nice"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Métropole Nice Côte d'Azur"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (tram/bus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Nice", region: "Provence-Alpes-Côte d'Azur", scope: "local",
   },
   {
     id: "mkt-transport-tan-nantes", category: "Transport", name: "TAN / Naolib Nantes -- Abonnement mensuel", price: 50.0,
@@ -230,6 +313,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.naolib.fr/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Pays de la Loire"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Nantes Métropole"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Nantes Métropole"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (tram/bus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Nantes", region: "Pays de la Loire", scope: "local",
   },
   {
     id: "mkt-transport-cts-strasbourg", category: "Transport", name: "CTS Strasbourg -- Abonnement mensuel", price: 48.0,
@@ -239,6 +323,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.cts-strasbourg.eu/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Grand Est"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Strasbourg Eurométropole"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Strasbourg Eurométropole"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (tram/bus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Strasbourg", region: "Grand Est", scope: "local",
   },
   {
     id: "mkt-transport-tam-montpellier", category: "Transport", name: "TaM Montpellier -- Pass gratuité résidents", price: 0.0,
@@ -248,6 +333,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.tam-voyages.com/presentation/?rub_code=72", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Occitanie"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Montpellier Méditerranée Métropole"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Montpellier Méditerranée Métropole"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (tram/bus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Oui, gratuit pour tous les résidents de la Métropole (Pass gratuité)"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "Non applicable (déjà gratuit)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Montpellier", region: "Occitanie", scope: "local",
   },
   {
     id: "mkt-transport-tbm-bordeaux", category: "Transport", name: "TBM Bordeaux -- Abonnement mensuel", price: 45.0,
@@ -257,6 +343,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.infotbm.com/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Nouvelle-Aquitaine"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Bordeaux Métropole"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Bordeaux Métropole"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (tram/bus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Bordeaux", region: "Nouvelle-Aquitaine", scope: "local",
   },
   {
     id: "mkt-transport-ilevia-lille", category: "Transport", name: "Ilévia Lille -- Abonnement mensuel", price: 50.0,
@@ -266,6 +353,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.ilevia.fr/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Hauts-de-France"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Métropole Européenne de Lille"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Métropole Européenne de Lille"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (métro/tram/bus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Lille", region: "Hauts-de-France", scope: "local",
   },
   {
     id: "mkt-transport-star-rennes", category: "Transport", name: "STAR Rennes -- Abonnement mensuel", price: 43.0,
@@ -275,6 +363,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.star.fr/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Bretagne"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Rennes Métropole"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Rennes Métropole"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (métro/bus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Rennes", region: "Bretagne", scope: "local",
   },
   {
     id: "mkt-transport-stan-nancy", category: "Transport", name: "Stan Nancy -- Abonnement mensuel", price: 40.0,
@@ -284,6 +373,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.reseau-stan.com/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Grand Est"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Métropole du Grand Nancy"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Métropole du Grand Nancy"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (bus/BHNS)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Nancy", region: "Grand Est", scope: "local",
   },
   {
     id: "mkt-transport-lemet-metz", category: "Transport", name: "Le Met' Metz -- Abonnement mensuel", price: 38.0,
@@ -293,6 +383,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.lemet.fr/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Grand Est"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Metz Métropole"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Metz Métropole"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (bus/BHNS)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Metz", region: "Grand Est", scope: "local",
   },
   {
     id: "mkt-transport-tag-grenoble", category: "Transport", name: "TAG (M Tag) Grenoble -- Abonnement mensuel", price: 46.0,
@@ -302,6 +393,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.mtag.fr/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Auvergne-Rhône-Alpes"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Grenoble-Alpes Métropole"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Grenoble-Alpes Métropole"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (tram/bus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire (Code du travail Art. L3261-2)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Grenoble", region: "Auvergne-Rhône-Alpes", scope: "local",
   },
   {
     id: "mkt-transport-dkbus-dunkerque", category: "Transport", name: "DK'BUS Dunkerque -- Réseau 100% gratuit", price: 0.0,
@@ -311,6 +403,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.dkbus.com/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Urbain local"}, {"key": "region", "label": "Région", "value": "Hauts-de-France"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Communauté urbaine de Dunkerque"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Communauté urbaine de Dunkerque"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Transport en commun (bus)"}, {"key": "free_transport", "label": "Gratuité", "value": "Oui, gratuit pour tous, sans condition ni justificatif"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "Non applicable (déjà gratuit)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel fixe)"}],
+    location: "Dunkerque", region: "Hauts-de-France", scope: "local",
   },
   {
     id: "mkt-transport-ter-aura", category: "Transport", name: "TER Auvergne-Rhône-Alpes (carte OùRA!)", price: 70.0,
@@ -320,6 +413,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.ter.sncf.com/auvergne-rhone-alpes", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Régional (TER)"}, {"key": "region", "label": "Région", "value": "Auvergne-Rhône-Alpes"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Toute la région (trains + cars régionaux)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Région Auvergne-Rhône-Alpes"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Train régional (TER) + cars"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire sur l'abonnement domicile-travail"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (carnets/cartes à l'usage disponibles)"}],
+    location: null, region: "Auvergne-Rhône-Alpes", scope: "regional",
   },
   {
     id: "mkt-transport-lio-occitanie", category: "Transport", name: "Lio (Région Occitanie)", price: 55.0,
@@ -329,6 +423,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.lio-occitanie.fr/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Régional (TER)"}, {"key": "region", "label": "Région", "value": "Occitanie"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Toute la région (trains + cars régionaux)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Région Occitanie"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Train régional (TER) + cars"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire sur l'abonnement domicile-travail"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (carnets/cartes à l'usage disponibles)"}],
+    location: null, region: "Occitanie", scope: "regional",
   },
   {
     id: "mkt-transport-modalis-nouvelleaquitaine", category: "Transport", name: "Modalis (Région Nouvelle-Aquitaine)", price: 50.0,
@@ -338,6 +433,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.modalis.fr/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Régional (TER)"}, {"key": "region", "label": "Région", "value": "Nouvelle-Aquitaine"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Toute la région (trains + cars régionaux)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Région Nouvelle-Aquitaine"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Train régional (TER) + cars"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire sur l'abonnement domicile-travail"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (carnets/cartes à l'usage disponibles)"}],
+    location: null, region: "Nouvelle-Aquitaine", scope: "regional",
   },
   {
     id: "mkt-transport-passpass-hautsdefrance", category: "Transport", name: "Pass Pass (Région Hauts-de-France)", price: 45.0,
@@ -347,6 +443,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.pass-pass.fr/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Régional (TER)"}, {"key": "region", "label": "Région", "value": "Hauts-de-France"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Toute la région (trains + cars régionaux)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Région Hauts-de-France"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Train régional (TER) + cars"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire sur l'abonnement domicile-travail"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (carnets/cartes à l'usage disponibles)"}],
+    location: null, region: "Hauts-de-France", scope: "regional",
   },
   {
     id: "mkt-transport-fluo-grandest", category: "Transport", name: "Fluo Grand Est", price: 55.0,
@@ -356,6 +453,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.fluo.eu/fr/grand-est", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Régional (TER)"}, {"key": "region", "label": "Région", "value": "Grand Est"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Toute la région (trains + cars régionaux)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Région Grand Est"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Train régional (TER) + cars"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire sur l'abonnement domicile-travail"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (carnets/cartes à l'usage disponibles)"}],
+    location: null, region: "Grand Est", scope: "regional",
   },
   {
     id: "mkt-transport-breizhgo-bretagne", category: "Transport", name: "BreizhGo (Région Bretagne)", price: 50.0,
@@ -365,6 +463,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.breizhgo.bzh/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Régional (TER)"}, {"key": "region", "label": "Région", "value": "Bretagne"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Toute la région (trains + cars régionaux)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Région Bretagne"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Train régional (TER) + cars"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire sur l'abonnement domicile-travail"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (carnets/cartes à l'usage disponibles)"}],
+    location: null, region: "Bretagne", scope: "regional",
   },
   {
     id: "mkt-transport-aleop-paysdelaloire", category: "Transport", name: "Aléop (Région Pays de la Loire)", price: 48.0,
@@ -374,6 +473,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://aleop.paysdelaloire.fr/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Régional (TER)"}, {"key": "region", "label": "Région", "value": "Pays de la Loire"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Toute la région (trains + cars régionaux)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Région Pays de la Loire"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Train régional (TER) + cars"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire sur l'abonnement domicile-travail"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (carnets/cartes à l'usage disponibles)"}],
+    location: null, region: "Pays de la Loire", scope: "regional",
   },
   {
     id: "mkt-transport-nomad-normandie", category: "Transport", name: "Nomad (Région Normandie)", price: 45.0,
@@ -383,6 +483,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.nomad-normandie.fr/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Régional (TER)"}, {"key": "region", "label": "Région", "value": "Normandie"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Toute la région (trains + cars régionaux)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Région Normandie"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Train régional (TER) + cars"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire sur l'abonnement domicile-travail"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (carnets/cartes à l'usage disponibles)"}],
+    location: null, region: "Normandie", scope: "regional",
   },
   {
     id: "mkt-transport-zou-paca", category: "Transport", name: "Zou! (Région Provence-Alpes-Côte d'Azur)", price: 52.0,
@@ -392,6 +493,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.zouprovencealpescotedazur.fr/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Régional (TER)"}, {"key": "region", "label": "Région", "value": "Provence-Alpes-Côte d'Azur"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Toute la région (trains + cars régionaux)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Région Provence-Alpes-Côte d'Azur"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Train régional (TER) + cars"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire sur l'abonnement domicile-travail"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (carnets/cartes à l'usage disponibles)"}],
+    location: null, region: "Provence-Alpes-Côte d'Azur", scope: "regional",
   },
   {
     id: "mkt-transport-remi-centrevaldeloire", category: "Transport", name: "Rémi (Région Centre-Val de Loire)", price: 42.0,
@@ -401,6 +503,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.remi-centrevaldeloire.fr/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "Régional (TER)"}, {"key": "region", "label": "Région", "value": "Centre-Val de Loire"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Toute la région (trains + cars régionaux)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Région Centre-Val de Loire"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Train régional (TER) + cars"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "50% obligatoire sur l'abonnement domicile-travail"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (carnets/cartes à l'usage disponibles)"}],
+    location: null, region: "Centre-Val de Loire", scope: "regional",
   },
   {
     id: "mkt-transport-sncf-avantage", category: "Transport", name: "Carte Avantage SNCF", price: 4.08,
@@ -410,6 +513,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.sncf-connect.com/", price_checked_at: "2026-07-12",
     annual_price: 49.0, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "National"}, {"key": "region", "label": "Région", "value": "France entière"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "France entière (grandes lignes)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "SNCF Voyageurs"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Train grande ligne (TGV/Intercités, -30% + prix plafonné)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "Non applicable (carte de réduction, pas un abonnement domicile-travail)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (réduction à l'usage, aucun abonnement fixe)"}],
+    location: null, region: null, scope: "national",
   },
   {
     id: "mkt-transport-sncf-max", category: "Transport", name: "SNCF Max Jeune / Max Senior", price: 79.0,
@@ -419,6 +523,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.sncf-connect.com/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "National"}, {"key": "region", "label": "Région", "value": "France entière"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "France entière (grandes lignes)"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "SNCF Voyageurs"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Train grande ligne (TGV/Intercités, illimité)"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "Non applicable (abonnement loisir, pas domicile-travail)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Non (abonnement mensuel)"}],
+    location: null, region: null, scope: "national",
   },
   {
     id: "mkt-transport-blablacar-daily", category: "Transport", name: "BlaBlaCar Daily", price: 45.0,
@@ -428,6 +533,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.blablacar.fr/daily", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "National"}, {"key": "region", "label": "Région", "value": "France entière"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Grandes agglomérations + trajets périurbains"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Non applicable (service privé)"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Covoiturage domicile-travail"}, {"key": "free_transport", "label": "Gratuité", "value": "Non"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "Éligible au Forfait Mobilités Durables employeur (facultatif)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (paiement à l'usage, aucun engagement)"}],
+    location: null, region: null, scope: "national",
   },
   {
     id: "mkt-transport-karos-klaxit", category: "Transport", name: "Karos / Klaxit", price: 0.0,
@@ -437,6 +543,7 @@ const TRANSPORT_OFFERS: MarketOffer[] = [
     link: "https://www.klaxit.com/", price_checked_at: "2026-07-12",
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: [{"key": "scope", "label": "Portée", "value": "National"}, {"key": "region", "label": "Région", "value": "France entière"}, {"key": "covered_cities", "label": "Villes / zone desservie", "value": "Zones périurbaines et rurales principalement"}, {"key": "aom_name", "label": "Autorité organisatrice (AOM)", "value": "Non applicable (service privé)"}, {"key": "mobility_type", "label": "Type de mobilité", "value": "Covoiturage domicile-travail subventionné"}, {"key": "free_transport", "label": "Gratuité", "value": "Variable selon bassin (souvent gratuit pour le passager)"}, {"key": "employer_reimbursement", "label": "Prise en charge employeur", "value": "Généralement pris en charge à 100% par l'employeur/la collectivité (Forfait Mobilités Durables)"}, {"key": "flexible_usage", "label": "Adapté au télétravail hybride", "value": "Oui (paiement à l'usage)"}],
+    location: null, region: null, scope: "national",
   },
 ];
 const BANQUE_OFFERS: MarketOffer[] = [
@@ -452,6 +559,7 @@ const BANQUE_OFFERS: MarketOffer[] = [
     attributes: bankingAttrs("Banque en ligne", "Standard (Visa Classic)", "Gratuit dans le monde entier",
       "Aucune condition de revenus", "Chèques par courrier uniquement, pas d'espèces",
       "Assurance moyens de paiement de base incluse"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-banque-boursobank-ultim", category: "Banque", name: "BoursoBank -- Formule Ultim", price: 0.0,
@@ -465,6 +573,7 @@ const BANQUE_OFFERS: MarketOffer[] = [
     attributes: bankingAttrs("Banque en ligne", "Premium (Visa Ultim, éq. Gold)", "Gratuit dans le monde entier",
       "Gratuite dès 2 000€/mois de revenus nets (sinon 9€/mois)", "Chèques par courrier uniquement, pas d'espèces",
       "Assurances voyage, médicale et annulation incluses"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-banque-fortuneo-fosfo", category: "Banque", name: "Fortuneo -- Fosfo Mastercard", price: 0.0,
@@ -477,6 +586,7 @@ const BANQUE_OFFERS: MarketOffer[] = [
     attributes: bankingAttrs("Banque en ligne", "Standard (Mastercard)", "Gratuit dans le monde entier",
       "Aucune condition de revenus", "Chèques par courrier uniquement, pas d'espèces",
       "Assurance moyens de paiement de base incluse"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-banque-fortuneo-gold", category: "Banque", name: "Fortuneo -- Gold Mastercard", price: 0.0,
@@ -490,6 +600,7 @@ const BANQUE_OFFERS: MarketOffer[] = [
     attributes: bankingAttrs("Banque en ligne", "Premium (Mastercard Gold)", "Gratuit dans le monde entier",
       "Gratuite dès 1 800€/mois de revenus nets (sinon 6,90€/mois)", "Chèques par courrier uniquement, pas d'espèces",
       "Assurances voyage, médicale et annulation incluses"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-banque-monabanq-pratiq-plus", category: "Banque", name: "Monabanq -- Formule Pratiq+", price: 2.90,
@@ -502,6 +613,7 @@ const BANQUE_OFFERS: MarketOffer[] = [
     attributes: bankingAttrs("Banque en ligne (hybride, réseau CIC)", "Standard (Mastercard)",
       "2% + 2€ par paiement hors zone euro", "Aucune condition de revenus", "Oui, via le réseau d'agences CIC",
       "Assurance moyens de paiement incluse"),
+    location: null, region: null, scope: "national"
   },
   // --- Néo-banques & FinTech mobiles ---
   {
@@ -514,6 +626,7 @@ const BANQUE_OFFERS: MarketOffer[] = [
     annual_price: null, setup_fee: 4.99, setup_fee_note: "Carte physique en option, livraison payante",
     attributes: bankingAttrs("Néo-banque", "Standard", "Gratuit jusqu'à 200€/mois de retrait, puis 2%",
       "Aucune condition de revenus", "Non disponible", "Protection fraude de base incluse"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-banque-revolut-premium", category: "Banque", name: "Revolut -- Premium", price: 9.99,
@@ -525,6 +638,7 @@ const BANQUE_OFFERS: MarketOffer[] = [
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: bankingAttrs("Néo-banque", "Premium", "Gratuit jusqu'à 400€/mois de retrait",
       "Aucune condition de revenus", "Non disponible", "Assurance voyage multi-trip et retard bagages incluses"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-banque-n26-standard", category: "Banque", name: "N26 -- Standard", price: 0.0,
@@ -536,6 +650,7 @@ const BANQUE_OFFERS: MarketOffer[] = [
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: bankingAttrs("Néo-banque", "Standard (Mastercard)", "Paiements gratuits, 3 retraits gratuits/mois puis 1,7%",
       "Aucune condition de revenus", "Non disponible", "Non incluse sur la formule Standard"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-banque-n26-you", category: "Banque", name: "N26 -- You", price: 9.90,
@@ -547,6 +662,7 @@ const BANQUE_OFFERS: MarketOffer[] = [
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: bankingAttrs("Néo-banque", "Premium", "Gratuit dans le monde entier",
       "Aucune condition de revenus", "Non disponible", "Assurance voyage, médicale et vol de téléphone incluses"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-banque-sumeria-lydia", category: "Banque", name: "Sumeria (Lydia) -- Compte courant", price: 0.0,
@@ -558,6 +674,7 @@ const BANQUE_OFFERS: MarketOffer[] = [
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: bankingAttrs("Néo-banque", "Standard", "2% + 1€ par paiement hors zone euro",
       "Aucune condition de revenus, dès 16 ans", "Non disponible", "Protection fraude de base incluse"),
+    location: null, region: null, scope: "national"
   },
   // --- Banques traditionnelles ---
   {
@@ -570,6 +687,7 @@ const BANQUE_OFFERS: MarketOffer[] = [
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: bankingAttrs("Banque traditionnelle", "Standard (Visa Classic)", "2% + 2,50€ par paiement hors zone euro",
       "Sous condition de revenus (étude de dossier)", "Oui, en agence", "Assurance moyens de paiement incluse dans le package"),
+    location: null, region: null, scope: "national"
   },
   {
     id: "mkt-banque-ca-globe-trotter", category: "Banque", name: "Crédit Agricole -- Formule Globe-Trotter 18-30",
@@ -582,6 +700,74 @@ const BANQUE_OFFERS: MarketOffer[] = [
     annual_price: null, setup_fee: null, setup_fee_note: null,
     attributes: bankingAttrs("Banque traditionnelle", "Standard (Visa Classic)", "Gratuit dans le monde entier",
       "Réservée aux 18-30 ans", "Oui, en agence", "Assurance moyens de paiement incluse"),
+    location: null, region: null, scope: "national"
+  },
+  {
+    id: "mkt-banque-labanquepostale", category: "Banque", name: "La Banque Postale -- Formule Essentielle", price: 2.0,
+    promo: null, score: 6.9, engagement: "Sans engagement",
+    pros: ["Réseau le plus dense de France (bureaux de poste)", "Accessible sans condition de revenus stricte"],
+    cons: ["Offre bancaire de base peu compétitive face aux néobanques"],
+    link: "https://www.labanquepostale.fr/particuliers/tarifs.html", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Banque traditionnelle", "Standard (Visa Classic)", "2% + 2€ par paiement hors zone euro",
+      "Aucune condition de revenus stricte, droit au compte facilité", "Oui, en bureau de poste", "Assurance moyens de paiement incluse"),
+    location: null, region: null, scope: "national"
+  },
+  {
+    id: "mkt-banque-hellobank", category: "Banque", name: "Hello bank!", price: 0.0,
+    promo: null, score: 7.5, engagement: "Sans engagement",
+    pros: ["Gratuit sous condition de revenus, adossé à BNP Paribas", "Retraits gratuits dans le réseau BNP Paribas"],
+    cons: ["Carte payante si les conditions de revenus ne sont pas remplies"],
+    link: "https://www.hellobank.fr/", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Banque en ligne (groupe BNP Paribas)", "Standard (Visa Classic)", "2% hors zone euro",
+      "Sous condition de revenus (1 200€ net/mois)", "Oui, dans le réseau BNP Paribas", "Assurance moyens de paiement incluse"),
+    location: null, region: null, scope: "national"
+  },
+  {
+    id: "mkt-banque-societe-generale", category: "Banque", name: "Société Générale -- Formule Initiative", price: 9.90,
+    promo: null, score: 6.3, engagement: "Sans engagement",
+    pros: ["Réseau d'agences physiques dense", "Conseiller dédié"],
+    cons: ["Package payant même pour un usage basique", "Frais hors zone euro élevés"],
+    link: "https://particuliers.societegenerale.fr/tarifs.html", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Banque traditionnelle", "Standard (Visa Classic)", "2,5% + 2€ par paiement hors zone euro",
+      "Sous condition de revenus (étude de dossier)", "Oui, en agence", "Assurance moyens de paiement incluse dans le package"),
+    location: null, region: null, scope: "national"
+  },
+  {
+    id: "mkt-banque-lcl", category: "Banque", name: "LCL -- Compte à composer Essentiel", price: 6.50,
+    promo: null, score: 6.4, engagement: "Sans engagement",
+    pros: ["Réseau d'agences physiques dans toute la France", "Offre modulable à la carte"],
+    cons: ["Tarifs additionnels vite cumulés selon les options choisies"],
+    link: "https://www.lcl.fr/tarifs", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Banque traditionnelle", "Standard (Visa Classic)", "2% + 2,50€ par paiement hors zone euro",
+      "Sous condition de revenus (étude de dossier)", "Oui, en agence", "Assurance moyens de paiement incluse dans le package"),
+    location: null, region: null, scope: "national"
+  },
+  {
+    id: "mkt-banque-nickel", category: "Banque", name: "Compte Nickel", price: 2.08,
+    promo: "20€/an soit environ 1,67€/mois pour l'offre Nickel de base (formules Zen/Ultra plus chères)",
+    score: 8.0, engagement: "Sans engagement",
+    pros: ["Ouverture en 5 minutes chez un buraliste partenaire, sans condition de revenus", "Dépôt d'espèces possible chez les buralistes partenaires"],
+    cons: ["Pas de découvert autorisé ni de chéquier"],
+    link: "https://www.compte-nickel.fr/", price_checked_at: CHECKED_BANQUE,
+    annual_price: 20.0, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Compte de paiement (buraliste partenaire)", "Standard (Mastercard)", "2% hors zone euro",
+      "Aucune condition de revenus, interdits bancaires acceptés", "Oui, espèces chez les buralistes partenaires", "Assurance moyens de paiement incluse"),
+    location: null, region: null, scope: "national"
+  },
+  {
+    id: "mkt-banque-orange-bank", category: "Banque", name: "Orange Bank", price: 0.0,
+    promo: null, score: 7.2, engagement: "Sans engagement",
+    pros: ["Gratuit sous condition d'utilisation de la carte", "Cashback sur certains achats"],
+    cons: ["Pas d'agence physique, support à distance uniquement"],
+    link: "https://www.orangebank.fr/", price_checked_at: CHECKED_BANQUE,
+    annual_price: null, setup_fee: null, setup_fee_note: null,
+    attributes: bankingAttrs("Banque en ligne / néobanque", "Standard (Mastercard)", "2% hors zone euro",
+      "Aucune condition de revenus, dès 18 ans", "Non disponible", "Assurance paiement mobile incluse"),
+    location: null, region: null, scope: "national"
   },
 ];
 
@@ -590,8 +776,12 @@ const BANQUE_OFFERS: MarketOffer[] = [
  * encore migrée/seedée sur cet environnement) -- une catégorie activée dans
  * `LabComparatorPage` ne doit jamais rendre une page blanche. Contenu
  * identique aux migrations backend `b2c94a71e8d3_add_sport_fitness_market_offers`,
- * `c4d8f2a913e7_add_transport_mobilite_market_offers` et
- * `a4f7c9e2b6d1_add_banque_market_offers`. */
+ * `c4d8f2a913e7_add_transport_mobilite_market_offers`,
+ * `a4f7c9e2b6d1_add_banque_market_offers` et aux migrations `location`/
+ * `region`/`scope` `f2a8c4e9b1d3_add_geo_metadata_columns`,
+ * `a7c1e5f83b02_backfill_geo_metadata`,
+ * `c3b9f6d2a847_add_comparator_step_flow_competitors` (utilisées par le
+ * matching de l'Étape 3 du Comparateur, cf. lib/comparatorMatch.ts). */
 export const MARKET_OFFERS_FALLBACK: Partial<Record<string, MarketOffer[]>> = {
   Sport: SPORT_OFFERS,
   Transport: TRANSPORT_OFFERS,
