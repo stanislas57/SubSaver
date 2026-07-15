@@ -55,6 +55,9 @@ const PremiumPage = lazy(() =>
 const LabComparatorPage = lazy(() =>
   import("@/pages/LabComparatorPage").then((m) => ({ default: m.LabComparatorPage }))
 );
+const ResourcesPage = lazy(() =>
+  import("@/pages/ResourcesPage").then((m) => ({ default: m.ResourcesPage }))
+);
 const LabCancellationPage = lazy(() =>
   import("@/pages/LabCancellationPage").then((m) => ({ default: m.LabCancellationPage }))
 );
@@ -170,6 +173,7 @@ export default function App() {
 
                 {/* Routes Premium-only (Espace Particulier Premium + BtoB) */}
                 <Route element={<PremiumOnlyRoute />}>
+                  <Route path="/ressources" element={<ResourcesPage />} />
                   <Route path="/lab" element={<Navigate to="/lab/comparator" replace />} />
                   <Route path="/lab/comparator" element={<LabComparatorPage />} />
                   <Route path="/lab/shared" element={<SharedSubscriptionPage />} />
