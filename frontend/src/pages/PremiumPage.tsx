@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Sparkles, ShieldCheck, Building2, Download } from "lucide-react";
+import { Sparkles, ShieldCheck, Building2, Download, ArrowRight } from "lucide-react";
 import { RevealText } from "@/components/shared/RevealText";
 import { BentoTile } from "@/components/shared/BentoTile";
 import { CTALink } from "@/components/shared/CTALink";
@@ -164,6 +164,9 @@ export function PremiumPage() {
                 </div>
                 <h3 className="text-base font-bold text-luxury-text">{tool.title}</h3>
                 <p className="mt-1 text-sm text-luxury-text-light">{tool.description}</p>
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-luxury-gold-deep">
+                  {isPremium ? "Ouvrir" : "Débloquer"} <ArrowRight className="h-3.5 w-3.5" />
+                </span>
               </BentoTile>
             );
           })}

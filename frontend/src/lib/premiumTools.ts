@@ -4,7 +4,7 @@ export const PARTICULIER_TOOLS = [
   {
     icon: LineChart,
     title: "Comparateur d'offres",
-    description: "Compare tes abonnements aux meilleures offres du marché.",
+    description: "Trouve de meilleures offres pour réduire tes factures : on compare tes abonnements au marché en continu.",
     path: "/lab/comparator",
   },
   {
@@ -23,7 +23,7 @@ export const PARTICULIER_TOOLS = [
     icon: Wallet,
     title: "Vos Ressources",
     description:
-      "Votre copilote de santé financière : revenu détecté, reste à vivre, répartiteur de budget et académie de l'épargne.",
+      "Détecte ton salaire et optimise ton budget : reste à vivre, répartiteur de budget et académie de l'épargne.",
     path: "/ressources",
   },
 ] as const;
