@@ -126,6 +126,54 @@ def send_debt_reminder_email(
     send_email(to, subject=f"{owner_name} te rappelle {price} pour vos abonnements partagés", html_body=html_body)
 
 
+def send_renewal_alert_email(to: str, first_name: str, subscription_name: str, price: float, currency: str, renewal_date_label: str, days_before: int) -> None:
+    """Alerte de renouvellement (7/10/14 jours avant échéance selon
+    `User.alert_delay_days`), envoyée une seule fois par cycle par le job
+    quotidien (cf. app/core/renewal_alerts.py) -- jamais de lien d'action
+    directe (annuler/payer) : SubSaver ne gère aucun paiement, l'utilisateur
+    agit depuis l'app (cf. quick actions du centre de notifications)."""
+    safe_first_name = html.escape(first_name)
+    safe_name = html.escape(subscription_name)
+    price_label = format_price(price, currency)
+    day_word = "jour" if days_before == 1 else "jours"
+
+    html_body = f"""
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; background: #f8fafc;">
+      <div style="background: #0A1128; padding: 24px 32px; border-radius: 12px 12px 0 0;">
+        <span style="color: #D4AF37; font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">SubSaver</span>
+      </div>
+      <div style="background: #ffffff; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="margin: 0 0 16px; color: #0f172a; font-size: 15px;">Bonjour {safe_first_name},</p>
+        <p style="margin: 0 0 24px; color: #475569; font-size: 15px; line-height: 1.6;">
+          Ton abonnement <strong>{safe_name}</strong> se renouvelle dans {days_before} {day_word}, le {renewal_date_label}.
+        </p>
+
+        <div style="background: #FAF6EA; border: 1px solid #D4AF37; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
+          <p style="margin: 0 0 4px; color: #64748b; font-size: 13px;">Montant du renouvellement</p>
+          <p style="margin: 0; color: #0A1128; font-size: 32px; font-weight: 700;">{price_label}</p>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #334155;">
+          <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0; color: #64748b;">Abonnement</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600;">{safe_name}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #64748b;">Date de renouvellement</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: 600;">{renewal_date_label}</td>
+          </tr>
+        </table>
+
+        <p style="margin: 24px 0 0; color: #94a3b8; font-size: 12px; line-height: 1.5;">
+          Ouvre SubSaver pour renouveler ou supprimer cet abonnement en un clic. Tu peux ajuster le
+          délai de préavis (7, 10 ou 14 jours) dans tes préférences de compte.
+        </p>
+      </div>
+    </div>
+    """
+    send_email(to, subject=f"{subscription_name} se renouvelle dans {days_before} {day_word} - {price_label}", html_body=html_body)
+
+
 def send_contact_email(name: str, from_email: str, subject: str, message: str) -> None:
     """Transfère un message du formulaire de contact public vers
     `settings.CONTACT_EMAIL`, avec `Reply-To` positionné sur l'adresse du

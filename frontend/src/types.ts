@@ -8,6 +8,7 @@ export type Theme = "light" | "dark";
 export type Currency = "EUR" | "USD" | "GBP" | "SEK";
 export type NotificationPref = "all" | "trials" | "none";
 export type Importance = 1 | 2 | 3;
+export type AlertDelayDays = 7 | 10 | 14;
 
 // ---------------------------------------------------------------------------
 // Utilisateur / Authentification
@@ -21,6 +22,9 @@ export interface User {
   theme: Theme;
   currency: Currency;
   notification_pref: NotificationPref;
+  /** Délai (jours) avant renouvellement auquel envoyer l'alerte in-app +
+   * email -- 7, 10 ou 14, réglable dans le profil (cf. ProfileForm). */
+  alert_delay_days: AlertDelayDays;
   is_premium: boolean;
   /** Date ISO de la souscription Premium (posée une seule fois côté serveur),
    * null si jamais upgradé ou upgradé avant l'ajout de ce champ. */
@@ -51,6 +55,27 @@ export interface ProfileUpdatePayload {
   theme?: Theme;
   currency?: Currency;
   notification_pref?: NotificationPref;
+  alert_delay_days?: AlertDelayDays;
+}
+
+// ---------------------------------------------------------------------------
+// Alertes de renouvellement
+// ---------------------------------------------------------------------------
+
+export type RenewalAlertStatus = "pending" | "sent" | "dismissed";
+
+/** GET /notifications - une alerte par cycle de renouvellement en attente
+ * (jamais status="dismissed", filtré côté serveur). */
+export interface RenewalAlert {
+  id: string;
+  subscription_id: string;
+  subscription_name: string;
+  price: number;
+  /** Format ISO "YYYY-MM-DD". */
+  renewal_date: string;
+  status: RenewalAlertStatus;
+  is_read: boolean;
+  created_at: string;
 }
 
 // ---------------------------------------------------------------------------

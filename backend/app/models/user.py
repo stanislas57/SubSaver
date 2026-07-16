@@ -26,6 +26,10 @@ class User(Base):
     theme: Mapped[str] = mapped_column(String, nullable=False, default="light")
     currency: Mapped[str] = mapped_column(String, nullable=False, default="EUR")
     notification_pref: Mapped[str] = mapped_column(String, nullable=False, default="all")
+    # Délai (en jours) avant chaque renouvellement auquel envoyer l'alerte
+    # in-app + email (cf. app/core/renewal_alerts.py) -- 7, 10 ou 14,
+    # contraint côté schéma Pydantic (ProfileUpdate), pas en base.
+    alert_delay_days: Mapped[int] = mapped_column(Integer, nullable=False, default=7)
     is_premium: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     # Date ISO de la souscription Premium, posée une seule fois par
     # POST /users/me/upgrade-premium (jamais réécrite ensuite). Null pour les

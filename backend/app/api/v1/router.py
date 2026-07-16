@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import admin, auth, bank, contact, family, market, pro, subscriptions, users
+from app.api.v1 import admin, auth, bank, contact, family, market, notifications, pro, subscriptions, users
 
 api_router = APIRouter()
 api_router.include_router(auth.router)
@@ -12,3 +12,4 @@ api_router.include_router(family.router)
 api_router.include_router(admin.router)
 api_router.include_router(contact.router)
 api_router.include_router(pro.router)
+api_router.include_router(notifications.router)

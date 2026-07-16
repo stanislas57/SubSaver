@@ -7,6 +7,7 @@ Theme = Literal["light", "dark"]
 Currency = Literal["EUR", "USD", "GBP", "SEK"]
 NotificationPref = Literal["all", "trials", "none"]
 Importance = Literal[1, 2, 3]
+AlertDelayDays = Literal[7, 10, 14]
 
 
 class UserOut(BaseModel):
@@ -19,6 +20,7 @@ class UserOut(BaseModel):
     theme: Theme
     currency: Currency
     notification_pref: NotificationPref
+    alert_delay_days: AlertDelayDays
     is_premium: bool
     premium_since: Optional[str] = None
     bank_connected: bool
@@ -66,6 +68,22 @@ class ProfileUpdate(BaseModel):
     theme: Optional[Theme] = None
     currency: Optional[Currency] = None
     notification_pref: Optional[NotificationPref] = None
+    alert_delay_days: Optional[AlertDelayDays] = None
+
+
+class RenewalAlertOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    subscription_id: str
+    # Dénormalisés depuis Subscription pour que le frontend n'ait pas à
+    # recorréler chaque alerte à sa liste d'abonnements déjà chargée.
+    subscription_name: str
+    price: float
+    renewal_date: str
+    status: Literal["pending", "sent", "dismissed"]
+    is_read: bool
+    created_at: str
 
 
 class SubscriptionOut(BaseModel):

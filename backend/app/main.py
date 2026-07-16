@@ -9,6 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.rate_limit import limiter
+from app.core.scheduler import start_scheduler, stop_scheduler
 
 # Sans ceci, un logger applicatif (logger = logging.getLogger(__name__)) reste
 # muet en dessous de WARNING : le root logger n'a par défaut aucun handler
@@ -75,6 +76,16 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+
+
+@app.on_event("startup")
+def _on_startup() -> None:
+    start_scheduler()
+
+
+@app.on_event("shutdown")
+def _on_shutdown() -> None:
+    stop_scheduler()
 
 
 @app.get("/")
