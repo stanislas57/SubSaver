@@ -20,10 +20,11 @@ export interface ComparatorOfferCardProps {
   badges?: OfferBadge[];
 }
 
-/** Carte d'offre générique : les 3 premiers `attributes` de l'offre s'affichent
- * toujours, quelle que soit la famille (VOD, forfaits mobiles, musique...) --
- * c'est la donnée elle-même qui porte les libellés propres à chaque catégorie,
- * pas le composant. */
+/** Carte d'offre générique : tous les `attributes` de l'offre s'affichent,
+ * quelle que soit la famille (VOD, forfaits mobiles, musique...) -- c'est la
+ * donnée elle-même qui porte les libellés propres à chaque catégorie, pas le
+ * composant, et rien n'est tronqué pour rester rigoureusement comparable
+ * critère par critère avec la vue tableau (cf. ComparatorOfferTable). */
 export function ComparatorOfferCard({ offer, currency, isCheapest, isBestMatch, currentPrice, badges }: ComparatorOfferCardProps) {
   const savings = currentPrice ? currentPrice - offer.price : null;
   // Tolère un backend pas encore redéployé/migré sur le nouveau schéma (champ
@@ -84,7 +85,7 @@ export function ComparatorOfferCard({ offer, currency, isCheapest, isBestMatch, 
 
         {attributes.length > 0 && (
           <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 border-y border-border py-3 text-xs">
-            {attributes.slice(0, 4).map((attr) => (
+            {attributes.map((attr) => (
               <div key={attr.key} className="min-w-0">
                 <dt className="flex items-center gap-1 text-text-muted">
                   <ListChecks className="h-3 w-3 shrink-0" /> {attr.label}
