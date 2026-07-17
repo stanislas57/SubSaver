@@ -64,7 +64,7 @@ export function matchOffers(userSub: Subscription, offers: MarketOffer[]): Marke
   return offers.filter(
     (item) =>
       item.category === userSub.category &&
-      (item.scope === "national" || item.location === location) &&
+      (item.scope === "national" || item.scope === "regional" || item.location === location) &&
       !isUserCurrentOffer(userSub, item)
   );
 }
